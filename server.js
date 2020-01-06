@@ -38,4 +38,17 @@ io.on("connection", function(socket) {
   socket.on("test", () => {
     io.emit("test"); // sends to all clients, including sender
   });
+
+  socket.on("client_command", (msg) => {
+    console.log("server has received command: " + msg);
+
+    // parse, verify
+
+    if (msg != "hearts at 5") return false;
+
+    // edit state
+
+    // emit back to all clients
+    io.emit("server_update", msg);
+  })
 });

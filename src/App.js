@@ -95,12 +95,15 @@ class Market extends React.Component {
 }
 
 class App extends Component {
-  state = {
-    test: ""
-  };
 
   constructor() {
     super();
+
+    this.state = {test: "",
+                  trade_command: '',};
+
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   async init() {
@@ -112,7 +115,12 @@ class App extends Component {
 
   async componentDidMount() {
     const socket = socketIOClient();
+    this.state.socket = socket;
     await this.init();
+
+    socket.on("server_update", msg => {
+      alert("received update from server" + msg);
+    });
 
     // console.log("done changing test");
     socket.on("test", async msg => {
@@ -127,6 +135,19 @@ class App extends Component {
     // wait on socket emit event, when that happens, call init again, which will set state again
   }
 
+
+  handleChange(event) {
+    this.setState({trade_command: event.target.value});
+  }
+
+  handleSubmit(event) {
+    alert('A command was submitted: ' + this.state.trade_command);
+    event.preventDefault();
+
+    this.state.socket.emit("client_command", this.state.trade_command);
+  }
+
+
   render() {
     return (
       <div className="App">
@@ -139,9 +160,19 @@ class App extends Component {
           </div>
 
           <Market />
+
+          <form onSubmit={this.handleSubmit}>
+            <label>
+              Trade: 
+              <input type="text" value={this.state.trade_command} onChange={this.handleChange} />
+            </label>
+            <input type="submit" value="Submit" />
+          </form>
         </header>
 
         <p>This is a test by Felix: {this.state.test}</p>
+
+
       </div>
     );
   }
