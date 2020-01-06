@@ -3,7 +3,6 @@ import socketIOClient from "socket.io-client";
 import logo from "./logo.svg";
 import "./App.css";
 
-
 var suits = ["hearts", "diamonds", "clubs", "spades"];
 
 class Player extends React.Component {
@@ -32,9 +31,7 @@ class Player extends React.Component {
   }
 }
 
-
 class Market extends React.Component {
-
   // constructor(props) {
   //   super(props);
   // }
@@ -61,16 +58,14 @@ class Market extends React.Component {
   }
 }
 
-
 var playerInitState = {
-  diamonds: 2,
-  clubs: null,
-  hearts: null,
-  spades: null,
+  diamonds: 1,
+  clubs: 2,
+  hearts: 3,
+  spades: 4,
   num_cards: 10,
-  money: 50,
-}
-
+  money: 50
+};
 
 class App extends Component {
   constructor() {
@@ -80,30 +75,29 @@ class App extends Component {
       trade_command: "",
       market: {
         bids: {
-          clubs: { bid: 1, player: 0 },
-          spades: { bid: 2, player: 0 },
-          hearts: { bid: 8, player: 2 },
-          diamonds: { bid: 4, player: 1 }
+          clubs: { bid: null, player: null },
+          spades: { bid: null, player: null },
+          hearts: { bid: null, player: null },
+          diamonds: { bid: null, player: null }
         },
         offers: {
-          clubs: { offer: 0, player: 0 },
-          spades: { offer: 0, player: 0 },
-          hearts: { offer: 0, player: 0 },
-          diamonds: { offer: 0, player: 0 }
+          clubs: { offer: null, player: null },
+          spades: { offer: null, player: null },
+          hearts: { offer: null, player: null },
+          diamonds: { offer: null, player: null }
         }
       },
       players: {
-        0: {...playerInitState},
-        1: {...playerInitState},
-        2: {...playerInitState},
-        3: {...playerInitState},
-      },
+        0: { ...playerInitState },
+        1: { ...playerInitState },
+        2: { ...playerInitState },
+        3: { ...playerInitState }
+      }
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-
 
   async componentDidMount() {
     const socket = socketIOClient();
@@ -119,10 +113,10 @@ class App extends Component {
       console.log("Bad Command");
 
       // this is a test to show Player props are being updated correctly
-      let playerState = {...this.state.players};
+      let playerState = { ...this.state.players };
       playerState[0]["diamonds"] = 100;
 
-      this.setState({players : playerState});
+      this.setState({ players: playerState });
     });
   }
 
@@ -137,7 +131,6 @@ class App extends Component {
     this.state.socket.emit("client_command", this.state.trade_command);
   }
 
-
   render() {
     console.log("state", this.state);
     console.log("app is rendering itself");
@@ -146,13 +139,12 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <div id="players">
-            <Player id="0" playerState={this.state["players"][0]}/>
-            <Player id="1" playerState={this.state["players"][1]}/>
-            <Player id="2" playerState={this.state["players"][2]}/>
-            <Player id="3" playerState={this.state["players"][3]}/>
+            <Player id="0" playerState={this.state["players"][0]} />
+            <Player id="1" playerState={this.state["players"][1]} />
+            <Player id="2" playerState={this.state["players"][2]} />
+            <Player id="3" playerState={this.state["players"][3]} />
           </div>
 
-          
           <Market marketState={this.state["market"]} />
 
           <form onSubmit={this.handleSubmit}>
