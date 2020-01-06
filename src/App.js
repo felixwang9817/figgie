@@ -3,54 +3,30 @@ import socketIOClient from "socket.io-client";
 import logo from "./logo.svg";
 import "./App.css";
 
+
+var suits = ["hearts", "diamonds", "clubs", "spades"];
+
 class Player extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      diamonds: 2,
-      clubs: null,
-      hearts: null,
-      spades: null,
-      num_cards: 10,
-      money: 50,
-      id: props.id
-    };
   }
 
   render() {
     var cards = "";
+    let playerState = this.props.playerState;
+    console.log(this.props);
 
-    // TODO: prettify this
-    if (this.state.diamonds === null) {
-      cards += "";
-    } else {
-      cards += this.state.diamonds.toString() + " diamonds ";
-    }
-
-    if (this.state.clubs === null) {
-      cards += "";
-    } else {
-      cards += this.state.clubs.toString() + " clubs ";
-    }
-
-    if (this.state.hearts === null) {
-      cards += "";
-    } else {
-      cards += this.state.hearts.toString() + " hearts ";
-    }
-
-    if (this.state.spades === null) {
-      cards += "";
-    } else {
-      cards += this.state.spades.toString() + " spades ";
-    }
+    suits.forEach(suit => {
+      let count = playerState[suit];
+      cards += count ? count + " " + suit + " " : "";
+    });
 
     return (
       <div>
-        <span class="player_id"> player #{this.state.id} </span>
+        <span class="player_id"> player #{this.props.id} </span>
         {cards}
-        <span class="num_cards"> {this.state.num_cards} cards </span>
-        <span class="money"> {this.state.money} money </span>
+        <span class="num_cards"> {playerState.num_cards} cards </span>
+        <span class="money"> {playerState.money} money </span>
       </div>
     );
   }
@@ -59,13 +35,12 @@ class Player extends React.Component {
 
 class Market extends React.Component {
 
-  constructor(props) {
-    super(props);
-    this.getMarketState = props.getMarketState;
-  }
+  // constructor(props) {
+  //   super(props);
+  // }
 
   render() {
-    let market = this.getMarketState();
+    let market = this.props.marketState;
     let offers = market["offers"];
 
     return (
@@ -87,6 +62,15 @@ class Market extends React.Component {
 }
 
 
+var playerInitState = {
+  diamonds: 2,
+  clubs: null,
+  hearts: null,
+  spades: null,
+  num_cards: 10,
+  money: 50,
+}
+
 
 class App extends Component {
   constructor() {
@@ -107,7 +91,13 @@ class App extends Component {
           hearts: { offer: 0, player: 0 },
           diamonds: { offer: 0, player: 0 }
         }
-      }
+      },
+      players: {
+        0: {...playerInitState},
+        1: {...playerInitState},
+        2: {...playerInitState},
+        3: {...playerInitState},
+      },
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -127,6 +117,12 @@ class App extends Component {
 
     socket.on("bad_command", () => {
       console.log("Bad Command");
+
+      // this is a test to show Player props are being updated correctly
+      let playerState = {...this.state.players};
+      playerState[0]["diamonds"] = 100;
+
+      this.setState({players : playerState});
     });
   }
 
@@ -142,10 +138,6 @@ class App extends Component {
   }
 
 
-  getMarketState() {
-    return this.state["market"];
-  }
-
   render() {
     console.log("state", this.state);
     console.log("app is rendering itself");
@@ -154,14 +146,14 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <div id="players">
-            <Player id="0" />
-            <Player id="1" />
-            <Player id="2" />
-            <Player id="3" />
+            <Player id="0" playerState={this.state["players"][0]}/>
+            <Player id="1" playerState={this.state["players"][1]}/>
+            <Player id="2" playerState={this.state["players"][2]}/>
+            <Player id="3" playerState={this.state["players"][3]}/>
           </div>
 
           
-          <Market getMarketState={() => this.getMarketState()} />
+          <Market marketState={this.state["market"]} />
 
           <form onSubmit={this.handleSubmit}>
             <label>
