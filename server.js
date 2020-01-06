@@ -16,6 +16,7 @@ app.get("/sum/:num1/:num2", function(req, res) {
 });
 
 var number = 5;
+var suits = ["hearts", "diamonds", "clubs", "spades"];
 
 app.get("/test", function(req, res) {
   res.send(String(number));
@@ -39,16 +40,29 @@ io.on("connection", function(socket) {
     io.emit("test"); // sends to all clients, including sender
   });
 
-  socket.on("client_command", (msg) => {
+  socket.on("client_command", msg => {
     console.log("server has received command: " + msg);
 
-    // parse, verify
+    // verify
+    // if (msg != "hearts at 5") return false;
 
-    if (msg != "hearts at 5") return false;
+    // parse
+    let tokens = msg.split(" ");
+    console.log(tokens);
+    if (tokens.length == 3) {
+      if (!suits.includes(tokens[0]) || tokens[1] != "at" || isNaN(tokens[2])) {
+        socket.emit("bad_command");
+        return false;
+      }
+    } else {
+      return false;
+    }
+
+    // TODO: parse, verify
 
     // edit state
 
     // emit back to all clients
     io.emit("server_update", msg);
-  })
+  });
 });

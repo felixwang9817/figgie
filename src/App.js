@@ -61,16 +61,16 @@ class Market extends React.Component {
     super(props);
     this.state = {
       bids: {
-        clubs: [1, 0],
-        spades: [2, 0],
-        hearts: [3, 2],
-        diamonds: [4, 1]
+        clubs: { bid: 1, player: 0 },
+        spades: { bid: 2, player: 0 },
+        hearts: { bid: 8, player: 2 },
+        diamonds: { bid: 4, player: 1 }
       },
       offers: {
-        clubs: 11,
-        spades: 12,
-        hearts: 13,
-        diamonds: 14
+        clubs: { offer: 1, player: 0 },
+        spades: { offer: 2, player: 0 },
+        hearts: { offer: 3, player: 2 },
+        diamonds: { offer: 4, player: 1 }
       }
     };
   }
@@ -82,8 +82,8 @@ class Market extends React.Component {
         {Object.keys(this.state.bids).map((key, val) => (
           <p>
             {" "}
-            {this.state.bids[key][0]} bid (#{this.state.bids[key][1]}) for {key}
-            .{" "}
+            {this.state.bids[key]["bid"]} bid (#{this.state.bids[key]["player"]}
+            ) for {key}.{" "}
           </p>
         ))}
         {
@@ -95,12 +95,10 @@ class Market extends React.Component {
 }
 
 class App extends Component {
-
   constructor() {
     super();
 
-    this.state = {test: "",
-                  trade_command: '',};
+    this.state = { test: "", trade_command: "" };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -120,6 +118,11 @@ class App extends Component {
 
     socket.on("server_update", msg => {
       alert("received update from server" + msg);
+      // TODO:
+    });
+
+    socket.on("bad_command", () => {
+      alert("bad command received");
     });
 
     // console.log("done changing test");
@@ -135,18 +138,16 @@ class App extends Component {
     // wait on socket emit event, when that happens, call init again, which will set state again
   }
 
-
   handleChange(event) {
-    this.setState({trade_command: event.target.value});
+    this.setState({ trade_command: event.target.value });
   }
 
   handleSubmit(event) {
-    alert('A command was submitted: ' + this.state.trade_command);
+    alert("A command was submitted: " + this.state.trade_command);
     event.preventDefault();
 
     this.state.socket.emit("client_command", this.state.trade_command);
   }
-
 
   render() {
     return (
@@ -163,16 +164,18 @@ class App extends Component {
 
           <form onSubmit={this.handleSubmit}>
             <label>
-              Trade: 
-              <input type="text" value={this.state.trade_command} onChange={this.handleChange} />
+              Trade:
+              <input
+                type="text"
+                value={this.state.trade_command}
+                onChange={this.handleChange}
+              />
             </label>
             <input type="submit" value="Submit" />
           </form>
         </header>
 
         <p>This is a test by Felix: {this.state.test}</p>
-
-
       </div>
     );
   }
