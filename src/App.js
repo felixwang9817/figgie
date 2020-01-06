@@ -63,32 +63,42 @@ class Player extends React.Component {
 //   this.state = props.marketState;
 // }
 // WORKS but bad
-function Market(props) {
-  // render() {
-  return (
-    <div id="market">
-      market
-      {Object.keys(props.marketState.offers).map((key, val) => (
-        <p>
-          {" "}
-          {props.marketState.offers[key]["offer"]} offer (#
-          {props.marketState.offers[key]["player"]}) for {key}.{" "}
-        </p>
-      ))}
-      {
-        // TODO: offers, display in bidding language?
-      }
-    </div>
-  );
-  // }
+class Market extends React.Component {
+
+  constructor(props) {
+    super(props);
+    this.getMarketState = props.getMarketState;
+  }
+
+  render() {
+    let market = this.getMarketState();
+    let offers = market["offers"];
+
+    return (
+      <div id="market">
+        market
+        {Object.keys(offers).map((key, val) => (
+          <p>
+            {" "}
+            {offers[key]["offer"]} offer (#
+            {offers[key]["player"]}) for {key}.{" "}
+          </p>
+        ))}
+        {
+          // TODO: offers, display in bidding language?
+        }
+      </div>
+    );
+  }
 }
+
+
 
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
-      test: "",
       trade_command: "",
       market: {
         bids: {
@@ -110,20 +120,13 @@ class App extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  async init() {
-    let res = await fetch(`/test`);
-    let text = await res.text();
-    console.log(text);
-    this.setState({ test: text });
-  }
 
   async componentDidMount() {
     const socket = socketIOClient();
     this.state.socket = socket;
-    await this.init();
 
     socket.on("server_update", msg => {
-      // msg should be json dictionary
+      // msg should be dictionary
       alert("received update from server" + msg);
       // TODO: update state and hopefully renders properly
     });
@@ -139,17 +142,6 @@ class App extends Component {
       alert("bad command received");
     });
 
-    // console.log("done changing test");
-    socket.on("test", async msg => {
-      console.log("test event received");
-      // await this.init();
-    });
-    socket.emit("test");
-    // NB: this works but the await fetch line below is very strange
-    // if we move it above console.log("done changing test"), everything breaks
-    // committing this for safety, but we're going to try using server-client emitting
-    // await fetch(`/change_test`); // should still render 5
-    // wait on socket emit event, when that happens, call init again, which will set state again
   }
 
   handleChange(event) {
@@ -163,9 +155,9 @@ class App extends Component {
     this.state.socket.emit("client_command", this.state.trade_command);
   }
 
-  renderMarket() {
-    console.log("render market is getting called");
-    return <Market marketState={this.state.market} />;
+
+  getMarketState() {
+    return this.state["market"];
   }
 
   render() {
@@ -182,8 +174,8 @@ class App extends Component {
             <Player id="3" />
           </div>
 
-          {this.renderMarket()}
-          {/* <Market marketState={this.state.market} /> */}
+          
+          <Market getMarketState={() => this.getMarketState()} />
 
           <form onSubmit={this.handleSubmit}>
             <label>
@@ -197,8 +189,6 @@ class App extends Component {
             <input type="submit" value="Submit" />
           </form>
         </header>
-
-        <p>This is a test by Felix: {this.state.test}</p>
       </div>
     );
   }
