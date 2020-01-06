@@ -56,49 +56,55 @@ class Player extends React.Component {
   }
 }
 
-class Market extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      bids: {
-        clubs: { bid: 1, player: 0 },
-        spades: { bid: 2, player: 0 },
-        hearts: { bid: 8, player: 2 },
-        diamonds: { bid: 4, player: 1 }
-      },
-      offers: {
-        clubs: { offer: 1, player: 0 },
-        spades: { offer: 2, player: 0 },
-        hearts: { offer: 3, player: 2 },
-        diamonds: { offer: 4, player: 1 }
+// clas Market extends React.Component {
+// constructor(props) {
+//   super(props);
+//   console.log("market constructor");
+//   this.state = props.marketState;
+// }
+// WORKS but bad
+function Market(props) {
+  // render() {
+  return (
+    <div id="market">
+      market
+      {Object.keys(props.marketState.offers).map((key, val) => (
+        <p>
+          {" "}
+          {props.marketState.offers[key]["offer"]} offer (#
+          {props.marketState.offers[key]["player"]}) for {key}.{" "}
+        </p>
+      ))}
+      {
+        // TODO: offers, display in bidding language?
       }
-    };
-  }
-
-  render() {
-    return (
-      <div id="market">
-        market
-        {Object.keys(this.state.bids).map((key, val) => (
-          <p>
-            {" "}
-            {this.state.bids[key]["bid"]} bid (#{this.state.bids[key]["player"]}
-            ) for {key}.{" "}
-          </p>
-        ))}
-        {
-          // TODO: offers, display in bidding language?
-        }
-      </div>
-    );
-  }
+    </div>
+  );
+  // }
 }
 
 class App extends Component {
   constructor() {
     super();
 
-    this.state = { test: "", trade_command: "" };
+    this.state = {
+      test: "",
+      trade_command: "",
+      market: {
+        bids: {
+          clubs: { bid: 1, player: 0 },
+          spades: { bid: 2, player: 0 },
+          hearts: { bid: 8, player: 2 },
+          diamonds: { bid: 4, player: 1 }
+        },
+        offers: {
+          clubs: { offer: 0, player: 0 },
+          spades: { offer: 0, player: 0 },
+          hearts: { offer: 0, player: 0 },
+          diamonds: { offer: 0, player: 0 }
+        }
+      }
+    };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -117,8 +123,16 @@ class App extends Component {
     await this.init();
 
     socket.on("server_update", msg => {
+      // msg should be json dictionary
       alert("received update from server" + msg);
-      // TODO:
+      // TODO: update state and hopefully renders properly
+    });
+
+    socket.on("market_update", state => {
+      alert("market update");
+      console.log(state);
+      this.setState({ market: state });
+      // alert(JSON.parse(state));
     });
 
     socket.on("bad_command", () => {
@@ -149,7 +163,15 @@ class App extends Component {
     this.state.socket.emit("client_command", this.state.trade_command);
   }
 
+  renderMarket() {
+    console.log("render market is getting called");
+    return <Market marketState={this.state.market} />;
+  }
+
   render() {
+    console.log("state", this.state);
+    console.log("app is rendering itself");
+    // TODO: use a render market function to force market to re-render when app updates state
     return (
       <div className="App">
         <header className="App-header">
@@ -160,7 +182,8 @@ class App extends Component {
             <Player id="3" />
           </div>
 
-          <Market />
+          {this.renderMarket()}
+          {/* <Market marketState={this.state.market} /> */}
 
           <form onSubmit={this.handleSubmit}>
             <label>

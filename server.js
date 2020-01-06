@@ -31,7 +31,24 @@ app.get("/change_test", function(req, res) {
   // emit server event
 });
 
+// state
+state = {
+  bids: {
+    clubs: { bid: null, player: null },
+    spades: { bid: null, player: null },
+    hearts: { bid: null, player: null },
+    diamonds: { bid: null, player: null }
+  },
+  offers: {
+    clubs: { offer: null, player: null },
+    spades: { offer: null, player: null },
+    hearts: { offer: null, player: null },
+    diamonds: { offer: null, player: null }
+  }
+};
+
 io.on("connection", function(socket) {
+  // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
   socket.on("disconnect", function() {
     console.log("user disconnected");
@@ -50,10 +67,20 @@ io.on("connection", function(socket) {
     let tokens = msg.split(" ");
     console.log(tokens);
     if (tokens.length == 3) {
+      // offer command
+      let suit = tokens[0];
+      let price = Number(tokens[2]);
       if (!suits.includes(tokens[0]) || tokens[1] != "at" || isNaN(tokens[2])) {
         socket.emit("bad_command");
         return false;
       }
+      // edit state here, then send new state to client for update
+      // TODO: add verification such as the new bid is better than existing bid
+      state["offers"][suit]["offer"] = price;
+      // TODO: add player after settling unique id for socket
+      // io.emit("market_update", JSON.stringify(state));
+      console.log(state);
+      io.emit("market_update", state);
     } else {
       return false;
     }
