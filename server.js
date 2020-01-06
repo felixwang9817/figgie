@@ -91,11 +91,22 @@ function deepCopy(x) {
   return JSON.parse(JSON.stringify(x));
 }
 
+// socket.id to unique username
+var usernames = ["alice", "bob", "charlie", "zeus"];
+socketMap = {};
+
 io.on("connection", function(socket) {
+  // TODO: reject connections when there are already four
+  console.log("socket id: " + socket.id);
+  socketMap[socket.id] = usernames.pop();
+  console.log("socketMap: " + JSON.stringify(socketMap));
+
   // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
   socket.on("disconnect", function() {
     console.log("user disconnected");
+    usernames.push(socketMap[socket.id]);
+    delete socketMap[socket.id];
   });
 
   // wait for client action
