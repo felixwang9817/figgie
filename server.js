@@ -5,15 +5,7 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
 app.use(express.static(__dirname));
-
-// app.get('/', (req, res) => res.send('Hello World!'))
-
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
-app.get("/sum/:num1/:num2", function(req, res) {
-  const sum = Number(req.params.num1) + Number(req.params.num2);
-  res.send("ans: " + sum);
-});
 
 var suits = ["hearts", "diamonds", "clubs", "spades"];
 
@@ -41,11 +33,9 @@ io.on("connection", function(socket) {
     console.log("user disconnected");
   });
   
+  // wait for client action
   socket.on("client_command", msg => {
     console.log("server has received command: " + msg);
-
-    // verify
-    // if (msg != "hearts at 5") return false;
 
     // parse
     let tokens = msg.split(" ");
@@ -66,14 +56,10 @@ io.on("connection", function(socket) {
       console.log(state);
       io.emit("market_update", state);
     } else {
+      // TODO: bid command
       return false;
     }
 
-    // TODO: parse, verify
-
-    // edit state
-
-    // emit back to all clients
-    io.emit("server_update", msg);
+    // TODO: player states
   });
 });

@@ -56,13 +56,7 @@ class Player extends React.Component {
   }
 }
 
-// clas Market extends React.Component {
-// constructor(props) {
-//   super(props);
-//   console.log("market constructor");
-//   this.state = props.marketState;
-// }
-// WORKS but bad
+
 class Market extends React.Component {
 
   constructor(props) {
@@ -125,23 +119,15 @@ class App extends Component {
     const socket = socketIOClient();
     this.state.socket = socket;
 
-    socket.on("server_update", msg => {
-      // msg should be dictionary
-      alert("received update from server" + msg);
-      // TODO: update state and hopefully renders properly
-    });
-
     socket.on("market_update", state => {
-      alert("market update");
+      console.log("market update");
       console.log(state);
       this.setState({ market: state });
-      // alert(JSON.parse(state));
     });
 
     socket.on("bad_command", () => {
-      alert("bad command received");
+      console.log("Bad Command");
     });
-
   }
 
   handleChange(event) {
@@ -149,7 +135,7 @@ class App extends Component {
   }
 
   handleSubmit(event) {
-    alert("A command was submitted: " + this.state.trade_command);
+    console.log("Sending command to server: " + this.state.trade_command);
     event.preventDefault();
 
     this.state.socket.emit("client_command", this.state.trade_command);
