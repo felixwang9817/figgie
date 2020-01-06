@@ -38,7 +38,10 @@ class Market extends React.Component {
 
   render() {
     let market = this.props.marketState;
-    let offers = market["offers"];
+    let offers = market ? market["offers"] : null;
+    if (!offers) {
+      return <div></div>;
+    }
 
     return (
       <div id="market">
@@ -58,41 +61,14 @@ class Market extends React.Component {
   }
 }
 
-var playerInitState = {
-  diamonds: 1,
-  clubs: 2,
-  hearts: 3,
-  spades: 4,
-  num_cards: 10,
-  money: 50
-};
-
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
       trade_command: "",
-      market: {
-        bids: {
-          clubs: { bid: null, player: null },
-          spades: { bid: null, player: null },
-          hearts: { bid: null, player: null },
-          diamonds: { bid: null, player: null }
-        },
-        offers: {
-          clubs: { offer: null, player: null },
-          spades: { offer: null, player: null },
-          hearts: { offer: null, player: null },
-          diamonds: { offer: null, player: null }
-        }
-      },
-      players: {
-        0: { ...playerInitState },
-        1: { ...playerInitState },
-        2: { ...playerInitState },
-        3: { ...playerInitState }
-      }
+      market: {},
+      players: {}
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -107,6 +83,12 @@ class App extends Component {
       console.log("market update");
       console.log(state);
       this.setState({ market: state });
+    });
+
+    socket.on("player_update", state => {
+      console.log("player update");
+      console.log(state);
+      this.setState({ players: state });
     });
 
     socket.on("bad_command", () => {
@@ -134,15 +116,15 @@ class App extends Component {
   render() {
     console.log("state", this.state);
     console.log("app is rendering itself");
+
     // TODO: use a render market function to force market to re-render when app updates state
     return (
       <div className="App">
         <header className="App-header">
           <div id="players">
-            <Player id="0" playerState={this.state["players"][0]} />
-            <Player id="1" playerState={this.state["players"][1]} />
-            <Player id="2" playerState={this.state["players"][2]} />
-            <Player id="3" playerState={this.state["players"][3]} />
+            {Object.keys(this.state.players).map((key, val) => (
+              <Player id={key} playerState={val}></Player>
+            ))}
           </div>
 
           <Market marketState={this.state["market"]} />

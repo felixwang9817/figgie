@@ -28,6 +28,17 @@ var initialMarketState = {
 
 var marketState = deepCopy(initialMarketState);
 
+var initialPlayerState = {
+  diamonds: 1,
+  clubs: 2,
+  hearts: 3,
+  spades: 4,
+  num_cards: 10,
+  money: 50
+};
+
+var playerState = {};
+
 function parseCommand(command) {
   console.log("command: " + command);
   let tokens = command.split(" ");
@@ -95,11 +106,26 @@ function deepCopy(x) {
 var usernames = ["alice", "bob", "charlie", "zeus"];
 socketMap = {};
 
+function updatePlayers() {
+  // for each socket in socketMap, shield appropriately and socket.emit to that socket
+  for (const socketid in socketMap) {
+    // TODO: shield
+    io.to(socketid).emit("player_update", playerState);
+  }
+}
+
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
   console.log("socket id: " + socket.id);
   socketMap[socket.id] = usernames.pop();
   console.log("socketMap: " + JSON.stringify(socketMap));
+
+  // add player to playerstate
+  playerState[socketMap[socket.id]] = deepCopy(initialPlayerState);
+  updatePlayers();
+  io.emit("market_update", marketState); // TODO: make this a helper function
+
+  // TODO: on connection, send player update and market update
 
   // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
