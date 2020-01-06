@@ -1,6 +1,6 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import logo from "./logo.svg";
+import "./App.css";
 
 
 class Player extends React.Component {
@@ -100,23 +100,52 @@ class Market extends React.Component {
 }
 
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
 
-      <div id='players'>
-        <Player id="0" />
-        <Player id="1" />
-        <Player id="2" />
-        <Player id="3" />
+class App extends Component {
+  state = {
+    test: ""
+  };
+
+  constructor() {
+    super();
+  }
+
+  init() {
+    fetch(`/sum/3/5`)
+      .then(res => res.text())
+      .then(res => {
+        this.setState({ test: res });
+      });
+  }
+
+  componentDidMount() {
+    this.init();
+  }
+
+
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+
+          <div id='players'>
+            <Player id="0" />
+            <Player id="1" />
+            <Player id="2" />
+            <Player id="3" />
+          </div>
+
+          <Market />
+
+        </header>
+
+        <p>This is a test by Felix: {this.state.test}</p>
+       
       </div>
-
-      <Market />
-
-      </header>
-    </div>
-  );
+    
+          
+    ) 
+  }
 }
 
 export default App;
