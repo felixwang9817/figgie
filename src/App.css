@@ -36,3 +36,18 @@
     transform: rotate(360deg);
   }
 }
+
+
+#players {
+  padding: 25px;
+  border: lightblue dotted 2px;
+}
+
+.player_id {
+  color: red;
+}
+
+
+#market {
+  margin-top: 40px;
+}
