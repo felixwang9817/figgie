@@ -113,15 +113,17 @@ class App extends Component {
   async componentDidMount() {
     const socket = socketIOClient();
     await this.init();
-    console.log("done changing test");
+
+    // console.log("done changing test");
     socket.on("test", async msg => {
       console.log("test event received");
-      await this.init();
+      // await this.init();
     });
+    socket.emit("test");
     // NB: this works but the await fetch line below is very strange
     // if we move it above console.log("done changing test"), everything breaks
     // committing this for safety, but we're going to try using server-client emitting
-    await fetch(`/change_test`); // should still render 5
+    // await fetch(`/change_test`); // should still render 5
     // wait on socket emit event, when that happens, call init again, which will set state again
   }
 

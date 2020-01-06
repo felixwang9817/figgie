@@ -35,4 +35,7 @@ io.on("connection", function(socket) {
   socket.on("disconnect", function() {
     console.log("user disconnected");
   });
+  socket.on("test", () => {
+    io.emit("test"); // sends to all clients, including sender
+  });
 });
