@@ -7,27 +7,27 @@ const io = require("socket.io")(http);
 app.use(express.static(__dirname));
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-var suits = ["hearts", "diamonds", "clubs", "spades"];
-var actions = ["take", "sell"];
+let suits = ["hearts", "diamonds", "clubs", "spades"];
+let actions = ["take", "sell"];
+let clearActions = ["clear", "out"];
 
-// state
-var initSuitMarket = {
+// market state
+let initSuitMarket = {
   bid: null,
   bid_player: null,
   offer: null,
   offer_player: null
 };
-
-var initialMarketState = {
+let initialMarketState = {
   clubs: { ...initSuitMarket },
   spades: { ...initSuitMarket },
   hearts: { ...initSuitMarket },
   diamonds: { ...initSuitMarket }
 };
+let marketState = deepCopy(initialMarketState);
 
-var marketState = deepCopy(initialMarketState);
-
-var initialPlayerState = {
+// player state
+let initialPlayerState = {
   diamonds: 1,
   clubs: 2,
   hearts: 3,
@@ -35,10 +35,10 @@ var initialPlayerState = {
   num_cards: 10,
   money: 50
 };
+let playerState = {};
 
-var playerState = {};
-
-var tradeLog = ["test", "asdf"];
+// trade log
+let tradeLog = ["test", "asdf"];
 
 function parseCommand(command, socket_id) {
   command = command.toLowerCase();
@@ -46,6 +46,16 @@ function parseCommand(command, socket_id) {
   let tokens = command.split(" ");
   let username = socketMap[socket_id];
 
+  if (tokens.length == 1) {
+    // clear or out command
+    let clearAction = tokens[0];
+    if (!clearActions.includes(clearAction)) {
+      return false;
+    }
+
+    console.log("clear or out command detected");
+    clearPlayer(socket_id);
+  }
   if (tokens.length == 2) {
     // take or sell command
     let action = tokens[0];
@@ -57,7 +67,8 @@ function parseCommand(command, socket_id) {
     console.log("take or sell command detected");
     if (action == "take") {
       takeOffer(suit, username);
-    } else {  // sell
+    } else {
+      // sell
       sellBid(suit, username);
     }
 
@@ -85,7 +96,6 @@ function parseCommand(command, socket_id) {
     postBid(suit, price, username);
   }
 }
-
 
 // assumes trade is valid!
 function tradeCard(buyer, seller, suit, price) {
@@ -155,24 +165,20 @@ function postBid(suit, price, player) {
   }
 }
 
-
-
 function takeOffer(suit, username) {
   let price = marketState[suit]["offer"];
   if (price === null) return;
   let seller = marketState[suit]["offer_player"];
-  if (seller == username) return;  // can't self trade
-
+  if (seller == username) return; // can't self trade
 
   tradeCard(username, seller, suit, price);
 }
-
 
 function sellBid(suit, username) {
   let price = marketState[suit]["bid"];
   if (price === null) return;
   let buyer = marketState[suit]["bid_player"];
-  if (buyer == username) return;  // can't self trade
+  if (buyer == username) return; // can't self trade
   let userState = playerState[username];
   if (userState[suit] < 1) return; // check have card to sell
 
@@ -186,12 +192,44 @@ function clearMarket() {
 }
 
 
+function clearPlayer(username) {
+  suits.forEach(suit => {
+    let suitMarketState = marketState[suit];
+    if (suitMarketState["bid_player"] == username) {
+      suitMarketState["bid_player"] = null;
+      suitMarketState["bid"] = null;
+    }
+    if (suitMarketState["offer_player"] == username) {
+      suitMarketState["offer_player"] = null;
+      suitMarketState["offer"] = null;
+    }
+    io.emit("market_update", marketState);
+  });
+}
+
+function postOffer(suit, price, player) {
+  let sellerState = playerState[player];
+  if (sellerState[suit] < 1) return; // check have card to sell
+
+  let currentOffer = marketState[suit]["offer"];
+  console.log("currentOffer: " + currentOffer);
+  console.log("price: " + price);
+  if (currentOffer === null || price > currentOffer) {
+    marketState[suit]["offer"] = price;
+    marketState[suit]["offer_player"] = player;
+    io.emit("market_update", marketState);
+    console.log(
+      "final marketState after postOffer: " + JSON.stringify(marketState)
+    );
+  }
+}
+
 function deepCopy(x) {
   return JSON.parse(JSON.stringify(x));
 }
 
 // socket.id to unique username
-var usernames = ["alice", "bob", "charlie", "zeus"];
+let usernames = ["alice", "bob", "charlie", "zeus"];
 socketMap = {};
 
 function updatePlayers() {
