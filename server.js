@@ -124,7 +124,7 @@ function postOffer(suit, price, player) {
     // valid offer; check market crossing
     let bidPrice = marketState[suit]["bid"];
     let bidPlayer = marketState[suit]["bid_player"];
-    if (bidPrice >= price) {
+    if (bidPrice !== null && bidPrice >= price) {
       // crossed market
       if (bidPlayer != player) {  // if it's yourself, it's allowed
                                   // otherwise, execute a trade at last bid price
@@ -149,7 +149,7 @@ function postBid(suit, price, player) {
     // valid bid; check market crossing
     let offerPrice = marketState[suit]["offer"];
     let offerPlayer = marketState[suit]["offer_player"];
-    if (offerPrice <= price) {
+    if (offerPrice !== null && offerPrice <= price) {
       // crossed market
       if (offerPlayer != player) {  // if it's yourself, it's allowed
                                   // otherwise, execute a trade at last offer price
