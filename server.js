@@ -108,7 +108,7 @@ function tradeCard(buyer, seller, suit, price) {
   sellerState["money"] += price;
   buyerState["money"] -= price;
 
-  trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
+  let trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
   tradeLog.push(trade);
   io.emit("tradeLogUpdate", tradeLog);
 
@@ -251,12 +251,12 @@ io.on("connection", function(socket) {
   let username = usernames.pop();
   socketMap[socket.id] = username;
 
-  // add player to playerstate
+  // on connection, initialize the new player
   playerState[username] = deepCopy(initialPlayerState);
   updatePlayers();
-  io.emit("marketUpdate", marketState); // TODO: make this a helper function
-  io.emit("tradeLogUpdate", tradeLog);
-  socket.emit("username", username); // emit to client that connected
+  socket.emit("marketUpdate", marketState);
+  socket.emit("tradeLogUpdate", tradeLog);
+  socket.emit("username", username);
 
   // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
