@@ -50,9 +50,11 @@ function parseCommand(command) {
     console.log("take or sell command detected");
     if (action == "take") {
       takeOffer(suit);
+    } else {
+      sellBid(suit);
     }
   }
-  if (tokens.length == 3) {
+  else if (tokens.length == 3) {
     // offer command
     let suit = tokens[0];
     let price = Number(tokens[2]);
@@ -67,14 +69,26 @@ function parseCommand(command) {
 
 function takeOffer(suit) {
   let currentOffer = marketState[suit]["offer"];
+  if (offer === null) return;
   let seller = marketState[suit]["offer_player"];
 
   // execute trade on market and player data
   // TODO: move player data from App.js to server.js and handle player execution later
 
-  // TODO: clear market at end
   clearMarket();
 }
+
+function sellBid(suit) {
+  let currentBid = marketState[suit]["bid"];
+  if (bid === null) return;
+  let buyer = marketState[suit]["bid_player"];
+
+  // execute trade on market and player data
+  // TODO: move player data from App.js to server.js and handle player execution later
+
+  clearMarket();
+}
+
 
 function clearMarket() {
   marketState = deepCopy(initialMarketState);
@@ -121,8 +135,6 @@ io.on("connection", function(socket) {
   playerState[socketMap[socket.id]] = deepCopy(initialPlayerState);
   updatePlayers();
   io.emit("market_update", marketState); // TODO: make this a helper function
-
-  // TODO: on connection, send player update and market update
 
   // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
