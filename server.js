@@ -38,6 +38,7 @@ function parseCommand(command, socket_id) {
   command = command.toLowerCase();
   console.log("command: " + command);
   let tokens = command.split(" ");
+  let username = socketMap[socket_id];
 
   if (tokens.length == 2) {
     // take or sell command
@@ -49,9 +50,9 @@ function parseCommand(command, socket_id) {
 
     console.log("take or sell command detected");
     if (action == "take") {
-      takeOffer(suit);
-    } else {
-      sellBid(suit);
+      takeOffer(suit, username);
+    } else {  // sell
+      sellBid(suit, username);
     }
   }
   else if (tokens.length == 3) {
@@ -63,33 +64,52 @@ function parseCommand(command, socket_id) {
     }
 
     console.log("offer command detected");
-    let player = socketMap[socket_id];  // username
-    postOffer(suit, price, player);
+    postOffer(suit, price, username);
   }
 }
 
-function takeOffer(suit) {
-  let currentOffer = marketState[suit]["offer"];
-  if (currentOffer === null) return;
-  let seller = marketState[suit]["offer_player"];
 
-  // execute trade on market and player data
-  // TODO: move player data from App.js to server.js and handle player execution later
+// assumes trade is valid!
+function tradeCard(buyer, seller, suit, price) {
+  let sellerState = playerState[seller];
+  let buyerState = playerState[buyer];
 
-
-
-  clearMarket();
+  sellerState[suit] -= 1;
+  buyerState[suit] += 1;
+  sellerState["num_cards"] -= 1;
+  buyerState["num_cards"] += 1;
+  sellerState["money"] += price;
+  buyerState["money"] -= price;
 }
 
-function sellBid(suit) {
-  let currentBid = marketState[suit]["bid"];
-  if (currentBid === null) return;
-  let buyer = marketState[suit]["bid_player"];
 
-  // execute trade on market and player data
-  // TODO: move player data from App.js to server.js and handle player execution later
+function takeOffer(suit, username) {
+  let price = marketState[suit]["offer"];
+  if (price === null) return;
+  let seller = marketState[suit]["offer_player"];
+  if (seller == username) return;  // can't self trade
+  let sellerState = playerState[seller];
+  if (sellerState[suit] < 1) return;
+  // TODO: maybe: check enough buyer money?
 
+  tradeCard(username, seller, suit, price);
   clearMarket();
+  updatePlayers();
+}
+
+
+function sellBid(suit, username) {
+  let price = marketState[suit]["bid"];
+  if (price === null) return;
+  let buyer = marketState[suit]["bid_player"];
+  if (buyer == username) return;  // can't self trade
+  let userState = playerState[username];
+  if (userState[suit] < 1) return; // check have card to sell
+  // TODO: maybe: check enough buyer money?
+
+  tradeCard(buyer, username, suit, price);
+  clearMarket();
+  updatePlayers();
 }
 
 
