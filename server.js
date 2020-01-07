@@ -9,24 +9,24 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
+let clearActions = ["clear", "out"];
 
-// state
+// market state
 let initSuitMarket = {
   bid: null,
   bid_player: null,
   offer: null,
   offer_player: null
 };
-
 let initialMarketState = {
   clubs: { ...initSuitMarket },
   spades: { ...initSuitMarket },
   hearts: { ...initSuitMarket },
   diamonds: { ...initSuitMarket }
 };
-
 let marketState = deepCopy(initialMarketState);
 
+// player state
 let initialPlayerState = {
   diamonds: 1,
   clubs: 2,
@@ -35,9 +35,9 @@ let initialPlayerState = {
   num_cards: 10,
   money: 50
 };
-
 let playerState = {};
 
+// trade log
 let tradeLog = ["test", "asdf"];
 
 function parseCommand(command, socket_id) {
@@ -46,6 +46,16 @@ function parseCommand(command, socket_id) {
   let tokens = command.split(" ");
   let username = socketMap[socket_id];
 
+  if (tokens.length == 1) {
+    // clear or out command
+    let clearAction = tokens[0];
+    if (!clearActions.includes(clearAction)) {
+      return false;
+    }
+
+    console.log("clear or out command detected");
+    clearPlayer(socket_id);
+  }
   if (tokens.length == 2) {
     // take or sell command
     let action = tokens[0];
@@ -115,6 +125,21 @@ function clearMarket() {
   marketState = deepCopy(initialMarketState);
   console.log("clearMarket: " + JSON.stringify(marketState));
   io.emit("market_update", marketState);
+}
+
+function clearPlayer(socket_id) {
+  suits.forEach(suit => {
+    let suitMarketState = marketState[suit];
+    if (suitMarketState["bid_player"] == socketMap[socket_id]) {
+      suitMarketState["bid_player"] = null;
+      suitMarketState["bid"] = null;
+    }
+    if (suitMarketState["offer_player"] == socketMap[socket_id]) {
+      suitMarketState["offer_player"] = null;
+      suitMarketState["offer"] = null;
+    }
+    io.emit("market_update", marketState);
+  });
 }
 
 function postOffer(suit, price, player) {
