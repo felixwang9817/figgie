@@ -292,3 +292,57 @@ io.on("connection", function(socket) {
     parseCommand(command, socket.id);
   });
 });
+
+
+function otherColor(suit) {
+  return {
+    spades: "clubs",
+    clubs: "spades",
+    diamonds: "hearts",
+    hearts: "diamonds",
+  }[suit];
+}
+
+function randomSuit() {
+  return suits[Math.floor(Math.random() * suits.length)];
+}
+
+/**
+ * Shuffles array in place.
+ * @param {Array} a items An array containing the items.
+ */
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        x = a[i];
+        a[i] = a[j];
+        a[j] = x;
+    }
+    return a;
+}
+
+// init game stuff
+function startGame() {
+  let common = randomSuit();
+  let goal = otherColor(common);
+  let eight = randomSuit();
+  while (eight == common) eight = randomSuit();
+
+  let remainingSuits = suits.filter(s => s != common && s != goal);
+
+  let cards = Array(40);
+  cards.fill(common, 0, 12);
+  cards.fill(eight, 12, 20);
+  cards.fill(remainingSuits[0], 20, 30);
+  cards.fill(remainingSuits[1], 30, 40);
+
+  console.log("preshuffle: " + cards);
+  shuffle(cards);
+
+  console.log("goal: " + goal);
+  console.log("cards: " + cards);
+  return [cards, goal]
+}
+
+startGame();
