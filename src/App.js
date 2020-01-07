@@ -2,15 +2,11 @@ import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
 
-var suits = ["hearts", "diamonds", "clubs", "spades"];
+let suits = ["hearts", "diamonds", "clubs", "spades"];
 
 class Player extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    var cards = "";
+    let cards = "";
     let playerState = this.props.playerState;
     console.log(this.props);
 
@@ -31,10 +27,6 @@ class Player extends React.Component {
 }
 
 class Market extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  // }
-
   render() {
     let markets = this.props.marketState;
     console.log("Market rendering, " + JSON.stringify(markets));
