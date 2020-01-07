@@ -35,7 +35,7 @@ let initialPlayerState = {
   num_cards: 10,
   money: 50
 };
-let playerState = {};
+let playerState = {}; // username -> playerDataDict
 
 // trade log
 let tradeLog = ["test", "asdf"];
@@ -55,8 +55,8 @@ function parseCommand(command, socket_id) {
 
     console.log("clear or out command detected");
     clearPlayer(username);
-  }
-  if (tokens.length == 2) {
+
+  } else if (tokens.length == 2) {
     // take or sell command
     let action = tokens[0];
     let suit = tokens[1];
@@ -136,7 +136,7 @@ function postOffer(suit, price, player) {
     // no market crossing or self-crossing: update new offer
     marketState[suit]["offer"] = price;
     marketState[suit]["offer_player"] = player;
-    io.emit("market_update", marketState);
+    broadcastMarketUpdate();
   }
 }
 
@@ -161,7 +161,7 @@ function postBid(suit, price, player) {
     // no market crossing or self-crossing: update new bid
     marketState[suit]["bid"] = price;
     marketState[suit]["bid_player"] = player;
-    io.emit("market_update", marketState);
+    broadcastMarketUpdate();
   }
 }
 
@@ -188,7 +188,7 @@ function sellBid(suit, username) {
 function clearMarket() {
   marketState = deepCopy(initialMarketState);
   console.log("clearMarket: " + JSON.stringify(marketState));
-  io.emit("market_update", marketState);
+  broadcastMarketUpdate();
 }
 
 
@@ -203,7 +203,7 @@ function clearPlayer(username) {
       suitMarketState["offer_player"] = null;
       suitMarketState["offer"] = null;
     }
-    io.emit("market_update", marketState);
+    broadcastMarketUpdate();
   });
 }
 
@@ -217,7 +217,7 @@ function postOffer(suit, price, player) {
   if (currentOffer === null || price > currentOffer) {
     marketState[suit]["offer"] = price;
     marketState[suit]["offer_player"] = player;
-    io.emit("market_update", marketState);
+    broadcastMarketUpdate();
     console.log(
       "final marketState after postOffer: " + JSON.stringify(marketState)
     );
@@ -232,12 +232,34 @@ function deepCopy(x) {
 let usernames = ["alice", "bob", "charlie", "zeus"];
 socketMap = {};
 
+
+function shieldPlayerInfo(socketid) {
+  let playerVisibleState = deepCopy(playerState);
+  let username = socketMap[socketid];
+
+  // hiding other player's hands
+  Object.keys(playerState).map(player => {
+    console.log("player: " + player);
+    if (player != username) {
+      suits.forEach(suit => {
+        playerVisibleState[player][suit] = null;
+      });
+    }
+  });
+
+  return playerVisibleState;
+}
+
+
 function updatePlayers() {
   // for each socket in socketMap, shield appropriately and socket.emit to that socket
   for (const socketid in socketMap) {
-    // TODO: shield
-    io.to(socketid).emit("player_update", playerState);
+    io.to(socketid).emit("player_update", shieldPlayerInfo(socketid));
   }
+}
+
+function broadcastMarketUpdate() {
+  io.emit("market_update", marketState);
 }
 
 io.on("connection", function(socket) {
@@ -252,7 +274,7 @@ io.on("connection", function(socket) {
   // add player to playerstate
   playerState[username] = deepCopy(initialPlayerState);
   updatePlayers();
-  io.emit("market_update", marketState); // TODO: make this a helper function
+  broadcastMarketUpdate();
   io.emit("trade_log_update", tradeLog);
 
   // on connection, server determines unique id for the socket and stores in a dictionary
