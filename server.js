@@ -34,7 +34,7 @@ var initialPlayerState = {
 
 var playerState = {};
 
-function parseCommand(command) {
+function parseCommand(command, socket_id) {
   command = command.toLowerCase();
   console.log("command: " + command);
   let tokens = command.split(" ");
@@ -63,7 +63,8 @@ function parseCommand(command) {
     }
 
     console.log("offer command detected");
-    postOffer(suit, price);
+    let player = socketMap[socket_id];  // username
+    postOffer(suit, price, player);
   }
 }
 
@@ -74,6 +75,8 @@ function takeOffer(suit) {
 
   // execute trade on market and player data
   // TODO: move player data from App.js to server.js and handle player execution later
+
+
 
   clearMarket();
 }
@@ -96,7 +99,7 @@ function clearMarket() {
   io.emit("market_update", marketState);
 }
 
-function postOffer(suit, price, player = 0) {
+function postOffer(suit, price, player) {
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
   console.log("price: " + price);
@@ -127,17 +130,19 @@ function updatePlayers() {
 
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
+
+  // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("socket id: " + socket.id);
-  socketMap[socket.id] = usernames.pop();
+  let username = usernames.pop();
+  socketMap[socket.id] = username;
   console.log("socketMap: " + JSON.stringify(socketMap));
 
   // add player to playerstate
-  playerState[socketMap[socket.id]] = deepCopy(initialPlayerState);
+  playerState[username] = deepCopy(initialPlayerState);
   updatePlayers();
   io.emit("market_update", marketState); // TODO: make this a helper function
-
-  // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
+
   socket.on("disconnect", function() {
     console.log("user disconnected");
     usernames.push(socketMap[socket.id]);
@@ -147,6 +152,6 @@ io.on("connection", function(socket) {
   // wait for client action
   socket.on("client_command", command => {
     console.log("server has received command: " + command);
-    parseCommand(command);
+    parseCommand(command, socket.id);
   });
 });
