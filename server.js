@@ -249,11 +249,9 @@ function updatePlayers() {
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
 
-  // on connection, server determines unique id for the socket and stores in a dictionary
-  console.log("socket id: " + socket.id);
+  // on connection, server assigns username to the unique socket id of the client
   let username = usernames.pop();
   socketMap[socket.id] = username;
-  console.log("socketMap: " + JSON.stringify(socketMap));
 
   // add player to playerstate
   playerState[username] = deepCopy(initialPlayerState);
