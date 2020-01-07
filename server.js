@@ -54,7 +54,7 @@ function parseCommand(command, socket_id) {
     }
 
     console.log("clear or out command detected");
-    clearPlayer(socket_id);
+    clearPlayer(username);
   }
   if (tokens.length == 2) {
     // take or sell command
