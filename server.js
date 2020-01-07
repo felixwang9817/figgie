@@ -11,14 +11,18 @@ var suits = ["hearts", "diamonds", "clubs", "spades"];
 var actions = ["take", "sell"];
 
 // state
-var initSuitMarket = { bid: null, bid_player: null,
-                       offer: null, offer_player: null };
+var initSuitMarket = {
+  bid: null,
+  bid_player: null,
+  offer: null,
+  offer_player: null
+};
 
 var initialMarketState = {
-  clubs: {...initSuitMarket},
-  spades: {...initSuitMarket},
-  hearts: {...initSuitMarket},
-  diamonds: {...initSuitMarket}
+  clubs: { ...initSuitMarket },
+  spades: { ...initSuitMarket },
+  hearts: { ...initSuitMarket },
+  diamonds: { ...initSuitMarket }
 };
 
 var marketState = deepCopy(initialMarketState);
@@ -33,6 +37,8 @@ var initialPlayerState = {
 };
 
 var playerState = {};
+
+var tradeLog = ["test", "asdf"];
 
 function parseCommand(command, socket_id) {
   command = command.toLowerCase();
@@ -53,8 +59,7 @@ function parseCommand(command, socket_id) {
     } else {
       sellBid(suit);
     }
-  }
-  else if (tokens.length == 3) {
+  } else if (tokens.length == 3) {
     // offer command
     let suit = tokens[0];
     let price = Number(tokens[2]);
@@ -63,7 +68,7 @@ function parseCommand(command, socket_id) {
     }
 
     console.log("offer command detected");
-    let player = socketMap[socket_id];  // username
+    let player = socketMap[socket_id]; // username
     postOffer(suit, price, player);
   }
 }
@@ -75,8 +80,6 @@ function takeOffer(suit) {
 
   // execute trade on market and player data
   // TODO: move player data from App.js to server.js and handle player execution later
-
-
 
   clearMarket();
 }
@@ -92,7 +95,6 @@ function sellBid(suit) {
   clearMarket();
 }
 
-
 function clearMarket() {
   marketState = deepCopy(initialMarketState);
   console.log("clearMarket: " + JSON.stringify(marketState));
@@ -107,8 +109,9 @@ function postOffer(suit, price, player) {
     marketState[suit]["offer"] = price;
     marketState[suit]["offer_player"] = player;
     io.emit("market_update", marketState);
-    console.log("final marketState after postOffer: "
-         + JSON.stringify(marketState));
+    console.log(
+      "final marketState after postOffer: " + JSON.stringify(marketState)
+    );
   }
 }
 
@@ -141,6 +144,9 @@ io.on("connection", function(socket) {
   playerState[username] = deepCopy(initialPlayerState);
   updatePlayers();
   io.emit("market_update", marketState); // TODO: make this a helper function
+  io.emit("trade_log_update", tradeLog);
+
+  // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");
 
   socket.on("disconnect", function() {
