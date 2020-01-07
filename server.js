@@ -260,6 +260,7 @@ io.on("connection", function(socket) {
   updatePlayers();
   io.emit("market_update", marketState); // TODO: make this a helper function
   io.emit("trade_log_update", tradeLog);
+  socket.emit("username", username); // emit to client that connected
 
   // on connection, server determines unique id for the socket and stores in a dictionary
   console.log("a user connected");

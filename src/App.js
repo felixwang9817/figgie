@@ -75,6 +75,7 @@ class App extends Component {
 
     this.state = {
       trade_command: "",
+      username: "",
       market: {},
       players: {},
       tradeLog: []
@@ -104,6 +105,12 @@ class App extends Component {
       console.log("trade log update");
       console.log(state);
       this.setState({ tradeLog: state });
+    });
+
+    socket.on("username", state => {
+      console.log("username");
+      console.log(state);
+      this.setState({ username: state });
     });
 
     socket.on("bad_command", () => {
@@ -142,6 +149,10 @@ class App extends Component {
               <Player id={key} playerState={val}></Player>
             ))}
           </div>
+
+          <br></br>
+
+          <div>your name: {this.state.username}</div>
 
           <Market marketState={this.state["market"]} />
 
