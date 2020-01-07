@@ -7,27 +7,27 @@ const io = require("socket.io")(http);
 app.use(express.static(__dirname));
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-var suits = ["hearts", "diamonds", "clubs", "spades"];
-var actions = ["take", "sell"];
+let suits = ["hearts", "diamonds", "clubs", "spades"];
+let actions = ["take", "sell"];
 
 // state
-var initSuitMarket = {
+let initSuitMarket = {
   bid: null,
   bid_player: null,
   offer: null,
   offer_player: null
 };
 
-var initialMarketState = {
+let initialMarketState = {
   clubs: { ...initSuitMarket },
   spades: { ...initSuitMarket },
   hearts: { ...initSuitMarket },
   diamonds: { ...initSuitMarket }
 };
 
-var marketState = deepCopy(initialMarketState);
+let marketState = deepCopy(initialMarketState);
 
-var initialPlayerState = {
+let initialPlayerState = {
   diamonds: 1,
   clubs: 2,
   hearts: 3,
@@ -36,9 +36,9 @@ var initialPlayerState = {
   money: 50
 };
 
-var playerState = {};
+let playerState = {};
 
-var tradeLog = ["test", "asdf"];
+let tradeLog = ["test", "asdf"];
 
 function parseCommand(command, socket_id) {
   command = command.toLowerCase();
@@ -57,7 +57,8 @@ function parseCommand(command, socket_id) {
     console.log("take or sell command detected");
     if (action == "take") {
       takeOffer(suit, username);
-    } else {  // sell
+    } else {
+      // sell
       sellBid(suit, username);
     }
   } else if (tokens.length == 3) {
@@ -73,7 +74,6 @@ function parseCommand(command, socket_id) {
   }
 }
 
-
 // assumes trade is valid!
 function tradeCard(buyer, seller, suit, price) {
   let sellerState = playerState[seller];
@@ -87,26 +87,22 @@ function tradeCard(buyer, seller, suit, price) {
   buyerState["money"] -= price;
 }
 
-
-
 function takeOffer(suit, username) {
   let price = marketState[suit]["offer"];
   if (price === null) return;
   let seller = marketState[suit]["offer_player"];
-  if (seller == username) return;  // can't self trade
-
+  if (seller == username) return; // can't self trade
 
   tradeCard(username, seller, suit, price);
   clearMarket();
   updatePlayers();
 }
 
-
 function sellBid(suit, username) {
   let price = marketState[suit]["bid"];
   if (price === null) return;
   let buyer = marketState[suit]["bid_player"];
-  if (buyer == username) return;  // can't self trade
+  if (buyer == username) return; // can't self trade
   let userState = playerState[username];
   if (userState[suit] < 1) return; // check have card to sell
 
@@ -123,7 +119,7 @@ function clearMarket() {
 
 function postOffer(suit, price, player) {
   let sellerState = playerState[player];
-  if (sellerState[suit] < 1) return;  // check have card to sell
+  if (sellerState[suit] < 1) return; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
@@ -143,7 +139,7 @@ function deepCopy(x) {
 }
 
 // socket.id to unique username
-var usernames = ["alice", "bob", "charlie", "zeus"];
+let usernames = ["alice", "bob", "charlie", "zeus"];
 socketMap = {};
 
 function updatePlayers() {
