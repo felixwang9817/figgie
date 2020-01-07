@@ -69,7 +69,7 @@ function parseCommand(command) {
 
 function takeOffer(suit) {
   let currentOffer = marketState[suit]["offer"];
-  if (offer === null) return;
+  if (currentOffer === null) return;
   let seller = marketState[suit]["offer_player"];
 
   // execute trade on market and player data
@@ -80,7 +80,7 @@ function takeOffer(suit) {
 
 function sellBid(suit) {
   let currentBid = marketState[suit]["bid"];
-  if (bid === null) return;
+  if (currentBid === null) return;
   let buyer = marketState[suit]["bid_player"];
 
   // execute trade on market and player data

@@ -109,6 +109,7 @@ class App extends Component {
     event.preventDefault();
 
     this.state.socket.emit("client_command", this.state.trade_command);
+    this.setState({trade_command: ''});  // clear form
   }
 
   render() {
