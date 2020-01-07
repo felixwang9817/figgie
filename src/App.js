@@ -36,7 +36,6 @@ class Market extends React.Component {
 
     return (
       <div id="market">
-        market
         {Object.entries(markets).map(([suit, suit_market]) => (
           <p>
             {suit}:{suit_market["bid"] || " no"} bid (
@@ -78,7 +77,9 @@ class App extends Component {
       username: "",
       market: {},
       players: {},
-      tradeLog: []
+      tradeLog: [],
+      observer: false,
+      isGameActive: false,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -113,14 +114,11 @@ class App extends Component {
       this.setState({ username: state });
     });
 
-    socket.on("bad_command", () => {
-      console.log("Bad Command");
-
-      // this is a test to show Player props are being updated correctly
-      let playerState = { ...this.state.players };
-      playerState[0]["diamonds"] = 100;
-
-      this.setState({ players: playerState });
+    socket.on("fullRoom", () => {
+      console.log("connection rejected due to full room.");
+      this.setState({ observer: true });
+      // TODO: actually keep connection alive for observers and show them
+      // true game state but disable commands
     });
   }
 
@@ -140,7 +138,21 @@ class App extends Component {
     console.log("state", this.state);
     console.log("app is rendering itself");
 
-    // TODO: use a render market function to force market to re-render when app updates state
+    if (this.state.observer) {
+      return (
+        <div className="FullGame">
+        Game Full. Please wait for players to leave and refresh.
+        </div>
+      )
+    }
+
+
+    let msg = '';
+    let numPlayers = Object.keys(this.state.players).length;
+    if (numPlayers < 4) {
+      msg = "Waiting for players " + numPlayers + "/4...";
+    }
+    
     return (
       <div className="App">
         <header className="App-header">
@@ -148,6 +160,7 @@ class App extends Component {
             {Object.entries(this.state.players).map(([key, val]) => (
               <Player id={key} playerState={val}></Player>
             ))}
+            {msg}
           </div>
 
           <br></br>

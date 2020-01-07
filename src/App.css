@@ -2,17 +2,6 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -40,6 +29,7 @@
 
 #players {
   padding: 25px;
+  margin-top: 50px;
   border: lightblue dotted 2px;
 }
 
@@ -49,5 +39,14 @@
 
 
 #market {
-  margin-top: 40px;
+  padding-top: 10px;
+}
+
+#tradeLog {
+  margin-bottom: 50px;
+}
+
+.FullGame {
+  margin: 200px;
+  text-align: center;
 }

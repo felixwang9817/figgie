@@ -251,6 +251,13 @@ function broadcastMarketUpdate() {
 
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
+  if (Object.keys(socketMap).length == 4) {
+    socket.emit("fullRoom");
+    console.log("Full room, rejecting connection from " + socket.id);
+    socket.disconnect();
+    return;
+  }
+
 
   // on connection, server assigns username to the unique socket id of the client
   console.log("a user connected");
@@ -267,7 +274,9 @@ io.on("connection", function(socket) {
   // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
     console.log("user disconnected");
-    usernames.push(socketMap[socket.id]);
+    let username = socketMap[socket.id];
+    usernames.push(username);
+    delete playerState[username];
     delete socketMap[socket.id];
     updatePlayers();
   });
@@ -318,10 +327,11 @@ function shuffle(a) {
 
 // init game stuff
 function startGame() {
-  console.log("game starting..." + JSON.stringify(socketMap));
   if (Object.keys(socketMap).length !== 4 || isGameActive) {
     return;
   }
+
+  console.log("game starting..." + JSON.stringify(socketMap));
 
   let common = randomSuit();
   let goal = otherColor(common);
