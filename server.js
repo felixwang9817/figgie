@@ -111,7 +111,7 @@ function tradeCard(buyer, seller, suit, price) {
   buyerState["money"] -= price;
 
   let trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
-  tradeLog.push(trade);
+  tradeLog.unshift(trade);
   io.emit("tradeLogUpdate", tradeLog);
 
   clearMarket();
@@ -324,6 +324,11 @@ function shuffle(a) {
 }
 
 
+function updateGameState(state) {
+  isGameActive = state;
+  io.emit("gameStateUpdate", state);
+}
+
 
 // init game stuff
 function startGame() {
@@ -368,13 +373,13 @@ function startGame() {
     cnt += 10;
   });
   updatePlayers();
-  isGameActive = true;
+  updateGameState(true);
 }
 
 function endGame() {
   if (!isGameActive) return;
 
-  isGameActive = false;
+  updateGameState(false);
 
   // compute final rewards and emit to all clients for display
   let winners = [];
@@ -398,9 +403,8 @@ function endGame() {
 
   let msg = "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards);
 
-  tradeLog.push(msg);
-  tradeLog.push("");
-  tradeLog.push("");
+  tradeLog.unshift(msg);
+  tradeLog.unshift("----");
   io.emit("tradeLogUpdate", tradeLog);
 
   // give out rewards

@@ -59,7 +59,7 @@ class TradeLog extends React.Component {
 
     return (
       <div id="tradeLog">
-        trade log
+        <h2>Trade Log</h2>
         {Object.values(tradeLog).map(trade => (
           <div>{trade}</div>
         ))}
@@ -120,6 +120,8 @@ class App extends Component {
       // TODO: actually keep connection alive for observers and show them
       // true game state but disable commands
     });
+
+    socket.on("gameStateUpdate", (state) => {this.setState({ isGameActive: state })});
   }
 
   handleChange(event) {
@@ -151,6 +153,18 @@ class App extends Component {
     let numPlayers = Object.keys(this.state.players).length;
     if (numPlayers < 4) {
       msg = "Waiting for players " + numPlayers + "/4...";
+    } else if (!this.state.isGameActive) {
+      msg = (
+          <button onClick={() => this.state.socket.emit("startGame")}>
+            start game
+          </button>
+      );
+    } else {
+      msg = (
+          <button onClick={() => this.state.socket.emit("endGame")}>
+            end game
+          </button>
+      );
     }
     
     return (
@@ -184,13 +198,7 @@ class App extends Component {
           <br></br>
           <br></br>
 
-          <button onClick={() => this.state.socket.emit("startGame")}>
-            start game
-          </button>
 
-          <button onClick={() => this.state.socket.emit("endGame")}>
-            end game
-          </button>
 
           <TradeLog tradeLog={this.state["tradeLog"]} />
         </header>
