@@ -88,9 +88,7 @@ function takeOffer(suit, username) {
   if (price === null) return;
   let seller = marketState[suit]["offer_player"];
   if (seller == username) return;  // can't self trade
-  let sellerState = playerState[seller];
-  if (sellerState[suit] < 1) return;
-  // TODO: maybe: check enough buyer money?
+
 
   tradeCard(username, seller, suit, price);
   clearMarket();
@@ -105,7 +103,6 @@ function sellBid(suit, username) {
   if (buyer == username) return;  // can't self trade
   let userState = playerState[username];
   if (userState[suit] < 1) return; // check have card to sell
-  // TODO: maybe: check enough buyer money?
 
   tradeCard(buyer, username, suit, price);
   clearMarket();
@@ -120,6 +117,9 @@ function clearMarket() {
 }
 
 function postOffer(suit, price, player) {
+  let sellerState = playerState[player];
+  if (sellerState[suit] < 1) return;  // check have card to sell
+
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
   console.log("price: " + price);
