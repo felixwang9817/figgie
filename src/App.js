@@ -180,10 +180,11 @@ class App extends Component {
           <br></br>
 
           <div>your name: {this.state.username}</div>
+          <a href="rules.html">Rules</a>
 
           <Market marketState={this.state["market"]} />
 
-          <form onSubmit={this.handleSubmit}>
+          <form class="commandForm" onSubmit={this.handleSubmit}>
             <label>
               Trade:
               <input
