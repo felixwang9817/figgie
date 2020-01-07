@@ -411,7 +411,7 @@ function endGame() {
     rewards[winner] += (200 - numGoalSuitTotal * 10) / winners.length;
   });
 
-  let msg = "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards);
+  let msg = "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
 
   tradeLog.unshift(msg);
   tradeLog.unshift("----");

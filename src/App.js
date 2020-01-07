@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col'
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 
@@ -61,7 +64,7 @@ class TradeLog extends React.Component {
       <div id="tradeLog">
         <h2>Trade Log</h2>
         {Object.values(tradeLog).map(trade => (
-          <div>{trade}</div>
+          <p>{trade}</p>
         ))}
       </div>
     );
@@ -153,55 +156,61 @@ class App extends Component {
     let numPlayers = Object.keys(this.state.players).length;
     if (numPlayers < 4) {
       msg = "Waiting for players " + numPlayers + "/4...";
-    } else if (!this.state.isGameActive) {
-      msg = (
-          <button onClick={() => this.state.socket.emit("startGame")}>
-            start game
-          </button>
-      );
     } else {
-      msg = (
-          <button onClick={() => this.state.socket.emit("endGame")}>
-            end game
-          </button>
-      );
+      msg = (this.state.isGameActive ? "Game On. Enter 'end' to stop" : "enter 'start'");
     }
+    // Only start/end with commands. MAYBE: re-enable this
+    // else if (!this.state.isGameActive) {
+    //   msg = (
+    //       <button onClick={() => this.state.socket.emit("startGame")}>
+    //         start game
+    //       </button>
+    //   );
+    // } else {
+    //   msg = (
+    //       <button onClick={() => this.state.socket.emit("endGame")}>
+    //         end game
+    //       </button>
+    //   );
+    // }
     
     return (
       <div className="App">
         <header className="App-header">
-          <div id="players">
-            {Object.entries(this.state.players).map(([key, val]) => (
-              <Player id={key} playerState={val}></Player>
-            ))}
-            {msg}
-          </div>
 
-          <br></br>
+          <Row>
+            <Col xs={8}>
+              <div id="players">
+                {Object.entries(this.state.players).map(([key, val]) => (
+                  <Player id={key} playerState={val}></Player>
+                ))}
+                <span class="App-link">{msg}</span>
+              </div>
 
-          <div>your name: {this.state.username}</div>
-          <a href="rules.html">Rules</a>
+              <br></br>
 
-          <Market marketState={this.state["market"]} />
+              <div>your name: {this.state.username}</div>
+              <a class="App-link" href="rules.html">Rules</a>
 
-          <form class="commandForm" onSubmit={this.handleSubmit}>
-            <label>
-              Trade:
-              <input
-                type="text"
-                value={this.state.trade_command}
-                onChange={this.handleChange}
-              />
-            </label>
-            <input type="submit" value="Submit" />
-          </form>
+              <Market marketState={this.state["market"]} />
 
-          <br></br>
-          <br></br>
+              <form class="commandForm" onSubmit={this.handleSubmit}>
+                <label>
+                  Trade:
+                  <input
+                    type="text"
+                    value={this.state.trade_command}
+                    onChange={this.handleChange}
+                  />
+                </label>
+                <input type="submit" value="Submit" />
+              </form>
+            </Col>
 
-
-
-          <TradeLog tradeLog={this.state["tradeLog"]} />
+            <Col xs={4}>
+              <TradeLog tradeLog={this.state["tradeLog"]} />
+            </Col>
+          </Row>
         </header>
       </div>
     );

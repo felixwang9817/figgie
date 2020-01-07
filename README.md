@@ -7,6 +7,7 @@ Multiplayer Figgie built using React, express, and socket.io
 # TODO
 
 ## style
+- format number to int (in case of 3 way tie)
 - favicon
 - prettier rules page
 - prettier waiting page
