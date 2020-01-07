@@ -43,6 +43,20 @@ let playerState = {}; // username -> playerDataDict
 let tradeLog = [];
 
 function parseCommand(command, socketId) {
+  if (!isGameActive) {
+    if (command == "start") {
+      startGame();
+    } else { 
+      console.log("game is not active, so not parsing command");
+    }
+    return;
+  }
+
+  if (command == "end") {
+    endGame();
+    return;
+  }
+
   let tokens = command.toLowerCase().split(" ");
   let username = socketMap[socketId];
 
@@ -284,11 +298,7 @@ io.on("connection", function(socket) {
   // on client command, server parses the command
   socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
-    if (isGameActive) {
-      parseCommand(command, socket.id);
-    } else {
-      console.log("game is not active, so not parsing command");
-    }
+    parseCommand(command, socket.id);
   });
 
   socket.on("startGame", startGame);
