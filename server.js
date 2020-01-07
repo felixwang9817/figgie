@@ -11,19 +11,14 @@ var suits = ["hearts", "diamonds", "clubs", "spades"];
 var actions = ["take", "sell"];
 
 // state
+var initSuitMarket = { bid: null, bid_player: null,
+                       offer: null, offer_player: null };
+
 var initialMarketState = {
-  bids: {
-    clubs: { bid: null, player: null },
-    spades: { bid: null, player: null },
-    hearts: { bid: null, player: null },
-    diamonds: { bid: null, player: null }
-  },
-  offers: {
-    clubs: { offer: null, player: null },
-    spades: { offer: null, player: null },
-    hearts: { offer: null, player: null },
-    diamonds: { offer: null, player: null }
-  }
+  clubs: {...initSuitMarket},
+  spades: {...initSuitMarket},
+  hearts: {...initSuitMarket},
+  diamonds: {...initSuitMarket}
 };
 
 var marketState = deepCopy(initialMarketState);
@@ -40,6 +35,7 @@ var initialPlayerState = {
 var playerState = {};
 
 function parseCommand(command) {
+  command = command.toLowerCase();
   console.log("command: " + command);
   let tokens = command.split(" ");
 
@@ -70,8 +66,8 @@ function parseCommand(command) {
 }
 
 function takeOffer(suit) {
-  let currentOffer = marketState["offers"][suit]["offer"];
-  let seller = marketState["offers"][suit]["player"];
+  let currentOffer = marketState[suit]["offer"];
+  let seller = marketState[suit]["offer_player"];
 
   // execute trade on market and player data
   // TODO: move player data from App.js to server.js and handle player execution later
@@ -87,14 +83,15 @@ function clearMarket() {
 }
 
 function postOffer(suit, price, player = 0) {
-  let currentOffer = marketState["offers"][suit]["offer"];
+  let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
   console.log("price: " + price);
-  if (price > currentOffer) {
-    marketState["offers"][suit]["offer"] = price;
-    marketState["offers"][suit]["player"] = player;
+  if (currentOffer === null || price > currentOffer) {
+    marketState[suit]["offer"] = price;
+    marketState[suit]["offer_player"] = player;
     io.emit("market_update", marketState);
-    console.log("final marketState after postOffer: " + marketState);
+    console.log("final marketState after postOffer: "
+         + JSON.stringify(marketState));
   }
 }
 

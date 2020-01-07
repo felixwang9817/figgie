@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
-import logo from "./logo.svg";
 import "./App.css";
 
 var suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -37,25 +36,24 @@ class Market extends React.Component {
   // }
 
   render() {
-    let market = this.props.marketState;
-    let offers = market ? market["offers"] : null;
-    if (!offers) {
-      return <div></div>;
+    let markets = this.props.marketState;
+    console.log("Market rendering, " + JSON.stringify(markets));
+    if (!markets) {
+      return '';
     }
 
     return (
       <div id="market">
         market
-        {Object.keys(offers).map((key, val) => (
+        {Object.entries(markets).map(([suit, suit_market]) => (
           <p>
-            {" "}
-            {offers[key]["offer"]} offer (#
-            {offers[key]["player"]}) for {key}.{" "}
+            {suit}: 
+            {suit_market["bid"] || " no"} bid
+            ({suit_market["bid_player"] || "n/a"}), 
+            {suit_market["offer"] || " no"} offer
+            ({suit_market["offer_player"] || "n/a"}).
           </p>
         ))}
-        {
-          // TODO: offers, display in bidding language?
-        }
       </div>
     );
   }
@@ -122,7 +120,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <div id="players">
-            {Object.keys(this.state.players).map((key, val) => (
+            {Object.entries(this.state.players).map(([key, val]) => (
               <Player id={key} playerState={val}></Player>
             ))}
           </div>
