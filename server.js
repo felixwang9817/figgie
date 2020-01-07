@@ -11,6 +11,7 @@ let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
 let clearActions = ["clear", "out"];
 let goalSuit = null;
+let isGameActive = false;
 
 // market state
 let initSuitMarket = {
@@ -29,12 +30,12 @@ let marketState = deepCopy(initialMarketState);
 
 // player state
 let initialPlayerState = {
-  diamonds: 1,
-  clubs: 2,
-  hearts: 3,
-  spades: 4,
+  diamonds: null,
+  clubs: null,
+  hearts: null,
+  spades: null,
   numCards: 10,
-  money: 50
+  money: 300
 };
 let playerState = {}; // username -> playerDataDict
 
@@ -54,7 +55,6 @@ function parseCommand(command, socketId) {
 
     console.log("clear or out command detected");
     clearPlayer(username);
-
   } else if (tokens.length == 2) {
     // take command: take SUIT
     // sell command: sell SUIT
@@ -214,7 +214,6 @@ function clearPlayer(username) {
   });
 }
 
-
 function deepCopy(x) {
   return JSON.parse(JSON.stringify(x));
 }
@@ -223,14 +222,12 @@ function deepCopy(x) {
 let usernames = ["alice", "bob", "charlie", "zeus"];
 socketMap = {};
 
-
 function shieldPlayerInfo(socketid) {
   let playerVisibleState = deepCopy(playerState);
   let username = socketMap[socketid];
 
   // hiding other player's hands
   Object.keys(playerState).map(player => {
-    console.log("player: " + player);
     if (player != username) {
       suits.forEach(suit => {
         playerVisibleState[player][suit] = null;
@@ -240,7 +237,6 @@ function shieldPlayerInfo(socketid) {
 
   return playerVisibleState;
 }
-
 
 function updatePlayers() {
   // for each socket in socketMap, shield appropriately and socket.emit to that socket
@@ -273,24 +269,29 @@ io.on("connection", function(socket) {
     console.log("user disconnected");
     usernames.push(socketMap[socket.id]);
     delete socketMap[socket.id];
+    updatePlayers();
   });
 
   // on client command, server parses the command
   socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
-    parseCommand(command, socket.id);
+    if (isGameActive) {
+      parseCommand(command, socket.id);
+    } else {
+      console.log("game is not active, so not parsing command");
+    }
   });
 
   socket.on("startGame", startGame);
+  socket.on("endGame", endGame);
 });
-
 
 function otherColor(suit) {
   return {
     spades: "clubs",
     clubs: "spades",
     diamonds: "hearts",
-    hearts: "diamonds",
+    hearts: "diamonds"
   }[suit];
 }
 
@@ -303,24 +304,31 @@ function randomSuit() {
  * @param {Array} a items An array containing the items.
  */
 function shuffle(a) {
-    var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        x = a[i];
-        a[i] = a[j];
-        a[j] = x;
-    }
-    return a;
+  var j, x, i;
+  for (i = a.length - 1; i > 0; i--) {
+    j = Math.floor(Math.random() * (i + 1));
+    x = a[i];
+    a[i] = a[j];
+    a[j] = x;
+  }
+  return a;
 }
+
+
 
 // init game stuff
 function startGame() {
+  console.log("game starting..." + JSON.stringify(socketMap));
+  if (Object.keys(socketMap).length !== 4 || isGameActive) {
+    return;
+  }
+
   let common = randomSuit();
   let goal = otherColor(common);
   let eight = randomSuit();
   while (eight == common) eight = randomSuit();
 
-  let remainingSuits = suits.filter(s => s != common && s != goal);
+  let remainingSuits = suits.filter(s => s != common && s != eight);
 
   let cards = Array(40);
   cards.fill(common, 0, 12);
@@ -338,14 +346,56 @@ function startGame() {
   // distribute cards to players
   let cnt = 0;
   Object.keys(playerState).map(player => {
-    let playerCards = cards.slice(cnt, cnt+10);
+    let playerCards = cards.slice(cnt, cnt + 10);
+    playerState[player]["money"] -= 50;
 
-    suits.forEach(suit => {playerState[player][suit] = 0;});
+    suits.forEach(suit => {
+      playerState[player][suit] = 0;
+    });
     playerCards.forEach(card => {
       playerState[player][card] += 1;
     });
     cnt += 10;
   });
   updatePlayers();
+  isGameActive = true;
 }
 
+function endGame() {
+  if (!isGameActive) return;
+
+  isGameActive = false;
+
+  // compute final rewards and emit to all clients for display
+  let winners = [];
+  let maxGoalSuit = 0;
+  let numGoalSuitTotal = 0;
+  let rewards = {};
+  Object.keys(playerState).map(player => {
+    let numGoalSuit = playerState[player][goalSuit];
+    numGoalSuitTotal += numGoalSuit;
+    rewards[player] = numGoalSuit * 10;
+    if (numGoalSuit > maxGoalSuit) {
+      winners = [player];
+      maxGoalSuit = numGoalSuit;
+    } else if (numGoalSuit == maxGoalSuit) {
+      winners.push(player);
+    }
+  });
+  winners.forEach(winner => {
+    rewards[winner] += (200 - numGoalSuitTotal * 10) / winners.length;
+  });
+
+  let msg = "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards);
+
+  tradeLog.push(msg);
+  tradeLog.push("");
+  tradeLog.push("");
+  io.emit("tradeLogUpdate", tradeLog);
+
+  // give out rewards
+  Object.keys(playerState).map(player => {
+    playerState[player]["money"] += rewards[player];
+  });
+  updatePlayers();
+}

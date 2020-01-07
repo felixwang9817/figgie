@@ -171,7 +171,13 @@ class App extends Component {
           <br></br>
           <br></br>
 
-          <button onClick={() => this.state.socket.emit("startGame")}>start game</button>
+          <button onClick={() => this.state.socket.emit("startGame")}>
+            start game
+          </button>
+
+          <button onClick={() => this.state.socket.emit("endGame")}>
+            end game
+          </button>
 
           <TradeLog tradeLog={this.state["tradeLog"]} />
         </header>
