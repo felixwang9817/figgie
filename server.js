@@ -10,6 +10,7 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
 let clearActions = ["clear", "out"];
+let goalSuit = null;
 
 // market state
 let initSuitMarket = {
@@ -279,6 +280,8 @@ io.on("connection", function(socket) {
     console.log("server has received command: " + command);
     parseCommand(command, socket.id);
   });
+
+  socket.on("startGame", startGame);
 });
 
 
@@ -330,7 +333,19 @@ function startGame() {
 
   console.log("goal: " + goal);
   console.log("cards: " + cards);
-  return [cards, goal]
+  goalSuit = goal;
+
+  // distribute cards to players
+  let cnt = 0;
+  Object.keys(playerState).map(player => {
+    let playerCards = cards.slice(cnt, cnt+10);
+
+    suits.forEach(suit => {playerState[player][suit] = 0;});
+    playerCards.forEach(card => {
+      playerState[player][card] += 1;
+    });
+    cnt += 10;
+  });
+  updatePlayers();
 }
 
-startGame();
