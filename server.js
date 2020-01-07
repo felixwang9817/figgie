@@ -14,9 +14,9 @@ let clearActions = ["clear", "out"];
 // market state
 let initSuitMarket = {
   bid: null,
-  bid_player: null,
+  bidPlayer: null,
   offer: null,
-  offer_player: null
+  offerPlayer: null
 };
 let initialMarketState = {
   clubs: { ...initSuitMarket },
@@ -32,22 +32,20 @@ let initialPlayerState = {
   clubs: 2,
   hearts: 3,
   spades: 4,
-  num_cards: 10,
+  numCards: 10,
   money: 50
 };
 let playerState = {}; // username -> playerDataDict
 
 // trade log
-let tradeLog = ["test", "asdf"];
+let tradeLog = [];
 
-function parseCommand(command, socket_id) {
-  command = command.toLowerCase();
-  console.log("command: " + command);
-  let tokens = command.split(" ");
-  let username = socketMap[socket_id];
+function parseCommand(command, socketId) {
+  let tokens = command.toLowerCase().split(" ");
+  let username = socketMap[socketId];
 
   if (tokens.length == 1) {
-    // clear or out command
+    // clear command: clear or out
     let clearAction = tokens[0];
     if (!clearActions.includes(clearAction)) {
       return false;
@@ -57,7 +55,8 @@ function parseCommand(command, socket_id) {
     clearPlayer(username);
 
   } else if (tokens.length == 2) {
-    // take or sell command
+    // take command: take SUIT
+    // sell command: sell SUIT
     let action = tokens[0];
     let suit = tokens[1];
     if (!actions.includes(action) || !suits.includes(suit)) {
@@ -68,10 +67,8 @@ function parseCommand(command, socket_id) {
     if (action == "take") {
       takeOffer(suit, username);
     } else {
-      // sell
       sellBid(suit, username);
     }
-
   } else if (tokens.length == 3) {
     // offer command: SUIT at X
     let suit = tokens[0];
@@ -82,13 +79,16 @@ function parseCommand(command, socket_id) {
 
     console.log("offer command detected");
     postOffer(suit, price, username);
-
   } else if (tokens.length == 4) {
     // bid command: X bid for SUIT
     let suit = tokens[3];
     let price = Number(tokens[0]);
-    if (!suits.includes(suit) || tokens[1] != "bid"
-        || tokens[2] != "for" || isNaN(price)) {
+    if (
+      !suits.includes(suit) ||
+      tokens[1] != "bid" ||
+      tokens[2] != "for" ||
+      isNaN(price)
+    ) {
       return false;
     }
 
@@ -104,18 +104,22 @@ function tradeCard(buyer, seller, suit, price) {
 
   sellerState[suit] -= 1;
   buyerState[suit] += 1;
-  sellerState["num_cards"] -= 1;
-  buyerState["num_cards"] += 1;
+  sellerState["numCards"] -= 1;
+  buyerState["numCards"] += 1;
   sellerState["money"] += price;
   buyerState["money"] -= price;
+
+  let trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
+  tradeLog.push(trade);
+  io.emit("tradeLogUpdate", tradeLog);
+
   clearMarket();
   updatePlayers();
 }
 
-
 function postOffer(suit, price, player) {
   let sellerState = playerState[player];
-  if (sellerState[suit] < 1) return;  // check have card to sell
+  if (sellerState[suit] < 1) return; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
@@ -123,23 +127,25 @@ function postOffer(suit, price, player) {
   if (currentOffer === null || price < currentOffer) {
     // valid offer; check market crossing
     let bidPrice = marketState[suit]["bid"];
-    let bidPlayer = marketState[suit]["bid_player"];
-    if (bidPrice >= price) {
+    let bidPlayer = marketState[suit]["bidPlayer"];
+    console.log("bidPrice: " + bidPrice);
+    console.log("bidPlayer: " + bidPlayer);
+    if (bidPrice !== null && bidPrice >= price) {
       // crossed market
-      if (bidPlayer != player) {  // if it's yourself, it's allowed
-                                  // otherwise, execute a trade at last bid price
+      if (bidPlayer != player) {
+        // if it's yourself, it's allowed
+        // otherwise, execute a trade at last bid price
         tradeCard(bidPlayer, player, suit, bidPrice);
-        return;  // market already updated and cleared
+        return; // market already updated and cleared
       }
     }
 
     // no market crossing or self-crossing: update new offer
     marketState[suit]["offer"] = price;
-    marketState[suit]["offer_player"] = player;
+    marketState[suit]["offerPlayer"] = player;
     broadcastMarketUpdate();
   }
 }
-
 
 function postBid(suit, price, player) {
   let currentBid = marketState[suit]["bid"];
@@ -148,19 +154,20 @@ function postBid(suit, price, player) {
   if (currentBid === null || price > currentBid) {
     // valid bid; check market crossing
     let offerPrice = marketState[suit]["offer"];
-    let offerPlayer = marketState[suit]["offer_player"];
-    if (offerPrice <= price) {
+    let offerPlayer = marketState[suit]["offerPlayer"];
+    if (offerPrice !== null && offerPrice <= price) {
       // crossed market
-      if (offerPlayer != player) {  // if it's yourself, it's allowed
-                                  // otherwise, execute a trade at last offer price
+      if (offerPlayer != player) {
+        // if it's yourself, it's allowed
+        // otherwise, execute a trade at last offer price
         tradeCard(player, offerPlayer, suit, offerPrice);
-        return;  // market already updated and cleared
+        return; // market already updated and cleared
       }
     }
 
     // no market crossing or self-crossing: update new bid
     marketState[suit]["bid"] = price;
-    marketState[suit]["bid_player"] = player;
+    marketState[suit]["bidPlayer"] = player;
     broadcastMarketUpdate();
   }
 }
@@ -168,7 +175,7 @@ function postBid(suit, price, player) {
 function takeOffer(suit, username) {
   let price = marketState[suit]["offer"];
   if (price === null) return;
-  let seller = marketState[suit]["offer_player"];
+  let seller = marketState[suit]["offerPlayer"];
   if (seller == username) return; // can't self trade
 
   tradeCard(username, seller, suit, price);
@@ -177,7 +184,7 @@ function takeOffer(suit, username) {
 function sellBid(suit, username) {
   let price = marketState[suit]["bid"];
   if (price === null) return;
-  let buyer = marketState[suit]["bid_player"];
+  let buyer = marketState[suit]["bidPlayer"];
   if (buyer == username) return; // can't self trade
   let userState = playerState[username];
   if (userState[suit] < 1) return; // check have card to sell
@@ -191,38 +198,21 @@ function clearMarket() {
   broadcastMarketUpdate();
 }
 
-
 function clearPlayer(username) {
   suits.forEach(suit => {
     let suitMarketState = marketState[suit];
-    if (suitMarketState["bid_player"] == username) {
-      suitMarketState["bid_player"] = null;
+    if (suitMarketState["bidPlayer"] == username) {
+      suitMarketState["bidPlayer"] = null;
       suitMarketState["bid"] = null;
     }
-    if (suitMarketState["offer_player"] == username) {
-      suitMarketState["offer_player"] = null;
+    if (suitMarketState["offerPlayer"] == username) {
+      suitMarketState["offerPlayer"] = null;
       suitMarketState["offer"] = null;
     }
     broadcastMarketUpdate();
   });
 }
 
-function postOffer(suit, price, player) {
-  let sellerState = playerState[player];
-  if (sellerState[suit] < 1) return; // check have card to sell
-
-  let currentOffer = marketState[suit]["offer"];
-  console.log("currentOffer: " + currentOffer);
-  console.log("price: " + price);
-  if (currentOffer === null || price > currentOffer) {
-    marketState[suit]["offer"] = price;
-    marketState[suit]["offer_player"] = player;
-    broadcastMarketUpdate();
-    console.log(
-      "final marketState after postOffer: " + JSON.stringify(marketState)
-    );
-  }
-}
 
 function deepCopy(x) {
   return JSON.parse(JSON.stringify(x));
@@ -254,40 +244,38 @@ function shieldPlayerInfo(socketid) {
 function updatePlayers() {
   // for each socket in socketMap, shield appropriately and socket.emit to that socket
   for (const socketid in socketMap) {
-    io.to(socketid).emit("player_update", shieldPlayerInfo(socketid));
+    io.to(socketid).emit("playerUpdate", shieldPlayerInfo(socketid));
   }
 }
 
 function broadcastMarketUpdate() {
-  io.emit("market_update", marketState);
+  io.emit("marketUpdate", marketState);
 }
 
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
 
-  // on connection, server determines unique id for the socket and stores in a dictionary
-  console.log("socket id: " + socket.id);
+  // on connection, server assigns username to the unique socket id of the client
+  console.log("a user connected");
   let username = usernames.pop();
   socketMap[socket.id] = username;
-  console.log("socketMap: " + JSON.stringify(socketMap));
 
-  // add player to playerstate
+  // on connection, initialize the new player
   playerState[username] = deepCopy(initialPlayerState);
   updatePlayers();
   broadcastMarketUpdate();
-  io.emit("trade_log_update", tradeLog);
+  io.emit("tradeLogUpdate", tradeLog);
+  socket.emit("username", username);
 
-  // on connection, server determines unique id for the socket and stores in a dictionary
-  console.log("a user connected");
-
+  // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
     console.log("user disconnected");
     usernames.push(socketMap[socket.id]);
     delete socketMap[socket.id];
   });
 
-  // wait for client action
-  socket.on("client_command", command => {
+  // on client command, server parses the command
+  socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
     parseCommand(command, socket.id);
   });
