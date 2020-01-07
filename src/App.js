@@ -39,7 +39,7 @@ class Market extends React.Component {
     let markets = this.props.marketState;
     console.log("Market rendering, " + JSON.stringify(markets));
     if (!markets) {
-      return '';
+      return "";
     }
 
     return (
@@ -47,12 +47,30 @@ class Market extends React.Component {
         market
         {Object.entries(markets).map(([suit, suit_market]) => (
           <p>
-            {suit}: 
-            {suit_market["bid"] || " no"} bid
-            ({suit_market["bid_player"] || "n/a"}), 
-            {suit_market["offer"] || " no"} offer
-            ({suit_market["offer_player"] || "n/a"}).
+            {suit}:{suit_market["bid"] || " no"} bid (
+            {suit_market["bid_player"] || "n/a"}),
+            {suit_market["offer"] || " no"} offer (
+            {suit_market["offer_player"] || "n/a"}).
           </p>
+        ))}
+      </div>
+    );
+  }
+}
+
+class TradeLog extends React.Component {
+  render() {
+    let tradeLog = this.props.tradeLog;
+    console.log("Trade log rendering, " + JSON.stringify(tradeLog));
+    if (!tradeLog) {
+      return "";
+    }
+
+    return (
+      <div id="tradeLog">
+        trade log
+        {Object.values(tradeLog).map(trade => (
+          <div>{trade}</div>
         ))}
       </div>
     );
@@ -66,7 +84,8 @@ class App extends Component {
     this.state = {
       trade_command: "",
       market: {},
-      players: {}
+      players: {},
+      tradeLog: []
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -89,6 +108,12 @@ class App extends Component {
       this.setState({ players: state });
     });
 
+    socket.on("trade_log_update", state => {
+      console.log("trade log update");
+      console.log(state);
+      this.setState({ tradeLog: state });
+    });
+
     socket.on("bad_command", () => {
       console.log("Bad Command");
 
@@ -109,7 +134,7 @@ class App extends Component {
     event.preventDefault();
 
     this.state.socket.emit("client_command", this.state.trade_command);
-    this.setState({trade_command: ''});  // clear form
+    this.setState({ trade_command: "" }); // clear form
   }
 
   render() {
@@ -139,6 +164,11 @@ class App extends Component {
             </label>
             <input type="submit" value="Submit" />
           </form>
+
+          <br></br>
+          <br></br>
+
+          <TradeLog tradeLog={this.state["tradeLog"]} />
         </header>
       </div>
     );
