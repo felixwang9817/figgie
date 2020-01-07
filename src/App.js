@@ -19,7 +19,7 @@ class Player extends React.Component {
       <div>
         <span class="player_id"> player #{this.props.id} </span>
         {cards}
-        <span class="num_cards"> {playerState.num_cards} cards </span>
+        <span class="numCards"> {playerState.numCards} cards </span>
         <span class="money"> {playerState.money} money </span>
       </div>
     );
@@ -40,9 +40,9 @@ class Market extends React.Component {
         {Object.entries(markets).map(([suit, suit_market]) => (
           <p>
             {suit}:{suit_market["bid"] || " no"} bid (
-            {suit_market["bid_player"] || "n/a"}),
+            {suit_market["bidPlayer"] || "n/a"}),
             {suit_market["offer"] || " no"} offer (
-            {suit_market["offer_player"] || "n/a"}).
+            {suit_market["offerPlayer"] || "n/a"}).
           </p>
         ))}
       </div>
@@ -89,19 +89,19 @@ class App extends Component {
     const socket = socketIOClient();
     this.state.socket = socket;
 
-    socket.on("market_update", state => {
+    socket.on("marketUpdate", state => {
       console.log("market update");
       console.log(state);
       this.setState({ market: state });
     });
 
-    socket.on("player_update", state => {
+    socket.on("playerUpdate", state => {
       console.log("player update");
       console.log(state);
       this.setState({ players: state });
     });
 
-    socket.on("trade_log_update", state => {
+    socket.on("tradeLogUpdate", state => {
       console.log("trade log update");
       console.log(state);
       this.setState({ tradeLog: state });
@@ -132,7 +132,7 @@ class App extends Component {
     console.log("Sending command to server: " + this.state.trade_command);
     event.preventDefault();
 
-    this.state.socket.emit("client_command", this.state.trade_command);
+    this.state.socket.emit("clientCommand", this.state.trade_command);
     this.setState({ trade_command: "" }); // clear form
   }
 
