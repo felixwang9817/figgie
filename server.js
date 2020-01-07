@@ -40,11 +40,11 @@ let playerState = {};
 // trade log
 let tradeLog = [];
 
-function parseCommand(command, socket_id) {
+function parseCommand(command, socketId) {
   command = command.toLowerCase();
   console.log("command: " + command);
   let tokens = command.split(" ");
-  let username = socketMap[socket_id];
+  let username = socketMap[socketId];
 
   if (tokens.length == 1) {
     // clear or out command
