@@ -38,7 +38,7 @@ let initialPlayerState = {
 let playerState = {};
 
 // trade log
-let tradeLog = ["test", "asdf"];
+let tradeLog = [];
 
 function parseCommand(command, socket_id) {
   command = command.toLowerCase();
@@ -71,7 +71,6 @@ function parseCommand(command, socket_id) {
       // sell
       sellBid(suit, username);
     }
-
   } else if (tokens.length == 3) {
     // offer command: SUIT at X
     let suit = tokens[0];
@@ -82,13 +81,16 @@ function parseCommand(command, socket_id) {
 
     console.log("offer command detected");
     postOffer(suit, price, username);
-
   } else if (tokens.length == 4) {
     // bid command: X bid for SUIT
     let suit = tokens[3];
     let price = Number(tokens[0]);
-    if (!suits.includes(suit) || tokens[1] != "bid"
-        || tokens[2] != "for" || isNaN(price)) {
+    if (
+      !suits.includes(suit) ||
+      tokens[1] != "bid" ||
+      tokens[2] != "for" ||
+      isNaN(price)
+    ) {
       return false;
     }
 
@@ -108,14 +110,18 @@ function tradeCard(buyer, seller, suit, price) {
   buyerState["num_cards"] += 1;
   sellerState["money"] += price;
   buyerState["money"] -= price;
+
+  trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
+  tradeLog.push(trade);
+  io.emit("trade_log_update", tradeLog);
+
   clearMarket();
   updatePlayers();
 }
 
-
 function postOffer(suit, price, player) {
   let sellerState = playerState[player];
-  if (sellerState[suit] < 1) return;  // check have card to sell
+  if (sellerState[suit] < 1) return; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
@@ -126,10 +132,11 @@ function postOffer(suit, price, player) {
     let bidPlayer = marketState[suit]["bid_player"];
     if (bidPrice !== null && bidPrice >= price) {
       // crossed market
-      if (bidPlayer != player) {  // if it's yourself, it's allowed
-                                  // otherwise, execute a trade at last bid price
+      if (bidPlayer != player) {
+        // if it's yourself, it's allowed
+        // otherwise, execute a trade at last bid price
         tradeCard(bidPlayer, player, suit, bidPrice);
-        return;  // market already updated and cleared
+        return; // market already updated and cleared
       }
     }
 
@@ -139,7 +146,6 @@ function postOffer(suit, price, player) {
     io.emit("market_update", marketState);
   }
 }
-
 
 function postBid(suit, price, player) {
   let currentBid = marketState[suit]["bid"];
@@ -151,10 +157,11 @@ function postBid(suit, price, player) {
     let offerPlayer = marketState[suit]["offer_player"];
     if (offerPrice !== null && offerPrice <= price) {
       // crossed market
-      if (offerPlayer != player) {  // if it's yourself, it's allowed
-                                  // otherwise, execute a trade at last offer price
+      if (offerPlayer != player) {
+        // if it's yourself, it's allowed
+        // otherwise, execute a trade at last offer price
         tradeCard(player, offerPlayer, suit, offerPrice);
-        return;  // market already updated and cleared
+        return; // market already updated and cleared
       }
     }
 
@@ -190,7 +197,6 @@ function clearMarket() {
   console.log("clearMarket: " + JSON.stringify(marketState));
   io.emit("market_update", marketState);
 }
-
 
 function clearPlayer(username) {
   suits.forEach(suit => {
