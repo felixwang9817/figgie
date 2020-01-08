@@ -22,6 +22,7 @@ Multiplayer Figgie built using React, express, and socket.io
 - persistent user
 
   - first, just store in DB no validation (just enter same username)
+  - then allow users to choose username upon joining
   - then, make accounts and pw
 
 - hotkeys
