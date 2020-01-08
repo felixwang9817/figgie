@@ -28,3 +28,5 @@ Multiplayer Figgie built using React, express, and socket.io
 - hotkeys
 
 - observer
+
+- deploy through AWS or Heroku
