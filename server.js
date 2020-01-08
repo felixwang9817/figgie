@@ -46,7 +46,7 @@ function parseCommand(command, socketId) {
   if (!isGameActive) {
     if (command == "start") {
       startGame();
-    } else { 
+    } else {
       console.log("game is not active, so not parsing command");
     }
     return;
@@ -272,7 +272,6 @@ io.on("connection", function(socket) {
     return;
   }
 
-
   // on connection, server assigns username to the unique socket id of the client
   console.log("a user connected");
   let username = usernames.pop();
@@ -323,7 +322,7 @@ function randomSuit() {
  * @param {Array} a items An array containing the items.
  */
 function shuffle(a) {
-  var j, x, i;
+  let j, x, i;
   for (i = a.length - 1; i > 0; i--) {
     j = Math.floor(Math.random() * (i + 1));
     x = a[i];
@@ -333,12 +332,10 @@ function shuffle(a) {
   return a;
 }
 
-
 function updateGameState(state) {
   isGameActive = state;
   io.emit("gameStateUpdate", state);
 }
-
 
 // init game stuff
 function startGame() {
@@ -407,11 +404,36 @@ function endGame() {
       winners.push(player);
     }
   });
-  winners.forEach(winner => {
-    rewards[winner] += (200 - numGoalSuitTotal * 10) / winners.length;
-  });
 
-  let msg = "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
+  // distribute remainder of pot equally to winners
+  let remainder = 200 - numGoalSuitTotal * 10;
+  let remainingRewards = [];
+  if (winners.length == 3 && remainder % 3 !== 0) {
+    // handle this case carefully
+    if (remainder % 3 == 1) {
+      remainingRewards.push(Math.floor(remainder / 3));
+      remainingRewards.push(Math.floor(remainder / 3));
+      remainingRewards.push(Math.floor(remainder / 3) + 1);
+    } else if (remainder % 3 == 2) {
+      remainingRewards.push(Math.floor(remainder / 3));
+      remainingRewards.push(Math.floor(remainder / 3) + 1);
+      remainingRewards.push(Math.floor(remainder / 3) + 1);
+    }
+
+    remainingRewards = shuffle(remainingRewards);
+  } else {
+    for (let i = 0; i < winners.length; i++) {
+      remainingRewards.push(remainder / winners.length);
+    }
+  }
+
+  for (let i = 0; i < winners.length; i++) {
+    let winner = winners[i];
+    rewards[winner] += remainingRewards[i];
+  }
+
+  let msg =
+    "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
 
   tradeLog.unshift(msg);
   tradeLog.unshift("----");
