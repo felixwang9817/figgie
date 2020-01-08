@@ -38,6 +38,7 @@ let initialPlayerState = {
   money: 300
 };
 let playerState = {}; // username -> playerDataDict
+let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
 
 // trade log
 let tradeLog = [];
@@ -277,8 +278,10 @@ io.on("connection", function(socket) {
   let username = usernames.pop();
   socketMap[socket.id] = username;
 
-  // on connection, initialize the new player
-  playerState[username] = deepCopy(initialPlayerState);
+  // on connection, retrieve persistent state based on username or initialize new player
+  playerState[username] = Object.keys(persistentPlayerState).includes(username)
+    ? persistentPlayerState[username]
+    : deepCopy(initialPlayerState);
   updatePlayers();
   broadcastMarketUpdate();
   io.emit("tradeLogUpdate", tradeLog);
@@ -439,9 +442,10 @@ function endGame() {
   tradeLog.unshift("----");
   io.emit("tradeLogUpdate", tradeLog);
 
-  // give out rewards
+  // give out rewards and update persistent state
   Object.keys(playerState).map(player => {
     playerState[player]["money"] += rewards[player];
+    persistentPlayerState[player] = playerState[player];
   });
   updatePlayers();
 }
