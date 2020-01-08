@@ -9,7 +9,6 @@ Multiplayer Figgie built using React, express, and socket.io
 - favicon
 - prettier rules page
 - prettier waiting page
-- integrate "your name" by displaying your player data in a different color / at top of screen
 
 ## functionality
 

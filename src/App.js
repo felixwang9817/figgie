@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col'
+import "bootstrap/dist/css/bootstrap.min.css";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 
@@ -82,7 +82,7 @@ class App extends Component {
       players: {},
       tradeLog: [],
       observer: false,
-      isGameActive: false,
+      isGameActive: false
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -124,7 +124,9 @@ class App extends Component {
       // true game state but disable commands
     });
 
-    socket.on("gameStateUpdate", (state) => {this.setState({ isGameActive: state })});
+    socket.on("gameStateUpdate", state => {
+      this.setState({ isGameActive: state });
+    });
   }
 
   handleChange(event) {
@@ -146,18 +148,19 @@ class App extends Component {
     if (this.state.observer) {
       return (
         <div className="FullGame">
-        Game Full. Please wait for players to leave and refresh.
+          Game Full. Please wait for players to leave and refresh.
         </div>
-      )
+      );
     }
 
-
-    let msg = '';
+    let msg = "";
     let numPlayers = Object.keys(this.state.players).length;
     if (numPlayers < 4) {
       msg = "Waiting for players " + numPlayers + "/4...";
     } else {
-      msg = (this.state.isGameActive ? "Game On. Enter 'end' to stop" : "enter 'start'");
+      msg = this.state.isGameActive
+        ? "Game On. Enter 'end' to stop"
+        : "enter 'start'";
     }
     // Only start/end with commands. MAYBE: re-enable this
     // else if (!this.state.isGameActive) {
@@ -173,24 +176,40 @@ class App extends Component {
     //       </button>
     //   );
     // }
-    
+
     return (
       <div className="App">
         <header className="App-header">
-
           <Row>
             <Col xs={8}>
               <div id="players">
-                {Object.entries(this.state.players).map(([key, val]) => (
-                  <Player id={key} playerState={val}></Player>
-                ))}
+                <div>your info</div>
+                {Object.entries(this.state.players).map(([key, val]) =>
+                  key === this.state.username ? (
+                    <Player id={key} playerState={val}></Player>
+                  ) : (
+                    <div></div>
+                  )
+                )}
+              </div>
+
+              <div id="players">
+                <div>other players' info</div>
+                {Object.entries(this.state.players).map(([key, val]) =>
+                  key !== this.state.username ? (
+                    <Player id={key} playerState={val}></Player>
+                  ) : (
+                    <div></div>
+                  )
+                )}
                 <span class="App-link">{msg}</span>
               </div>
 
               <br></br>
 
-              <div>your name: {this.state.username}</div>
-              <a class="App-link" href="rules.html">Rules</a>
+              <a class="App-link" href="rules.html">
+                Rules
+              </a>
 
               <Market marketState={this.state["market"]} />
 
