@@ -8,6 +8,7 @@ const utils = require("./utils");
 app.use(express.static(__dirname));
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
+let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
 let clearActions = ["clear", "out"];
@@ -411,27 +412,32 @@ function endGame(roomNumber) {
 }
 
 io.on("connection", function(socket) {
-  // TODO: reject connections when there are already four
-
-  // TODO: room check
-  if (Object.keys(socketidToUsername).length == 40) {
-    socket.emit("fullRoom");
-    console.log("Full room, rejecting connection from " + socket.id);
+  if (Object.keys(socketidToUsername).length == maxUsers) {
+    console.log(
+      "Reached maximum capacity, rejecting connection from " + socket.id
+    );
+    socket.emit("maxCapacity");
     socket.disconnect();
     return;
   }
 
-  // allow client to specify username
-  console.log("a user connected");
-  socket.on("provideUsername", username => {
-    console.log("username provided: " + username);
-    socketidToUsername[socket.id] = username;
-    let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
-    usernameToRoomNumber[username] = roomNumber;
+  console.log("A user connected with socket id: " + socket.id);
 
+  // join specific room
+  socket.on("enterRoom", roomNumber => {
+    socket.join(roomNumber);
+    socketidToRoomNumber[socket.id] = roomNumber;
     if (!Object.keys(roomToState).includes(roomNumber)) {
       initializeRoom(roomNumber);
     }
+    socket.emit("enteredRoom", roomNumber);
+  });
+
+  // allow client to specify username
+  socket.on("provideUsername", username => {
+    socketidToUsername[socket.id] = username;
+    let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
+    usernameToRoomNumber[username] = roomNumber;
 
     // retrieve persistent state based on username or initialize new player
     roomToState[roomNumber]["playerState"][username] = Object.keys(
@@ -442,20 +448,6 @@ io.on("connection", function(socket) {
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
     socket.emit("username", username);
-  });
-
-  // join specific room
-  socket.on("enterRoom", roomNumber => {
-    socket.join(roomNumber);
-    console.log("socket.id: " + socket.id);
-    console.log("joined room number: " + roomNumber);
-    console.log(io.sockets.adapter.rooms[roomNumber].sockets);
-
-    socketidToRoomNumber[socket.id] = roomNumber;
-    if (!Object.keys(roomToState).includes(roomNumber)) {
-      initializeRoom(roomNumber);
-    }
-    socket.emit("enteredRoom", roomNumber);
   });
 
   // on disconnection, server recycles the client username
@@ -494,6 +486,7 @@ io.on("connection", function(socket) {
     let roomNumber = socketidToRoomNumber[socket.id];
     startGame(roomNumber);
   });
+
   socket.on("endGame", () => {
     let roomNumber = socketidToRoomNumber[socket.id];
     endGame(roomNumber);
