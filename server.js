@@ -34,8 +34,7 @@ let initialPlayerState = {
   numCards: 10,
   money: 300
 };
-// TODO: only store money
-let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
+let playerMoney = {}; // username -> money, to be updated at the end of every game
 let roomToState = {}; // room number -> market state and player state for that room
 
 // socket and room info
@@ -318,7 +317,7 @@ function startGame(roomNumber) {
   cards.fill(remainingSuits[1], 30, 40);
 
   console.log("preshuffle: " + cards);
-  shuffle(cards);
+  utils.shuffle(cards);
 
   console.log("goal: " + goal);
   console.log("cards: " + cards);
@@ -387,7 +386,7 @@ function endGame(roomNumber) {
   // give out rewards and update persistent state
   Object.keys(playerState).map(player => {
     playerState[player]["money"] += rewards[player];
-    persistentPlayerState[player] = playerState[player];
+    playerMoney[player] = playerState[player]["money"];
   });
   updatePlayers(roomNumber);
 }
@@ -421,11 +420,13 @@ io.on("connection", function(socket) {
     usernameToRoomNumber[username] = roomNumber;
 
     // retrieve persistent state based on username or initialize new player
-    roomToState[roomNumber]["playerState"][username] = Object.keys(
-      persistentPlayerState
-    ).includes(username)
-      ? persistentPlayerState[username]
-      : utils.deepCopy(initialPlayerState);
+    roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
+      initialPlayerState
+    );
+    if (Object.keys(playerMoney).includes(username)) {
+      roomToState[roomNumber]["playerState"][username]["money"] =
+        playerMoney[username]; // retrieve from persistent state
+    }
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
     socket.emit("username", username);
@@ -447,6 +448,7 @@ io.on("connection", function(socket) {
     delete usernameToRoomNumber[username];
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
+      playerMoney[username] = playerState[username]["money"];
       delete playerState[username];
       if (Object.keys(playerState).length == 0) {
         delete roomToState[roomNumber];

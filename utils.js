@@ -50,5 +50,6 @@ module.exports = {
         remainingRewards.push(Math.floor(remainder / 3) + 1);
       }
     }
+    return remainingRewards;
   }
 };
