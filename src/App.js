@@ -4,6 +4,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 
@@ -90,6 +91,11 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    // retrieve username from querystring
+    const values = queryString.parse(this.props.location.search);
+    let username = values.username;
+    console.log("username from query string: " + username);
+
     const socket = socketIOClient();
     this.state.socket = socket;
 
