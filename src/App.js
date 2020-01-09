@@ -269,8 +269,6 @@ class App extends Component {
         <header className="App-header">
           <Row>
             <Col xs={8}>
-              <div class="roomNumber">room: {this.state.roomNumber}</div>
-
               <Market marketState={this.state["market"]} />
 
               <form class="commandForm" onSubmit={this.handleSubmit}>
