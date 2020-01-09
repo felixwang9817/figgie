@@ -42,6 +42,7 @@ socketidToUsername = {};
 socketidToRoomNumber = {};
 usernameToRoomNumber = {};
 
+// PARSE FUNCTION
 function parseCommand(command, socketId, roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "start") {
@@ -113,8 +114,9 @@ function parseCommand(command, socketId, roomNumber) {
   }
 }
 
-// assumes trade is valid!
+// TRADING AND MARKET FUNCTIONS
 function tradeCard(buyer, seller, suit, price, roomNumber) {
+  // assumes trade is valid!
   let playerState = roomToState[roomNumber]["playerState"];
   let sellerState = playerState[seller];
   let buyerState = playerState[buyer];
@@ -236,6 +238,7 @@ function clearPlayer(username, roomNumber) {
   });
 }
 
+// UPDATE FUNCTIONS
 function shieldPlayerInfo(socketid, roomNumber) {
   let playerVisibleState = utils.deepCopy(
     roomToState[roomNumber]["playerState"]
@@ -275,96 +278,12 @@ function broadcastMarketUpdate(roomNumber) {
   io.to(roomNumber).emit("marketUpdate", marketState);
 }
 
-io.on("connection", function(socket) {
-  // TODO: reject connections when there are already four
+function updateGameState(state, roomNumber) {
+  roomToState[roomNumber]["isGameActive"] = state;
+  io.to(roomNumber).emit("gameStateUpdate", state);
+}
 
-  // TODO: room check
-  if (Object.keys(socketidToUsername).length == 40) {
-    socket.emit("fullRoom");
-    console.log("Full room, rejecting connection from " + socket.id);
-    socket.disconnect();
-    return;
-  }
-
-  // allow client to specify username
-  console.log("a user connected");
-  socket.on("provideUsername", username => {
-    console.log("username provided: " + username);
-    socketidToUsername[socket.id] = username;
-    let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
-    usernameToRoomNumber[username] = roomNumber;
-
-    if (!Object.keys(roomToState).includes(roomNumber)) {
-      initializeRoom(roomNumber);
-    }
-
-    // retrieve persistent state based on username or initialize new player
-    roomToState[roomNumber]["playerState"][username] = Object.keys(
-      persistentPlayerState
-    ).includes(username)
-      ? persistentPlayerState[username]
-      : utils.deepCopy(initialPlayerState);
-    updatePlayers(roomNumber);
-    broadcastMarketUpdate(roomNumber);
-    socket.emit("username", username);
-  });
-
-  // join specific room
-  socket.on("enterRoom", roomNumber => {
-    socket.join(roomNumber);
-    console.log("socket.id: " + socket.id);
-    console.log("joined room number: " + roomNumber);
-    console.log(io.sockets.adapter.rooms[roomNumber].sockets);
-
-    socketidToRoomNumber[socket.id] = roomNumber;
-    if (!Object.keys(roomToState).includes(roomNumber)) {
-      initializeRoom(roomNumber);
-    }
-    socket.emit("enteredRoom", roomNumber);
-  });
-
-  // on disconnection, server recycles the client username
-  socket.on("disconnect", function() {
-    // TODO: be more careful about checking conditions
-    console.log("user disconnected");
-    let username = socketidToUsername[socket.id];
-    let roomNumber = socketidToRoomNumber[socket.id];
-    // usernames.push(username);
-    console.log("roomToState: " + JSON.stringify(roomToState));
-    console.log(
-      "socket id to room number: " + JSON.stringify(socketidToRoomNumber)
-    );
-    delete socketidToUsername[socket.id];
-    delete socketidToRoomNumber[socket.id];
-    delete usernameToRoomNumber[username];
-    if (roomToState[roomNumber] != null) {
-      let playerState = roomToState[roomNumber]["playerState"];
-      delete playerState[username];
-      if (Object.keys(playerState).length == 0) {
-        delete roomToState[roomNumber];
-      } else {
-        updatePlayers(roomNumber);
-      }
-    }
-  });
-
-  // on client command, server parses the command
-  socket.on("clientCommand", command => {
-    console.log("server has received command: " + command);
-    let roomNumber = socketidToRoomNumber[socket.id];
-    parseCommand(command, socket.id, roomNumber);
-  });
-
-  socket.on("startGame", () => {
-    let roomNumber = socketidToRoomNumber[socket.id];
-    startGame(roomNumber);
-  });
-  socket.on("endGame", () => {
-    let roomNumber = socketidToRoomNumber[socket.id];
-    endGame(roomNumber);
-  });
-});
-
+// START AND END FUNCTIONS
 function initializeRoom(roomNumber) {
   let marketState = utils.deepCopy(initialMarketState);
   roomToState[roomNumber] = {};
@@ -375,12 +294,6 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["tradeLog"] = [];
 }
 
-function updateGameState(state, roomNumber) {
-  roomToState[roomNumber]["isGameActive"] = state;
-  io.to(roomNumber).emit("gameStateUpdate", state);
-}
-
-// init game stuff
 function startGame(roomNumber) {
   if (
     Object.keys(roomToState[roomNumber]["playerState"]).length !== 4 ||
@@ -496,3 +409,93 @@ function endGame(roomNumber) {
   });
   updatePlayers(roomNumber);
 }
+
+io.on("connection", function(socket) {
+  // TODO: reject connections when there are already four
+
+  // TODO: room check
+  if (Object.keys(socketidToUsername).length == 40) {
+    socket.emit("fullRoom");
+    console.log("Full room, rejecting connection from " + socket.id);
+    socket.disconnect();
+    return;
+  }
+
+  // allow client to specify username
+  console.log("a user connected");
+  socket.on("provideUsername", username => {
+    console.log("username provided: " + username);
+    socketidToUsername[socket.id] = username;
+    let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
+    usernameToRoomNumber[username] = roomNumber;
+
+    if (!Object.keys(roomToState).includes(roomNumber)) {
+      initializeRoom(roomNumber);
+    }
+
+    // retrieve persistent state based on username or initialize new player
+    roomToState[roomNumber]["playerState"][username] = Object.keys(
+      persistentPlayerState
+    ).includes(username)
+      ? persistentPlayerState[username]
+      : utils.deepCopy(initialPlayerState);
+    updatePlayers(roomNumber);
+    broadcastMarketUpdate(roomNumber);
+    socket.emit("username", username);
+  });
+
+  // join specific room
+  socket.on("enterRoom", roomNumber => {
+    socket.join(roomNumber);
+    console.log("socket.id: " + socket.id);
+    console.log("joined room number: " + roomNumber);
+    console.log(io.sockets.adapter.rooms[roomNumber].sockets);
+
+    socketidToRoomNumber[socket.id] = roomNumber;
+    if (!Object.keys(roomToState).includes(roomNumber)) {
+      initializeRoom(roomNumber);
+    }
+    socket.emit("enteredRoom", roomNumber);
+  });
+
+  // on disconnection, server recycles the client username
+  socket.on("disconnect", function() {
+    // TODO: be more careful about checking conditions
+    console.log("user disconnected");
+    let username = socketidToUsername[socket.id];
+    let roomNumber = socketidToRoomNumber[socket.id];
+    // usernames.push(username);
+    console.log("roomToState: " + JSON.stringify(roomToState));
+    console.log(
+      "socket id to room number: " + JSON.stringify(socketidToRoomNumber)
+    );
+    delete socketidToUsername[socket.id];
+    delete socketidToRoomNumber[socket.id];
+    delete usernameToRoomNumber[username];
+    if (roomToState[roomNumber] != null) {
+      let playerState = roomToState[roomNumber]["playerState"];
+      delete playerState[username];
+      if (Object.keys(playerState).length == 0) {
+        delete roomToState[roomNumber];
+      } else {
+        updatePlayers(roomNumber);
+      }
+    }
+  });
+
+  // on client command, server parses the command
+  socket.on("clientCommand", command => {
+    console.log("server has received command: " + command);
+    let roomNumber = socketidToRoomNumber[socket.id];
+    parseCommand(command, socket.id, roomNumber);
+  });
+
+  socket.on("startGame", () => {
+    let roomNumber = socketidToRoomNumber[socket.id];
+    startGame(roomNumber);
+  });
+  socket.on("endGame", () => {
+    let roomNumber = socketidToRoomNumber[socket.id];
+    endGame(roomNumber);
+  });
+});
