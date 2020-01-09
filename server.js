@@ -34,14 +34,10 @@ let initialPlayerState = {
   numCards: 10,
   money: 300
 };
-let playerState = {}; // username -> playerDataDict
 // TODO: only store money
 let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
 
 let roomToState = {}; // room number -> market state and player state for that room
-
-// trade log
-let tradeLog = [];
 
 function parseCommand(command, socketId, roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) {
@@ -128,6 +124,7 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
   buyerState["money"] -= price;
 
   let trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
+  let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(trade);
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
 
@@ -381,6 +378,7 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["playerState"] = {};
   roomToState[roomNumber]["goalSuit"] = null;
   roomToState[roomNumber]["isGameActive"] = false;
+  roomToState[roomNumber]["tradeLog"] = [];
 }
 
 function otherColor(suit) {
@@ -520,6 +518,7 @@ function endGame(roomNumber) {
   let msg =
     "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
 
+  let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(msg);
   tradeLog.unshift("----");
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
