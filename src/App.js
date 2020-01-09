@@ -7,8 +7,6 @@ import Col from "react-bootstrap/Col";
 import { Collapse, Button, Table } from "react-bootstrap";
 import queryString from "query-string";
 
-let suits = ["hearts", "diamonds", "clubs", "spades"];
-
 class Players extends React.Component {
   render() {
     let msg = "";
@@ -29,17 +27,9 @@ class Players extends React.Component {
         : "enter 'start'";
     }
 
-    let cards = "";
-
-    suits.forEach(suit => {
-      let count = playerState[username][suit];
-      cards += count ? count + " " + suit + " " : "";
-    });
-
     let yourInfo = (
       <div>
         <span class="player_id"> {username} (you) </span>
-        {cards}
         <span class="money"> {playerState[username].money} money </span>
       </div>
     );
@@ -85,7 +75,7 @@ class Market extends React.Component {
       <Table striped bordered hover variant="dark">
         <thead>
           <tr>
-            <th>Market</th>
+            <th>MARKET</th>
             {Object.keys(markets).map(key => (
               <th>{key}</th>
             ))}
@@ -93,8 +83,8 @@ class Market extends React.Component {
         </thead>
         <tbody>
           <tr>
-            <td>Bids</td>
-            {Object.entries(markets).map(([suit, suitMarket]) => (
+            <td>bids</td>
+            {Object.values(markets).map(suitMarket => (
               <td>
                 {suitMarket["bid"] !== null
                   ? suitMarket["bid"] + " by " + suitMarket["bidPlayer"]
@@ -103,11 +93,21 @@ class Market extends React.Component {
             ))}
           </tr>
           <tr>
-            <td>Offers</td>
-            {Object.entries(markets).map(([suit, suitMarket]) => (
+            <td>offers</td>
+            {Object.values(markets).map(suitMarket => (
               <td>
                 {suitMarket["offer"] !== null
                   ? suitMarket["offer"] + " by " + suitMarket["offerPlayer"]
+                  : ""}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <td># you have</td>
+            {Object.keys(markets).map(key => (
+              <td>
+                {this.props.playerState != null
+                  ? this.props.playerState[key]
                   : ""}
               </td>
             ))}
@@ -269,7 +269,10 @@ class App extends Component {
         <header className="App-header">
           <Row>
             <Col xs={8}>
-              <Market marketState={this.state["market"]} />
+              <Market
+                marketState={this.state["market"]}
+                playerState={this.state.players[this.state.username]}
+              />
 
               <form class="commandForm" onSubmit={this.handleSubmit}>
                 <label>
