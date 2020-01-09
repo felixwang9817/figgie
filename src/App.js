@@ -79,6 +79,7 @@ class App extends Component {
     this.state = {
       trade_command: "",
       username: "",
+      roomNumber: "",
       market: {},
       players: {},
       tradeLog: [],
@@ -94,15 +95,23 @@ class App extends Component {
     // retrieve username from querystring
     const values = queryString.parse(this.props.location.search);
     let username = values.username;
+    let roomNumber = values.roomNumber;
     console.log("username from query string: " + username);
-    if (username == null) {
-      // for now, if no username, set to observer
+    console.log("room number from query string: " + roomNumber);
+    if (username == null || roomNumber == null) {
+      // for now, if no username or no room number, set to observer
       this.setState({ observer: true });
     }
 
     const socket = socketIOClient();
     socket.emit("provideUsername", username);
+    socket.emit("enterRoom", roomNumber);
     this.state.socket = socket;
+
+    socket.on("enteredRoom", state => {
+      console.log("entered room number: " + state);
+      this.setState({ roomNumber: state });
+    });
 
     socket.on("marketUpdate", state => {
       console.log("market update");
@@ -193,6 +202,7 @@ class App extends Component {
         <header className="App-header">
           <Row>
             <Col xs={8}>
+              <div>room number: {this.state.roomNumber}</div>
               <div id="players">
                 <div>your info</div>
                 {Object.entries(this.state.players).map(([key, val]) =>

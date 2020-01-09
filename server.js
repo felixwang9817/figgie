@@ -40,6 +40,9 @@ let initialPlayerState = {
 let playerState = {}; // username -> playerDataDict
 let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
 
+// TODO: create room to state dict
+// TODO: when a client enters a room, populate dict accordingly
+
 // trade log
 let tradeLog = [];
 
@@ -280,7 +283,6 @@ io.on("connection", function(socket) {
   socket.on("provideUsername", username => {
     console.log("username provided: " + username);
     socketidToUsername[socket.id] = username;
-    socketidToRoomNumber[socket.id] = "default"; // all sockets join room "default" for now
 
     // retrieve persistent state based on username or initialize new player
     playerState[username] = Object.keys(persistentPlayerState).includes(
@@ -292,6 +294,12 @@ io.on("connection", function(socket) {
     broadcastMarketUpdate();
     io.emit("tradeLogUpdate", tradeLog);
     socket.emit("username", username);
+  });
+
+  // join specific room
+  socket.on("enterRoom", roomNumber => {
+    socketidToRoomNumber[socket.id] = roomNumber;
+    socket.emit("enteredRoom", roomNumber);
   });
 
   // on disconnection, server recycles the client username
