@@ -182,7 +182,6 @@ class App extends Component {
         <header className="App-header">
           <Row>
             <Col xs={8}>
-              <a href="/Login">to login!</a>
               <div id="players">
                 <div>your info</div>
                 {Object.entries(this.state.players).map(([key, val]) =>

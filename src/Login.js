@@ -4,7 +4,8 @@ class Login extends React.Component {
   render() {
     return (
       <div>
-        <p1>login test</p1>
+        <p>login test</p>
+        <a href="/App">to the game!</a>
       </div>
     );
   }
