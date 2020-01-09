@@ -1,9 +1,10 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import { Collapse, Button } from 'react-bootstrap';
 import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -30,6 +31,81 @@ class Player extends React.Component {
   }
 }
 
+
+class Players extends React.Component {
+
+
+  render () {
+    let msg = "";
+    let playerState = this.props.playerState;
+    let username = this.props.username;
+
+    if (username == null) return '';
+    if (playerState[username] == null) return '';
+
+    console.log(playerState);
+    console.log(username);
+    let numPlayers = Object.keys(playerState).length;
+    if (numPlayers < 4) {
+      msg = "Waiting for players " + numPlayers + "/4...";
+    } else {
+      msg = this.props.isGameActive
+        ? "Game On. Enter 'end' to stop"
+        : "enter 'start'";
+    }
+
+    let cards = "";
+
+    suits.forEach(suit => {
+      let count = playerState[username][suit];
+      cards += count ? count + " " + suit + " " : "";
+    });
+
+    
+    let yourInfo = (
+      <div>
+        <span class="player_id"> {username} (you) </span>
+        {cards}
+        <span class="money"> {playerState[username].money} money </span>
+      </div>
+    );
+
+
+    let otherPlayers = (
+        <Row>
+          {Object.entries(playerState).map(([key, val]) =>
+                  key !== username ? (
+                      <Col xs={3}>
+                        <span class="name">{key}</span>
+                        <br />
+                        <span class="money">money: {playerState[key]["money"]}</span>
+                      </Col>
+
+                  ) : (
+                    <div></div>
+                  )
+          )}
+
+        {/* TODO: add placeholder Col's for missing players*/}
+
+        </Row>
+    );
+
+    return (
+          <div>
+
+            {yourInfo}
+
+            {otherPlayers}
+
+            {msg}
+
+          </div>
+          );
+  }
+}
+
+
 class Market extends React.Component {
   render() {
     let markets = this.props.marketState;
@@ -40,6 +116,7 @@ class Market extends React.Component {
 
     return (
       <div id="market">
+        <h2> Market </h2>
         {Object.entries(markets).map(([suit, suit_market]) => (
           <p>
             {suit}:{suit_market["bid"] || " no"} bid (
@@ -70,6 +147,29 @@ class TradeLog extends React.Component {
       </div>
     );
   }
+}
+
+function CheatSheet() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <Button
+        onClick={() => setOpen(!open)}
+        aria-controls="example-collapse-text"
+        aria-expanded={open}
+      >
+        click
+      </Button>
+      <Collapse in={open}>
+        <div id="example-collapse-text">
+          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus
+          terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer
+          labore wes anderson cred nesciunt sapiente ea proident.
+        </div>
+      </Collapse>
+    </div>
+  );
 }
 
 class App extends Component {
@@ -175,64 +275,12 @@ class App extends Component {
       );
     }
 
-    let msg = "";
-    let numPlayers = Object.keys(this.state.players).length;
-    if (numPlayers < 4) {
-      msg = "Waiting for players " + numPlayers + "/4...";
-    } else {
-      msg = this.state.isGameActive
-        ? "Game On. Enter 'end' to stop"
-        : "enter 'start'";
-    }
-    // Only start/end with commands. MAYBE: re-enable this
-    // else if (!this.state.isGameActive) {
-    //   msg = (
-    //       <button onClick={() => this.state.socket.emit("startGame")}>
-    //         start game
-    //       </button>
-    //   );
-    // } else {
-    //   msg = (
-    //       <button onClick={() => this.state.socket.emit("endGame")}>
-    //         end game
-    //       </button>
-    //   );
-    // }
-
     return (
       <div className="App">
         <header className="App-header">
           <Row>
             <Col xs={8}>
-              <div>room number: {this.state.roomNumber}</div>
-              <div id="players">
-                <div>your info</div>
-                {Object.entries(this.state.players).map(([key, val]) =>
-                  key === this.state.username ? (
-                    <Player id={key} playerState={val}></Player>
-                  ) : (
-                    <div></div>
-                  )
-                )}
-              </div>
-
-              <div id="players">
-                <div>other players' info</div>
-                {Object.entries(this.state.players).map(([key, val]) =>
-                  key !== this.state.username ? (
-                    <Player id={key} playerState={val}></Player>
-                  ) : (
-                    <div></div>
-                  )
-                )}
-                <span class="App-link">{msg}</span>
-              </div>
-
-              <br></br>
-
-              <a class="App-link" href="rules.html">
-                Rules
-              </a>
+              <div class="roomNumber">room: {this.state.roomNumber}</div>
 
               <Market marketState={this.state["market"]} />
 
@@ -247,9 +295,21 @@ class App extends Component {
                 </label>
                 <input type="submit" value="Submit" />
               </form>
+
+              <Players username={this.state.username} playerState={this.state.players} 
+                      isGameActive={this.state.isGameActive} />
+
+
+              <a class="App-link" href="rules.html">
+                Rules
+              </a>
+
             </Col>
 
+
             <Col xs={4}>
+              <CheatSheet />
+
               <TradeLog tradeLog={this.state["tradeLog"]} />
             </Col>
           </Row>

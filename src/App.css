@@ -33,15 +33,11 @@
   margin-left: 3px;
 }
 
-#players {
-  padding: 25px;
-  margin-top: 50px;
-  border: lightblue dotted 2px;
+
+.roomNumber {
+  text-align: left;
 }
 
-.player_id {
-  color: red;
-}
 
 
 #market {
