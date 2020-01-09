@@ -4,7 +4,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Collapse, Button } from "react-bootstrap";
+import { Collapse, Button, Card, ListGroup } from "react-bootstrap";
 import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -118,25 +118,33 @@ class TradeLog extends React.Component {
 }
 
 function CheatSheet() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   return (
-    <div>
+    <Card id="CheatSheet">
       <Button
         onClick={() => setOpen(!open)}
         aria-controls="example-collapse-text"
         aria-expanded={open}
       >
-        click
+        {open ? "Close" : "Open"} Trading Cheatsheet
       </Button>
       <Collapse in={open}>
-        <div id="example-collapse-text">
-          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus
-          terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer
-          labore wes anderson cred nesciunt sapiente ea proident.
+        <div id="rulesCheatSheetText">
+          <Card.Header><span>start</span> and <span>end</span> when you're ready.</Card.Header>
+          <ListGroup variant="flush">
+            <ListGroup.Item><span>SUIT at X</span> to make an offer, e.g. <span>spades at 10</span>
+            </ListGroup.Item>
+            <ListGroup.Item><span>X bid for SUIT</span> to make a bid, e.g. <span>5 bid for hearts</span></ListGroup.Item>
+            <ListGroup.Item><span>take clubs</span> to buy clubs at current offer.</ListGroup.Item>
+            <ListGroup.Item><span>sell diamonds</span> to sell diamonds.</ListGroup.Item>
+            <ListGroup.Item><span>clear</span> or <span>out</span> to clear all your bids and offers.</ListGroup.Item>
+            <ListGroup.Item>Market clears after every trade.</ListGroup.Item>
+
+          </ListGroup>
         </div>
       </Collapse>
-    </div>
+    </Card>
   );
 }
 
@@ -277,7 +285,6 @@ class App extends Component {
 
             <Col xs={4}>
               <CheatSheet />
-
               <TradeLog tradeLog={this.state["tradeLog"]} />
             </Col>
           </Row>

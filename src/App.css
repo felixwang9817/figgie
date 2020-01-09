@@ -44,6 +44,21 @@
   padding-top: 10px;
 }
 
+
+#CheatSheet {
+  margin-bottom: 30px;
+}
+
+#rulesCheatSheetText {
+  color: black;
+  font-size: 12px;
+  text-align: left;
+}
+
+#rulesCheatSheetText span {
+  color: red;
+}
+
 #tradeLog {
   margin-bottom: 50px;
 }
