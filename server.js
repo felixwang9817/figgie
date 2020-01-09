@@ -405,18 +405,29 @@ io.on("connection", function(socket) {
 
   // join specific room
   socket.on("enterRoom", roomNumber => {
-    socket.join(roomNumber);
-    socketidToRoomNumber[socket.id] = roomNumber;
     if (!Object.keys(roomToState).includes(roomNumber)) {
       initializeRoom(roomNumber);
     }
-    socket.emit("enteredRoom", roomNumber);
+
+    socket.join(roomNumber);
+    socketidToRoomNumber[socket.id] = roomNumber;
+    
+    socket.emit("enteredRoom", roomNumber);  // user data is added on provideUsername
   });
 
   // allow client to specify username
   socket.on("provideUsername", username => {
-    socketidToUsername[socket.id] = username;
     let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
+    if (Object.keys(roomToState[roomNumber]["playerState"]).length == 4) {
+      // room full
+      // TODO: emit different message to client than full total capacity
+      console.log("Room is full, rejecting connection from " + socket.id);
+      socket.emit("maxCapacity");
+      socket.disconnect();
+      return;
+    }
+
+    socketidToUsername[socket.id] = username;
     usernameToRoomNumber[username] = roomNumber;
 
     // retrieve persistent state based on username or initialize new player
@@ -448,8 +459,10 @@ io.on("connection", function(socket) {
     delete usernameToRoomNumber[username];
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
-      playerMoney[username] = playerState[username]["money"];
-      delete playerState[username];
+      if (playerState[username] != null) {
+        playerMoney[username] = playerState[username]["money"];
+        delete playerState[username];
+      }
       if (Object.keys(playerState).length == 0) {
         delete roomToState[roomNumber];
       } else {
