@@ -139,8 +139,8 @@ class App extends Component {
       this.setState({ username: state });
     });
 
-    socket.on("fullRoom", () => {
-      console.log("connection rejected due to full room.");
+    socket.on("maxCapacity", () => {
+      console.log("Connection rejected since server is at maximum capacity.");
       this.setState({ observer: true });
       // TODO: actually keep connection alive for observers and show them
       // true game state but disable commands
