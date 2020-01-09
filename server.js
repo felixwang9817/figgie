@@ -10,8 +10,6 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
 let clearActions = ["clear", "out"];
-let goalSuit = null;
-let isGameActive = false;
 
 // market state
 let initSuitMarket = {
@@ -26,7 +24,6 @@ let initialMarketState = {
   hearts: { ...initSuitMarket },
   diamonds: { ...initSuitMarket }
 };
-let marketState = deepCopy(initialMarketState);
 
 // player state
 let initialPlayerState = {
@@ -38,18 +35,19 @@ let initialPlayerState = {
   money: 300
 };
 let playerState = {}; // username -> playerDataDict
+// TODO: only store money
 let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
 
-// TODO: create room to state dict
-// TODO: when a client enters a room, populate dict accordingly
+let roomToState = {}; // room number -> market state and player state for that room
 
 // trade log
 let tradeLog = [];
 
-function parseCommand(command, socketId) {
-  if (!isGameActive) {
+function parseCommand(command, socketId, roomNumber) {
+  if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "start") {
-      startGame();
+      // TODO: check if there are four players
+      startGame(roomNumber);
     } else {
       console.log("game is not active, so not parsing command");
     }
@@ -57,7 +55,7 @@ function parseCommand(command, socketId) {
   }
 
   if (command == "end") {
-    endGame();
+    endGame(roomNumber);
     return;
   }
 
@@ -72,7 +70,7 @@ function parseCommand(command, socketId) {
     }
 
     console.log("clear or out command detected");
-    clearPlayer(username);
+    clearPlayer(username, roomNumber);
   } else if (tokens.length == 2) {
     // take command: take SUIT
     // sell command: sell SUIT
@@ -84,9 +82,9 @@ function parseCommand(command, socketId) {
 
     console.log("take or sell command detected");
     if (action == "take") {
-      takeOffer(suit, username);
+      takeOffer(suit, username, roomNumber);
     } else {
-      sellBid(suit, username);
+      sellBid(suit, username, roomNumber);
     }
   } else if (tokens.length == 3) {
     // offer command: SUIT at X
@@ -97,7 +95,7 @@ function parseCommand(command, socketId) {
     }
 
     console.log("offer command detected");
-    postOffer(suit, price, username);
+    postOffer(suit, price, username, roomNumber);
   } else if (tokens.length == 4) {
     // bid command: X bid for SUIT
     let suit = tokens[3];
@@ -112,12 +110,13 @@ function parseCommand(command, socketId) {
     }
 
     console.log("bid command detected");
-    postBid(suit, price, username);
+    postBid(suit, price, username, roomNumber);
   }
 }
 
 // assumes trade is valid!
-function tradeCard(buyer, seller, suit, price) {
+function tradeCard(buyer, seller, suit, price, roomNumber) {
+  let playerState = roomToState[roomNumber]["playerState"];
   let sellerState = playerState[seller];
   let buyerState = playerState[buyer];
 
@@ -130,13 +129,15 @@ function tradeCard(buyer, seller, suit, price) {
 
   let trade = `${buyer} bought ${suit} from ${seller} for ${price}`;
   tradeLog.unshift(trade);
-  io.emit("tradeLogUpdate", tradeLog);
+  io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
 
-  clearMarket();
-  updatePlayers();
+  clearMarket(roomNumber);
+  updatePlayers(roomNumber);
 }
 
-function postOffer(suit, price, player) {
+function postOffer(suit, price, player, roomNumber) {
+  let playerState = roomToState[roomNumber]["playerState"];
+  let marketState = roomToState[roomNumber]["marketState"];
   let sellerState = playerState[player];
   if (sellerState[suit] < 1) return; // check have card to sell
 
@@ -154,7 +155,7 @@ function postOffer(suit, price, player) {
       if (bidPlayer != player) {
         // if it's yourself, it's allowed
         // otherwise, execute a trade at last bid price
-        tradeCard(bidPlayer, player, suit, bidPrice);
+        tradeCard(bidPlayer, player, suit, bidPrice, roomNumber);
         return; // market already updated and cleared
       }
     }
@@ -162,11 +163,12 @@ function postOffer(suit, price, player) {
     // no market crossing or self-crossing: update new offer
     marketState[suit]["offer"] = price;
     marketState[suit]["offerPlayer"] = player;
-    broadcastMarketUpdate();
+    broadcastMarketUpdate(roomNumber);
   }
 }
 
-function postBid(suit, price, player) {
+function postBid(suit, price, player, roomNumber) {
+  let marketState = roomToState[roomNumber]["marketState"];
   let currentBid = marketState[suit]["bid"];
   console.log("currentBid: " + currentBid);
   console.log("price: " + price);
@@ -179,7 +181,7 @@ function postBid(suit, price, player) {
       if (offerPlayer != player) {
         // if it's yourself, it's allowed
         // otherwise, execute a trade at last offer price
-        tradeCard(player, offerPlayer, suit, offerPrice);
+        tradeCard(player, offerPlayer, suit, offerPrice, roomNumber);
         return; // market already updated and cleared
       }
     }
@@ -187,20 +189,23 @@ function postBid(suit, price, player) {
     // no market crossing or self-crossing: update new bid
     marketState[suit]["bid"] = price;
     marketState[suit]["bidPlayer"] = player;
-    broadcastMarketUpdate();
+    broadcastMarketUpdate(roomNumber);
   }
 }
 
-function takeOffer(suit, username) {
+function takeOffer(suit, username, roomNumber) {
+  let marketState = roomToState[roomNumber]["marketState"];
   let price = marketState[suit]["offer"];
   if (price === null) return;
   let seller = marketState[suit]["offerPlayer"];
   if (seller == username) return; // can't self trade
 
-  tradeCard(username, seller, suit, price);
+  tradeCard(username, seller, suit, price, roomNumber);
 }
 
-function sellBid(suit, username) {
+function sellBid(suit, username, roomNumber) {
+  let marketState = roomToState[roomNumber]["marketState"];
+  let playerState = roomToState[roomNumber]["playerState"];
   let price = marketState[suit]["bid"];
   if (price === null) return;
   let buyer = marketState[suit]["bidPlayer"];
@@ -208,18 +213,17 @@ function sellBid(suit, username) {
   let userState = playerState[username];
   if (userState[suit] < 1) return; // check have card to sell
 
-  tradeCard(buyer, username, suit, price);
+  tradeCard(buyer, username, suit, price, roomNumber);
 }
 
-function clearMarket() {
-  marketState = deepCopy(initialMarketState);
-  console.log("clearMarket: " + JSON.stringify(marketState));
-  broadcastMarketUpdate();
+function clearMarket(roomNumber) {
+  roomToState[roomNumber]["marketState"] = deepCopy(initialMarketState);
+  broadcastMarketUpdate(roomNumber);
 }
 
-function clearPlayer(username) {
+function clearPlayer(username, roomNumber) {
   suits.forEach(suit => {
-    let suitMarketState = marketState[suit];
+    let suitMarketState = roomToState[roomNumber]["marketState"][suit];
     if (suitMarketState["bidPlayer"] == username) {
       suitMarketState["bidPlayer"] = null;
       suitMarketState["bid"] = null;
@@ -228,7 +232,7 @@ function clearPlayer(username) {
       suitMarketState["offerPlayer"] = null;
       suitMarketState["offer"] = null;
     }
-    broadcastMarketUpdate();
+    broadcastMarketUpdate(roomNumber);
   });
 }
 
@@ -241,13 +245,14 @@ function deepCopy(x) {
 socketidToUsername = {};
 // for now, every socketid joins room "default"
 socketidToRoomNumber = {};
+usernameToRoomNumber = {};
 
-function shieldPlayerInfo(socketid) {
-  let playerVisibleState = deepCopy(playerState);
+function shieldPlayerInfo(socketid, roomNumber) {
+  let playerVisibleState = deepCopy(roomToState[roomNumber]["playerState"]);
   let username = socketidToUsername[socketid];
 
   // hiding other player's hands
-  Object.keys(playerState).map(player => {
+  Object.keys(playerVisibleState).map(player => {
     if (player != username) {
       suits.forEach(suit => {
         playerVisibleState[player][suit] = null;
@@ -258,20 +263,32 @@ function shieldPlayerInfo(socketid) {
   return playerVisibleState;
 }
 
-function updatePlayers() {
+function updatePlayers(roomNumber) {
+  // first, get socketids associated with roomNumber
+  let socketids = io.sockets.adapter.rooms[roomNumber].sockets;
+  console.log("socketids: " + JSON.stringify(socketids));
+
   // for each socket in socketidToUsername, shield appropriately and socket.emit to that socket
-  for (const socketid in socketidToUsername) {
-    io.to(socketid).emit("playerUpdate", shieldPlayerInfo(socketid));
+  for (const socketid in socketids) {
+    console.log("socketid: " + socketid);
+    console.log("shielded info: " + shieldPlayerInfo(socketid, roomNumber));
+    io.to(socketid).emit(
+      "playerUpdate",
+      shieldPlayerInfo(socketid, roomNumber)
+    );
   }
 }
 
-function broadcastMarketUpdate() {
-  io.emit("marketUpdate", marketState);
+function broadcastMarketUpdate(roomNumber) {
+  let marketState = roomToState[roomNumber]["marketState"];
+  io.to(roomNumber).emit("marketUpdate", marketState);
 }
 
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
-  if (Object.keys(socketidToUsername).length == 4) {
+
+  // TODO: room check
+  if (Object.keys(socketidToUsername).length == 40) {
     socket.emit("fullRoom");
     console.log("Full room, rejecting connection from " + socket.id);
     socket.disconnect();
@@ -283,44 +300,88 @@ io.on("connection", function(socket) {
   socket.on("provideUsername", username => {
     console.log("username provided: " + username);
     socketidToUsername[socket.id] = username;
+    let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
+    usernameToRoomNumber[username] = roomNumber;
+
+    if (!Object.keys(roomToState).includes(roomNumber)) {
+      initializeRoom(roomNumber);
+    }
 
     // retrieve persistent state based on username or initialize new player
-    playerState[username] = Object.keys(persistentPlayerState).includes(
-      username
-    )
+    roomToState[roomNumber]["playerState"][username] = Object.keys(
+      persistentPlayerState
+    ).includes(username)
       ? persistentPlayerState[username]
       : deepCopy(initialPlayerState);
-    updatePlayers();
-    broadcastMarketUpdate();
-    io.emit("tradeLogUpdate", tradeLog);
+    updatePlayers(roomNumber);
+    broadcastMarketUpdate(roomNumber);
     socket.emit("username", username);
   });
 
   // join specific room
   socket.on("enterRoom", roomNumber => {
+    socket.join(roomNumber);
+    console.log("socket.id: " + socket.id);
+    console.log("joined room number: " + roomNumber);
+    console.log(io.sockets.adapter.rooms[roomNumber].sockets);
+
     socketidToRoomNumber[socket.id] = roomNumber;
+    if (!Object.keys(roomToState).includes(roomNumber)) {
+      initializeRoom(roomNumber);
+    }
     socket.emit("enteredRoom", roomNumber);
   });
 
   // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
+    // TODO: be more careful about checking conditions
     console.log("user disconnected");
     let username = socketidToUsername[socket.id];
+    let roomNumber = socketidToRoomNumber[socket.id];
     // usernames.push(username);
-    delete playerState[username];
+    console.log("roomToState: " + JSON.stringify(roomToState));
+    console.log(
+      "socket id to room number: " + JSON.stringify(socketidToRoomNumber)
+    );
     delete socketidToUsername[socket.id];
-    updatePlayers();
+    delete socketidToRoomNumber[socket.id];
+    delete usernameToRoomNumber[username];
+    if (roomToState[roomNumber] != null) {
+      let playerState = roomToState[roomNumber]["playerState"];
+      delete playerState[username];
+      if (Object.keys(playerState).length == 0) {
+        delete roomToState[roomNumber];
+      } else {
+        updatePlayers(roomNumber);
+      }
+    }
   });
 
   // on client command, server parses the command
   socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
-    parseCommand(command, socket.id);
+    let roomNumber = socketidToRoomNumber[socket.id];
+    parseCommand(command, socket.id, roomNumber);
   });
 
-  socket.on("startGame", startGame);
-  socket.on("endGame", endGame);
+  socket.on("startGame", () => {
+    let roomNumber = socketidToRoomNumber[socket.id];
+    startGame(roomNumber);
+  });
+  socket.on("endGame", () => {
+    let roomNumber = socketidToRoomNumber[socket.id];
+    endGame(roomNumber);
+  });
 });
+
+function initializeRoom(roomNumber) {
+  let marketState = deepCopy(initialMarketState);
+  roomToState[roomNumber] = {};
+  roomToState[roomNumber]["marketState"] = marketState;
+  roomToState[roomNumber]["playerState"] = {};
+  roomToState[roomNumber]["goalSuit"] = null;
+  roomToState[roomNumber]["isGameActive"] = false;
+}
 
 function otherColor(suit) {
   return {
@@ -350,14 +411,17 @@ function shuffle(a) {
   return a;
 }
 
-function updateGameState(state) {
-  isGameActive = state;
-  io.emit("gameStateUpdate", state);
+function updateGameState(state, roomNumber) {
+  roomToState[roomNumber]["isGameActive"] = state;
+  io.to(roomNumber).emit("gameStateUpdate", state);
 }
 
 // init game stuff
-function startGame() {
-  if (Object.keys(socketidToUsername).length !== 4 || isGameActive) {
+function startGame(roomNumber) {
+  if (
+    Object.keys(roomToState[roomNumber]["playerState"]).length !== 4 ||
+    roomToState[roomNumber]["isGameActive"]
+  ) {
     return;
   }
 
@@ -381,10 +445,11 @@ function startGame() {
 
   console.log("goal: " + goal);
   console.log("cards: " + cards);
-  goalSuit = goal;
+  roomToState[roomNumber]["goalSuit"] = goal;
 
   // distribute cards to players
   let cnt = 0;
+  let playerState = roomToState[roomNumber]["playerState"];
   Object.keys(playerState).map(player => {
     let playerCards = cards.slice(cnt, cnt + 10);
     playerState[player]["money"] -= 50;
@@ -397,17 +462,19 @@ function startGame() {
     });
     cnt += 10;
   });
-  updatePlayers();
-  updateGameState(true);
+  updatePlayers(roomNumber);
+  updateGameState(true, roomNumber);
 }
 
-function endGame() {
-  if (!isGameActive) return;
+function endGame(roomNumber) {
+  let playerState = roomToState[roomNumber]["playerState"];
+  if (!roomToState[roomNumber]["isGameActive"]) return;
 
-  updateGameState(false);
+  updateGameState(false, roomNumber);
 
   // compute final rewards and emit to all clients for display
   let winners = [];
+  let goalSuit = roomToState[roomNumber]["goalSuit"];
   let maxGoalSuit = 0;
   let numGoalSuitTotal = 0;
   let rewards = {};
@@ -455,12 +522,12 @@ function endGame() {
 
   tradeLog.unshift(msg);
   tradeLog.unshift("----");
-  io.emit("tradeLogUpdate", tradeLog);
+  io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
 
   // give out rewards and update persistent state
   Object.keys(playerState).map(player => {
     playerState[player]["money"] += rewards[player];
     persistentPlayerState[player] = playerState[player];
   });
-  updatePlayers();
+  updatePlayers(roomNumber);
 }

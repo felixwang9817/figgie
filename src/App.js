@@ -92,6 +92,7 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    // TODO: make sure can't take a username that's already taken
     // retrieve username from querystring
     const values = queryString.parse(this.props.location.search);
     let username = values.username;
@@ -104,12 +105,13 @@ class App extends Component {
     }
 
     const socket = socketIOClient();
-    socket.emit("provideUsername", username);
     socket.emit("enterRoom", roomNumber);
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {
       console.log("entered room number: " + state);
+      // to ensure that no async problems occur with username being set up after the room
+      socket.emit("provideUsername", username);
       this.setState({ roomNumber: state });
     });
 
