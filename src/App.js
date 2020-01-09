@@ -4,44 +4,19 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Collapse, Button } from 'react-bootstrap';
+import { Collapse, Button } from "react-bootstrap";
 import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 
-class Player extends React.Component {
-  render() {
-    let cards = "";
-    let playerState = this.props.playerState;
-    console.log(this.props);
-
-    suits.forEach(suit => {
-      let count = playerState[suit];
-      cards += count ? count + " " + suit + " " : "";
-    });
-
-    return (
-      <div>
-        <span class="player_id"> player #{this.props.id} </span>
-        {cards}
-        <span class="numCards"> {playerState.numCards} cards </span>
-        <span class="money"> {playerState.money} money </span>
-      </div>
-    );
-  }
-}
-
-
 class Players extends React.Component {
-
-
-  render () {
+  render() {
     let msg = "";
     let playerState = this.props.playerState;
     let username = this.props.username;
 
-    if (username == null) return '';
-    if (playerState[username] == null) return '';
+    if (username == null) return "";
+    if (playerState[username] == null) return "";
 
     console.log(playerState);
     console.log(username);
@@ -61,7 +36,6 @@ class Players extends React.Component {
       cards += count ? count + " " + suit + " " : "";
     });
 
-    
     let yourInfo = (
       <div>
         <span class="player_id"> {username} (you) </span>
@@ -70,41 +44,35 @@ class Players extends React.Component {
       </div>
     );
 
-
     let otherPlayers = (
-        <Row>
-          {Object.entries(playerState).map(([key, val]) =>
-                  key !== username ? (
-                      <Col xs={3}>
-                        <span class="name">{key}</span>
-                        <br />
-                        <span class="money">money: {playerState[key]["money"]}</span>
-                      </Col>
-
-                  ) : (
-                    <div></div>
-                  )
-          )}
+      <Row>
+        {Object.entries(playerState).map(([key, val]) =>
+          key !== username ? (
+            <Col xs={3}>
+              <span class="name">{key}</span>
+              <br />
+              <span class="money">money: {playerState[key]["money"]}</span>
+            </Col>
+          ) : (
+            <div></div>
+          )
+        )}
 
         {/* TODO: add placeholder Col's for missing players*/}
-
-        </Row>
+      </Row>
     );
 
     return (
-          <div>
+      <div>
+        {yourInfo}
 
-            {yourInfo}
+        {otherPlayers}
 
-            {otherPlayers}
-
-            {msg}
-
-          </div>
-          );
+        {msg}
+      </div>
+    );
   }
 }
-
 
 class Market extends React.Component {
   render() {
@@ -296,16 +264,16 @@ class App extends Component {
                 <input type="submit" value="Submit" />
               </form>
 
-              <Players username={this.state.username} playerState={this.state.players} 
-                      isGameActive={this.state.isGameActive} />
-
+              <Players
+                username={this.state.username}
+                playerState={this.state.players}
+                isGameActive={this.state.isGameActive}
+              />
 
               <a class="App-link" href="rules.html">
                 Rules
               </a>
-
             </Col>
-
 
             <Col xs={4}>
               <CheatSheet />
