@@ -16,7 +16,7 @@ class Players extends React.Component {
     if (username == null) return "";
     if (playerState[username] == null) return "";
 
-    console.log(playerState);
+    console.log("playerState " + JSON.stringify(playerState));
     console.log(username);
     let numPlayers = Object.keys(playerState).length;
     if (numPlayers < 4) {
@@ -27,37 +27,40 @@ class Players extends React.Component {
         : "enter 'start'";
     }
 
-    let yourInfo = (
-      <div>
-        <span class="player_id"> {username} (you) </span>
-        <span class="money"> {playerState[username].money} money </span>
-      </div>
-    );
-
-    let otherPlayers = (
-      <Row>
-        {Object.entries(playerState).map(([key, val]) =>
-          key !== username ? (
-            <Col xs={3}>
-              <span class="name">{key}</span>
-              <br />
-              <span class="money">money: {playerState[key]["money"]}</span>
-            </Col>
-          ) : (
-            <div></div>
-          )
-        )}
-
-        {/* TODO: add placeholder Col's for missing players*/}
-      </Row>
-    );
+    // fill players up to four names
+    let players = Object.keys(playerState);
+    while (players.length < 4) {
+      players.push("asdf");
+    }
 
     return (
       <div>
-        {yourInfo}
-
-        {otherPlayers}
-
+        <Table striped bordered hover variant="dark">
+          <thead>
+            <tr>
+              <td>#</td>
+              {Object.keys(players).map(key =>
+                playerState[players[key]] != null ? (
+                  <td>{players[key]}</td>
+                ) : (
+                  <td></td>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td># cards</td>
+              {Object.keys(players).map(key =>
+                playerState[players[key]] != null ? (
+                  <td>{playerState[players[key]]["numCards"]}</td>
+                ) : (
+                  <td></td>
+                )
+              )}
+            </tr>
+          </tbody>
+        </Table>
         {msg}
       </div>
     );
@@ -77,7 +80,7 @@ class Market extends React.Component {
           <tr>
             <th>MARKET</th>
             {Object.keys(markets).map(key => (
-              <th>{key}</th>
+              <td>{key}</td>
             ))}
           </tr>
         </thead>
