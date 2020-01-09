@@ -53,6 +53,7 @@
   color: black;
   font-size: 14px;
   text-align: left;
+  padding: 0.75rem;
 }
 
 #rulesCheatSheetText span {
@@ -60,7 +61,7 @@
 }
 
 #rulesCheatSheetText .card-header, #rulesCheatSheetText .list-group-item {
-  padding: .5rem 1rem
+  padding: .5rem 1rem;
 }
 
 #tradeLog {

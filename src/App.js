@@ -4,7 +4,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Collapse, Button, Card, ListGroup } from "react-bootstrap";
+import { Collapse, Button, Card, ListGroup, Alert } from "react-bootstrap";
 import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -137,8 +137,8 @@ function CheatSheet() {
       </Button>
       <Collapse in={open}>
         <div id="rulesCheatSheetText">
-          <Card.Header><span>start</span> to start. Market clears after every trade.</Card.Header>
           <ListGroup variant="flush">
+            <ListGroup.Item><span>start</span> to start. Market clears after every trade.</ListGroup.Item>
             <ListGroup.Item><span>SUIT at X</span> to make an offer, e.g. <span>spades at 10</span>
             </ListGroup.Item>
             <ListGroup.Item><span>X bid for SUIT</span> to make a bid, e.g. <span>5 bid for hearts</span></ListGroup.Item>
@@ -164,7 +164,8 @@ class App extends Component {
       players: {},
       tradeLog: [],
       observer: false,
-      isGameActive: false
+      isGameActive: false,
+      alertMsg: "alert!!",
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -255,6 +256,13 @@ class App extends Component {
       );
     }
 
+    let alert = '';
+    if (this.state.alertMsg) {
+      alert = (
+        <Alert variant="warning" > {this.state.alertMsg} </Alert>
+      );
+    }
+
     return (
       <div className="App">
         <header className="App-header">
@@ -263,6 +271,8 @@ class App extends Component {
               <div class="roomNumber">room: {this.state.roomNumber}</div>
 
               <Market marketState={this.state["market"]} />
+
+              {alert}
 
               <form class="commandForm" onSubmit={this.handleSubmit}>
                 <label>
