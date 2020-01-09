@@ -4,7 +4,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Collapse, Button } from "react-bootstrap";
+import { Collapse, Button, Table } from "react-bootstrap";
 import queryString from "query-string";
 
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -77,23 +77,43 @@ class Players extends React.Component {
 class Market extends React.Component {
   render() {
     let markets = this.props.marketState;
-    console.log("Market rendering, " + JSON.stringify(markets));
     if (!markets) {
       return "";
     }
 
     return (
-      <div id="market">
-        <h2> Market </h2>
-        {Object.entries(markets).map(([suit, suit_market]) => (
-          <p>
-            {suit}:{suit_market["bid"] || " no"} bid (
-            {suit_market["bidPlayer"] || "n/a"}),
-            {suit_market["offer"] || " no"} offer (
-            {suit_market["offerPlayer"] || "n/a"}).
-          </p>
-        ))}
-      </div>
+      <Table striped bordered hover variant="dark">
+        <thead>
+          <tr>
+            <th>Market</th>
+            {Object.keys(markets).map(key => (
+              <th>{key}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bids</td>
+            {Object.entries(markets).map(([suit, suitMarket]) => (
+              <td>
+                {suitMarket["bid"] !== null
+                  ? suitMarket["bid"] + " by " + suitMarket["bidPlayer"]
+                  : ""}
+              </td>
+            ))}
+          </tr>
+          <tr>
+            <td>Offers</td>
+            {Object.entries(markets).map(([suit, suitMarket]) => (
+              <td>
+                {suitMarket["offer"] !== null
+                  ? suitMarket["offer"] + " by " + suitMarket["offerPlayer"]
+                  : ""}
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </Table>
     );
   }
 }
@@ -244,6 +264,7 @@ class App extends Component {
     }
 
     return (
+      // TODO: ensure that username is capped at 30 characters or overflow is disabled
       <div className="App">
         <header className="App-header">
           <Row>
