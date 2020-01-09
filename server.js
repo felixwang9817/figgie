@@ -286,9 +286,8 @@ function updateGameState(state, roomNumber) {
 
 // START AND END FUNCTIONS
 function initializeRoom(roomNumber) {
-  let marketState = utils.deepCopy(initialMarketState);
   roomToState[roomNumber] = {};
-  roomToState[roomNumber]["marketState"] = marketState;
+  roomToState[roomNumber]["marketState"] = utils.deepCopy(initialMarketState);
   roomToState[roomNumber]["playerState"] = {};
   roomToState[roomNumber]["goalSuit"] = null;
   roomToState[roomNumber]["isGameActive"] = false;
@@ -370,26 +369,8 @@ function endGame(roomNumber) {
 
   // distribute remainder of pot equally to winners
   let remainder = 200 - numGoalSuitTotal * 10;
-  let remainingRewards = [];
-  if (winners.length == 3 && remainder % 3 !== 0) {
-    // handle this case carefully
-    if (remainder % 3 == 1) {
-      remainingRewards.push(Math.floor(remainder / 3));
-      remainingRewards.push(Math.floor(remainder / 3));
-      remainingRewards.push(Math.floor(remainder / 3) + 1);
-    } else if (remainder % 3 == 2) {
-      remainingRewards.push(Math.floor(remainder / 3));
-      remainingRewards.push(Math.floor(remainder / 3) + 1);
-      remainingRewards.push(Math.floor(remainder / 3) + 1);
-    }
-
-    remainingRewards = utils.shuffle(remainingRewards);
-  } else {
-    for (let i = 0; i < winners.length; i++) {
-      remainingRewards.push(remainder / winners.length);
-    }
-  }
-
+  let remainingRewards = utils.splitWinnings(remainder, winners.length);
+  remainingRewards = utils.shuffle(remainingRewards);
   for (let i = 0; i < winners.length; i++) {
     let winner = winners[i];
     rewards[winner] += remainingRewards[i];

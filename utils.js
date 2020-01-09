@@ -28,5 +28,27 @@ module.exports = {
   },
   deepCopy: function(x) {
     return JSON.parse(JSON.stringify(x));
+  },
+  splitWinnings: function(remainder, numWinners) {
+    let remainingRewards = [];
+    if (numWinners == 1 || numWinners == 2 || numWinners == 4) {
+      for (let i = 0; i < numWinners; i++) {
+        remainingRewards.push(remainder / numWinners);
+      }
+    } else if (numWinners == 3) {
+      if (remainder % 3 !== 0) {
+        for (let i = 0; i < numWinners; i++) {
+          remainingRewards.push(remainder / numWinners);
+        }
+      } else if (remainder % 3 == 1) {
+        remainingRewards.push(Math.floor(remainder / 3));
+        remainingRewards.push(Math.floor(remainder / 3));
+        remainingRewards.push(Math.floor(remainder / 3) + 1);
+      } else if (remainder % 3 == 2) {
+        remainingRewards.push(Math.floor(remainder / 3));
+        remainingRewards.push(Math.floor(remainder / 3) + 1);
+        remainingRewards.push(Math.floor(remainder / 3) + 1);
+      }
+    }
   }
 };
