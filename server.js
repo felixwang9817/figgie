@@ -4,9 +4,20 @@ const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const utils = require("./utils");
+const db = require("./queries");
+require("isomorphic-fetch");
 
 app.use(express.static(__dirname));
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+let server = "http://localhost:8080";
+
+// Postgres db endpoints
+app.get("/players", db.getPlayers);
+app.get("/players/:username", db.getMoneyByUsername);
+app.post("/players/:username", db.createPlayer);
+app.put("/players/:username/:money", db.updatePlayer);
+app.delete("/players/:username", db.deletePlayer);
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -34,7 +45,6 @@ let initialPlayerState = {
   numCards: 10,
   money: 300
 };
-let playerMoney = {}; // username -> money, to be updated at the end of every game
 let roomToState = {}; // room number -> market state and player state for that room
 
 // socket and room info
@@ -384,14 +394,16 @@ function endGame(roomNumber) {
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
 
   // give out rewards and update persistent state
-  Object.keys(playerState).map(player => {
+  Object.keys(playerState).map(async player => {
     playerState[player]["money"] += rewards[player];
-    playerMoney[player] = playerState[player]["money"];
+    await fetch(`${server}/players/${player}/${playerState[player]["money"]}`, {
+      method: "PUT"
+    });
   });
   updatePlayers(roomNumber);
 }
 
-io.on("connection", function(socket) {
+io.on("connection", async function(socket) {
   if (Object.keys(socketidToUsername).length == maxUsers) {
     console.log(
       "Reached maximum capacity, rejecting connection from " + socket.id
@@ -411,12 +423,13 @@ io.on("connection", function(socket) {
 
     socket.join(roomNumber);
     socketidToRoomNumber[socket.id] = roomNumber;
-    
-    socket.emit("enteredRoom", roomNumber);  // user data is added on provideUsername
+
+    socket.emit("enteredRoom", roomNumber); // user data is added on provideUsername
   });
 
   // allow client to specify username
-  socket.on("provideUsername", username => {
+  socket.on("provideUsername", async username => {
+    socketidToUsername[socket.id] = username;
     let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
     if (Object.keys(roomToState[roomNumber]["playerState"]).length == 4) {
       // room full
@@ -430,13 +443,19 @@ io.on("connection", function(socket) {
     socketidToUsername[socket.id] = username;
     usernameToRoomNumber[username] = roomNumber;
 
-    // retrieve persistent state based on username or initialize new player
+    // initialize new player and add to db or retrieve persistent state
     roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
       initialPlayerState
     );
-    if (Object.keys(playerMoney).includes(username)) {
+    let money = await fetch(`${server}/players/${username}`);
+    money = await money.json();
+    if (money.length > 0) {
       roomToState[roomNumber]["playerState"][username]["money"] =
-        playerMoney[username]; // retrieve from persistent state
+        money[0]["money"]; // populate from db
+    } else {
+      await fetch(`${server}/players/${username}`, {
+        method: "POST"
+      });
     }
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
@@ -444,7 +463,7 @@ io.on("connection", function(socket) {
   });
 
   // on disconnection, server recycles the client username
-  socket.on("disconnect", function() {
+  socket.on("disconnect", async function() {
     // TODO: be more careful about checking conditions
     console.log("user disconnected");
     let username = socketidToUsername[socket.id];
@@ -460,9 +479,12 @@ io.on("connection", function(socket) {
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
-        playerMoney[username] = playerState[username]["money"];
         delete playerState[username];
       }
+      await fetch(
+        `${server}/players/${username}/${playerState[username]["money"]}`,
+        { method: "PUT" }
+      );
       if (Object.keys(playerState).length == 0) {
         delete roomToState[roomNumber];
       } else {
