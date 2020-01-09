@@ -137,7 +137,7 @@ function CheatSheet() {
       </Button>
       <Collapse in={open}>
         <div id="rulesCheatSheetText">
-          <Card.Header><span>start</span> and <span>end</span> when you're ready.</Card.Header>
+          <Card.Header><span>start</span> to start. Market clears after every trade.</Card.Header>
           <ListGroup variant="flush">
             <ListGroup.Item><span>SUIT at X</span> to make an offer, e.g. <span>spades at 10</span>
             </ListGroup.Item>
@@ -145,8 +145,6 @@ function CheatSheet() {
             <ListGroup.Item><span>take clubs</span> to buy clubs at current offer.</ListGroup.Item>
             <ListGroup.Item><span>sell diamonds</span> to sell diamonds.</ListGroup.Item>
             <ListGroup.Item><span>clear</span> or <span>out</span> to clear all your bids and offers.</ListGroup.Item>
-            <ListGroup.Item>Market clears after every trade.</ListGroup.Item>
-
           </ListGroup>
         </div>
       </Collapse>
@@ -261,7 +259,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <Row>
-            <Col xs={8}>
+            <Col xs={7}>
               <div class="roomNumber">room: {this.state.roomNumber}</div>
 
               <Market marketState={this.state["market"]} />
@@ -289,7 +287,7 @@ class App extends Component {
               </a>
             </Col>
 
-            <Col xs={4}>
+            <Col xs={5}>
               <CheatSheet />
               <TradeLog tradeLog={this.state["tradeLog"]} />
             </Col>
