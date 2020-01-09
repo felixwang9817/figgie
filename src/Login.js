@@ -21,7 +21,7 @@ class Login extends React.Component {
     this.setState({ username: "" }); // clear form
 
     // navigates to app while passing username as querystring
-    let path = `/App?username=${this.state.username}`;
+    let path = `/Room?username=${this.state.username}`;
     this.props.history.push(path);
   }
 

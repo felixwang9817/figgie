@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import Login from "./Login";
+import Room from "./Room";
 import * as serviceWorker from "./serviceWorker";
 import { Route, BrowserRouter } from "react-router-dom";
 
@@ -10,6 +11,7 @@ ReactDOM.render(
   <BrowserRouter>
     <div>
       <Route exact path="/" component={Login} />
+      <Route path="/Room" component={Room} />
       <Route path="/App" component={App} />
       <Route
         render={function() {
