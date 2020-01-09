@@ -97,6 +97,7 @@ class App extends Component {
     console.log("username from query string: " + username);
 
     const socket = socketIOClient();
+    socket.emit("provideUsername", username);
     this.state.socket = socket;
 
     socket.on("marketUpdate", state => {

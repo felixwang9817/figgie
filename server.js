@@ -234,7 +234,7 @@ function deepCopy(x) {
 }
 
 // socket.id to unique username
-let usernames = ["alice", "bob", "charlie", "zeus"];
+// let usernames = ["alice", "bob", "charlie", "zeus"];
 socketidToUsername = {};
 // for now, every socketid joins room "default"
 socketidToRoomNumber = {};
@@ -275,26 +275,30 @@ io.on("connection", function(socket) {
     return;
   }
 
-  // on connection, server assigns username to the unique socket id of the client
+  // allow client to specify username
   console.log("a user connected");
-  let username = usernames.pop();
-  socketidToUsername[socket.id] = username;
-  socketidToRoomNumber[socket.id] = "default"; // all sockets join room "default" for now
+  socket.on("provideUsername", username => {
+    console.log("username provided: " + username);
+    socketidToUsername[socket.id] = username;
+    socketidToRoomNumber[socket.id] = "default"; // all sockets join room "default" for now
 
-  // on connection, retrieve persistent state based on username or initialize new player
-  playerState[username] = Object.keys(persistentPlayerState).includes(username)
-    ? persistentPlayerState[username]
-    : deepCopy(initialPlayerState);
-  updatePlayers();
-  broadcastMarketUpdate();
-  io.emit("tradeLogUpdate", tradeLog);
-  socket.emit("username", username);
+    // retrieve persistent state based on username or initialize new player
+    playerState[username] = Object.keys(persistentPlayerState).includes(
+      username
+    )
+      ? persistentPlayerState[username]
+      : deepCopy(initialPlayerState);
+    updatePlayers();
+    broadcastMarketUpdate();
+    io.emit("tradeLogUpdate", tradeLog);
+    socket.emit("username", username);
+  });
 
   // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
     console.log("user disconnected");
     let username = socketidToUsername[socket.id];
-    usernames.push(username);
+    // usernames.push(username);
     delete playerState[username];
     delete socketidToUsername[socket.id];
     updatePlayers();
