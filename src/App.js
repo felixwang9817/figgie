@@ -95,6 +95,10 @@ class App extends Component {
     const values = queryString.parse(this.props.location.search);
     let username = values.username;
     console.log("username from query string: " + username);
+    if (username == null) {
+      // for now, if no username, set to observer
+      this.setState({ observer: true });
+    }
 
     const socket = socketIOClient();
     socket.emit("provideUsername", username);
