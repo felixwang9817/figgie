@@ -390,7 +390,6 @@ function endGame(roomNumber) {
 
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(msg);
-  tradeLog.unshift("----");
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
 
   // give out rewards and update persistent state
@@ -497,6 +496,7 @@ io.on("connection", async function(socket) {
   socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
     let roomNumber = socketidToRoomNumber[socket.id];
+    if (roomToState[roomNumber] === null) return;
     parseCommand(command, socket.id, roomNumber);
   });
 

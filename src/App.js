@@ -111,9 +111,12 @@ class TradeLog extends React.Component {
         <h2>Trade Log</h2>
 
         <ListGroup variant="flush">
-          {Object.values(tradeLog).map(trade => (
-            <ListGroup.Item>{trade}</ListGroup.Item>
-          ))}
+          {Object.values(tradeLog).map(trade => {
+            let variant = trade.substring(0, 4) == "goal" ? "primary" : "";
+            return (
+              <ListGroup.Item variant={variant}>{trade}</ListGroup.Item>
+            )}
+          )}
         </ListGroup>
       </div>
     );

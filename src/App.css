@@ -68,6 +68,10 @@
   background-color: transparent;
 }
 
+#tradeLog .list-group-item-primary {
+  color: #b8daff;  /* make light for dark background */
+}
+
 .FullGame {
   margin: 200px;
   text-align: center;
