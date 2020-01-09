@@ -3,6 +3,7 @@ const app = express();
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
+const utils = require("./utils");
 
 app.use(express.static(__dirname));
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
@@ -11,7 +12,7 @@ let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];
 let clearActions = ["clear", "out"];
 
-// market state
+// state
 let initSuitMarket = {
   bid: null,
   bidPlayer: null,
@@ -24,8 +25,6 @@ let initialMarketState = {
   hearts: { ...initSuitMarket },
   diamonds: { ...initSuitMarket }
 };
-
-// player state
 let initialPlayerState = {
   diamonds: null,
   clubs: null,
@@ -36,8 +35,12 @@ let initialPlayerState = {
 };
 // TODO: only store money
 let persistentPlayerState = {}; // username -> playerDataDict, to be updated at the end of every game
-
 let roomToState = {}; // room number -> market state and player state for that room
+
+// socket and room info
+socketidToUsername = {};
+socketidToRoomNumber = {};
+usernameToRoomNumber = {};
 
 function parseCommand(command, socketId, roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) {
@@ -214,7 +217,7 @@ function sellBid(suit, username, roomNumber) {
 }
 
 function clearMarket(roomNumber) {
-  roomToState[roomNumber]["marketState"] = deepCopy(initialMarketState);
+  roomToState[roomNumber]["marketState"] = utils.deepCopy(initialMarketState);
   broadcastMarketUpdate(roomNumber);
 }
 
@@ -233,19 +236,10 @@ function clearPlayer(username, roomNumber) {
   });
 }
 
-function deepCopy(x) {
-  return JSON.parse(JSON.stringify(x));
-}
-
-// socket.id to unique username
-// let usernames = ["alice", "bob", "charlie", "zeus"];
-socketidToUsername = {};
-// for now, every socketid joins room "default"
-socketidToRoomNumber = {};
-usernameToRoomNumber = {};
-
 function shieldPlayerInfo(socketid, roomNumber) {
-  let playerVisibleState = deepCopy(roomToState[roomNumber]["playerState"]);
+  let playerVisibleState = utils.deepCopy(
+    roomToState[roomNumber]["playerState"]
+  );
   let username = socketidToUsername[socketid];
 
   // hiding other player's hands
@@ -309,7 +303,7 @@ io.on("connection", function(socket) {
       persistentPlayerState
     ).includes(username)
       ? persistentPlayerState[username]
-      : deepCopy(initialPlayerState);
+      : utils.deepCopy(initialPlayerState);
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
     socket.emit("username", username);
@@ -372,41 +366,13 @@ io.on("connection", function(socket) {
 });
 
 function initializeRoom(roomNumber) {
-  let marketState = deepCopy(initialMarketState);
+  let marketState = utils.deepCopy(initialMarketState);
   roomToState[roomNumber] = {};
   roomToState[roomNumber]["marketState"] = marketState;
   roomToState[roomNumber]["playerState"] = {};
   roomToState[roomNumber]["goalSuit"] = null;
   roomToState[roomNumber]["isGameActive"] = false;
   roomToState[roomNumber]["tradeLog"] = [];
-}
-
-function otherColor(suit) {
-  return {
-    spades: "clubs",
-    clubs: "spades",
-    diamonds: "hearts",
-    hearts: "diamonds"
-  }[suit];
-}
-
-function randomSuit() {
-  return suits[Math.floor(Math.random() * suits.length)];
-}
-
-/**
- * Shuffles array in place.
- * @param {Array} a items An array containing the items.
- */
-function shuffle(a) {
-  let j, x, i;
-  for (i = a.length - 1; i > 0; i--) {
-    j = Math.floor(Math.random() * (i + 1));
-    x = a[i];
-    a[i] = a[j];
-    a[j] = x;
-  }
-  return a;
 }
 
 function updateGameState(state, roomNumber) {
@@ -425,10 +391,10 @@ function startGame(roomNumber) {
 
   console.log("game starting..." + JSON.stringify(socketidToUsername));
 
-  let common = randomSuit();
-  let goal = otherColor(common);
-  let eight = randomSuit();
-  while (eight == common) eight = randomSuit();
+  let common = utils.randomSuit();
+  let goal = utils.otherColor(common);
+  let eight = utils.randomSuit();
+  while (eight == common) eight = utils.randomSuit();
 
   let remainingSuits = suits.filter(s => s != common && s != eight);
 
@@ -503,7 +469,7 @@ function endGame(roomNumber) {
       remainingRewards.push(Math.floor(remainder / 3) + 1);
     }
 
-    remainingRewards = shuffle(remainingRewards);
+    remainingRewards = utils.shuffle(remainingRewards);
   } else {
     for (let i = 0; i < winners.length; i++) {
       remainingRewards.push(remainder / winners.length);
