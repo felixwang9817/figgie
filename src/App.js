@@ -165,7 +165,8 @@ class App extends Component {
       tradeLog: [],
       observer: false,
       isGameActive: false,
-      alertMsg: "alert!!",
+      alertMsg: "",
+      alertVisible: true,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -230,6 +231,14 @@ class App extends Component {
     socket.on("gameStateUpdate", state => {
       this.setState({ isGameActive: state });
     });
+
+    socket.on("alert", msg => {
+      this.setState({alertMsg: msg}, ()=>{
+        window.setTimeout(()=>{
+          this.setState({alertMsg:""})
+        },2000);
+      })
+    });
   }
 
   handleChange(event) {
@@ -259,7 +268,7 @@ class App extends Component {
     let alert = '';
     if (this.state.alertMsg) {
       alert = (
-        <Alert variant="warning" > {this.state.alertMsg} </Alert>
+        <Alert variant="warning"> {this.state.alertMsg} </Alert>
       );
     }
 

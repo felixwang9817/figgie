@@ -53,13 +53,14 @@ socketidToRoomNumber = {};
 usernameToRoomNumber = {};
 
 // PARSE FUNCTION
-function parseCommand(command, socketId, roomNumber) {
+function parseCommand(command, socket, roomNumber) {
+  let socketId = socket.id;
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "start") {
       // TODO: check if there are four players
       startGame(roomNumber);
     } else {
-      console.log("game is not active, so not parsing command");
+      socket.emit("alert", "Game is not active! Enter <start> to start.");
     }
     return;
   }
@@ -497,7 +498,7 @@ io.on("connection", async function(socket) {
     console.log("server has received command: " + command);
     let roomNumber = socketidToRoomNumber[socket.id];
     if (roomToState[roomNumber] === null) return;
-    parseCommand(command, socket.id, roomNumber);
+    parseCommand(command, socket, roomNumber);
   });
 
   socket.on("startGame", () => {
