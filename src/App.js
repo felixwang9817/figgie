@@ -147,7 +147,7 @@ class TradeLog extends React.Component {
 }
 
 function CheatSheet() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <Card id="CheatSheet">
