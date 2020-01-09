@@ -60,7 +60,12 @@
 }
 
 #tradeLog {
-  margin-bottom: 50px;
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+#tradeLog .list-group-item {
+  background-color: transparent;
 }
 
 .FullGame {

@@ -109,9 +109,12 @@ class TradeLog extends React.Component {
     return (
       <div id="tradeLog">
         <h2>Trade Log</h2>
-        {Object.values(tradeLog).map(trade => (
-          <p>{trade}</p>
-        ))}
+
+        <ListGroup variant="flush">
+          {Object.values(tradeLog).map(trade => (
+            <ListGroup.Item>{trade}</ListGroup.Item>
+          ))}
+        </ListGroup>
       </div>
     );
   }
