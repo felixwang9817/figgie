@@ -59,7 +59,7 @@ function parseCommand(command, socketId) {
   }
 
   let tokens = command.toLowerCase().split(" ");
-  let username = socketMap[socketId];
+  let username = socketidToUsername[socketId];
 
   if (tokens.length == 1) {
     // clear command: clear or out
@@ -235,11 +235,13 @@ function deepCopy(x) {
 
 // socket.id to unique username
 let usernames = ["alice", "bob", "charlie", "zeus"];
-socketMap = {};
+socketidToUsername = {};
+// for now, every socketid joins room "default"
+socketidToRoomNumber = {};
 
 function shieldPlayerInfo(socketid) {
   let playerVisibleState = deepCopy(playerState);
-  let username = socketMap[socketid];
+  let username = socketidToUsername[socketid];
 
   // hiding other player's hands
   Object.keys(playerState).map(player => {
@@ -254,8 +256,8 @@ function shieldPlayerInfo(socketid) {
 }
 
 function updatePlayers() {
-  // for each socket in socketMap, shield appropriately and socket.emit to that socket
-  for (const socketid in socketMap) {
+  // for each socket in socketidToUsername, shield appropriately and socket.emit to that socket
+  for (const socketid in socketidToUsername) {
     io.to(socketid).emit("playerUpdate", shieldPlayerInfo(socketid));
   }
 }
@@ -266,7 +268,7 @@ function broadcastMarketUpdate() {
 
 io.on("connection", function(socket) {
   // TODO: reject connections when there are already four
-  if (Object.keys(socketMap).length == 4) {
+  if (Object.keys(socketidToUsername).length == 4) {
     socket.emit("fullRoom");
     console.log("Full room, rejecting connection from " + socket.id);
     socket.disconnect();
@@ -276,7 +278,8 @@ io.on("connection", function(socket) {
   // on connection, server assigns username to the unique socket id of the client
   console.log("a user connected");
   let username = usernames.pop();
-  socketMap[socket.id] = username;
+  socketidToUsername[socket.id] = username;
+  socketidToRoomNumber[socket.id] = "default"; // all sockets join room "default" for now
 
   // on connection, retrieve persistent state based on username or initialize new player
   playerState[username] = Object.keys(persistentPlayerState).includes(username)
@@ -290,10 +293,10 @@ io.on("connection", function(socket) {
   // on disconnection, server recycles the client username
   socket.on("disconnect", function() {
     console.log("user disconnected");
-    let username = socketMap[socket.id];
+    let username = socketidToUsername[socket.id];
     usernames.push(username);
     delete playerState[username];
-    delete socketMap[socket.id];
+    delete socketidToUsername[socket.id];
     updatePlayers();
   });
 
@@ -342,11 +345,11 @@ function updateGameState(state) {
 
 // init game stuff
 function startGame() {
-  if (Object.keys(socketMap).length !== 4 || isGameActive) {
+  if (Object.keys(socketidToUsername).length !== 4 || isGameActive) {
     return;
   }
 
-  console.log("game starting..." + JSON.stringify(socketMap));
+  console.log("game starting..." + JSON.stringify(socketidToUsername));
 
   let common = randomSuit();
   let goal = otherColor(common);
