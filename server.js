@@ -33,7 +33,6 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 let server = "http://localhost:8080";
 
 
-
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let actions = ["take", "sell"];

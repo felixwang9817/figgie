@@ -16,6 +16,7 @@ import {
 import { GiSpades, GiClubs, GiDiamonds, GiHearts, GiTwoCoins } from "react-icons/gi";
 import queryString from "query-string";
 const playerColor = "yellow";
+const ip = '10.1.14.106';  // REPLACE on production!!
 
 function displaySuit(suit) {
   let icon = null;
@@ -344,7 +345,7 @@ class App extends Component {
     //   this.setState({ observer: true });
     // }
 
-    const socket = socketIOClient('localhost:8080');
+    const socket = socketIOClient(ip+':8080');
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {
