@@ -3,14 +3,12 @@ const app = express();
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
+// io.set('origins', '*:*');
 const utils = require("./utils");
 const db = require("./queries");
+const path = require('path')
 require("isomorphic-fetch");
 
-app.use(express.static(__dirname));
-http.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
-let server = "http://localhost:8080";
 
 // Postgres db endpoints
 app.get("/players", db.getPlayers);
@@ -18,6 +16,23 @@ app.get("/players/:username", db.getMoneyByUsername);
 app.post("/players/:username", db.createPlayer);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
+
+
+console.log(process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, "/build")));
+  app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  });
+} else {
+  app.use(express.static(__dirname));
+}
+
+http.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+let server = "http://localhost:8080";
+
+
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];

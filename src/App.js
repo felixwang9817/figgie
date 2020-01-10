@@ -344,7 +344,7 @@ class App extends Component {
     //   this.setState({ observer: true });
     // }
 
-    const socket = socketIOClient();
+    const socket = socketIOClient('localhost:8080');
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {
