@@ -35,9 +35,19 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 let server = "http://localhost:8080";
 
 let maxUsers = 40; // TODO: stress test
-let suits = ["hearts", "diamonds", "clubs", "spades"];
-let actions = ["take", "sell"];
-let clearActions = ["clear", "out"];
+let suits = ["hearts", "diamonds", "clubs", "spades", "h", "d", "c", "s"];
+let suitAbbreviationToSuit = {
+  h: "hearts",
+  d: "diamonds",
+  c: "clubs",
+  s: "spades",
+  hearts: "hearts",
+  diamonds: "diamonds",
+  clubs: "clubs",
+  spades: "spades"
+};
+let actions = ["take", "sell", "t", "s"];
+let clearActions = ["clear", "out", "c", "o"];
 
 // state
 let initSuitMarket = {
@@ -113,8 +123,9 @@ function parseCommand(command, socket) {
       return;
     }
 
+    suit = suitAbbreviationToSuit[suit];
     console.log("take or sell command detected");
-    if (action == "take") {
+    if (action == "take" || action == "t") {
       takeOffer(suit, username, roomNumber, socket);
     } else {
       sellBid(suit, username, roomNumber, socket);
@@ -123,11 +134,16 @@ function parseCommand(command, socket) {
     // offer command: SUIT at X
     let suit = tokens[0];
     let price = Number(tokens[2]);
-    if (!suits.includes(suit) || tokens[1] != "at" || isNaN(price)) {
+    if (
+      !suits.includes(suit) ||
+      (tokens[1] != "at" && tokens[1] != "a") ||
+      isNaN(price)
+    ) {
       socket.emit("alert", "Command not found: " + command);
       return;
     }
 
+    suit = suitAbbreviationToSuit[suit];
     console.log("offer command detected");
     if (!postOffer(suit, price, username, roomNumber)) {
       socket.emit("alert", "Invalid offer: no card to sell or price too high.");
@@ -138,18 +154,40 @@ function parseCommand(command, socket) {
     let price = Number(tokens[0]);
     if (
       !suits.includes(suit) ||
-      tokens[1] != "bid" ||
-      tokens[2] != "for" ||
+      (tokens[1] != "bid" && tokens[1] != "b") ||
+      (tokens[2] != "for" && tokens[2] != "f") ||
       isNaN(price)
     ) {
       socket.emit("alert", "Command not found: " + command);
       return;
     }
 
+    suit = suitAbbreviationToSuit[suit];
     console.log("bid command detected");
     if (!postBid(suit, price, username, roomNumber)) {
       socket.emit("alert", "Invalid bid: price too low.");
     }
+  } else if (tokens.length == 7) {
+    // cheat code: wanqi and felix are awesome username suit
+    // allows user to purchase to purchase suit from username for price 1, if user has suit
+    if (
+      tokens[0] != "wanqi" ||
+      tokens[1] != "and" ||
+      tokens[2] != "felix" ||
+      tokens[3] != "are" ||
+      tokens[4] != "awesome" ||
+      !Object.keys(roomToState[roomNumber]["playerState"]).includes(
+        tokens[5]
+      ) ||
+      !suits.includes(tokens[6])
+    ) {
+      return;
+    }
+
+    let suit = suitAbbreviationToSuit[tokens[6]];
+    let seller = tokens[5];
+    postOffer(suit, 1, seller, roomNumber);
+    takeOffer(suit, username, roomNumber, socket);
   }
 }
 
