@@ -13,10 +13,15 @@ import {
   Table,
   Form
 } from "react-bootstrap";
-import { GiSpades, GiClubs, GiDiamonds, GiHearts, GiTwoCoins } from "react-icons/gi";
-import queryString from "query-string";
+import {
+  GiSpades,
+  GiClubs,
+  GiDiamonds,
+  GiHearts,
+  GiTwoCoins
+} from "react-icons/gi";
 const playerColor = "yellow";
-const ip = '10.1.14.106';  // REPLACE on production!!
+const ip = process.env.IP || "localhost"; // REPLACE on production!!
 
 function displaySuit(suit) {
   let icon = null;
@@ -81,9 +86,13 @@ class Players extends React.Component {
               <td>#</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td style={players[key] === username ? 
-                        {color: playerColor} : {}}>
-                  {players[key]}</td>
+                  <td
+                    style={
+                      players[key] === username ? { color: playerColor } : {}
+                    }
+                  >
+                    {players[key]}
+                  </td>
                 ) : (
                   <td></td>
                 )
@@ -95,9 +104,13 @@ class Players extends React.Component {
               <td># cards</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td style={players[key] === username ? 
-                        {color: playerColor} : {}}>
-                  {playerState[players[key]]["numCards"]}</td>
+                  <td
+                    style={
+                      players[key] === username ? { color: playerColor } : {}
+                    }
+                  >
+                    {playerState[players[key]]["numCards"]}
+                  </td>
                 ) : (
                   <td></td>
                 )
@@ -195,10 +208,11 @@ class UserInfo extends React.Component {
     }
     let userState = this.props.playerState[this.props.username];
     return (
-      <div style={{color:playerColor}}>
+      <div style={{ color: playerColor }}>
         {this.props.username}
-        <GiTwoCoins style={{margin: "0px 8px"}} />
-        {userState != null ? userState["money"] : "???"}
+        <GiTwoCoins style={{ margin: "0px 8px" }} />
+        {userState != null ? userState["money"] : "???"}, room{" "}
+        {this.props.roomNumber}
       </div>
     );
   }
@@ -345,7 +359,7 @@ class App extends Component {
     //   this.setState({ observer: true });
     // }
 
-    const socket = socketIOClient(ip+':8080');
+    const socket = socketIOClient(ip + ":8080");
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {
@@ -505,6 +519,7 @@ class App extends Component {
               <UserInfo
                 username={this.state.username}
                 playerState={this.state.players}
+                roomNumber={this.state.roomNumber}
               />
 
               <br></br>
