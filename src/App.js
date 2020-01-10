@@ -162,16 +162,34 @@ class Market extends React.Component {
               </td>
             ))}
           </tr>
-          <tr>
-            <td># you have</td>
-            {Object.keys(markets).map(key => (
-              <td>
-                {this.props.playerState != null
-                  ? this.props.playerState[key]
-                  : ""}
-              </td>
-            ))}
-          </tr>
+          {this.props.isGameActive ? (
+            <tr>
+              <td># you have</td>
+              {Object.keys(markets).map(key => (
+                <td>
+                  {this.props.playerState[this.props.username] != null
+                    ? this.props.playerState[this.props.username][key]
+                    : ""}
+                </td>
+              ))}
+            </tr>
+          ) : (
+            ""
+          )}
+          {!this.props.isGameActive && this.props.tradeLog.length > 0
+            ? Object.keys(this.props.playerState).map(player => (
+                <tr>
+                  <td># {player} has</td>
+                  {Object.keys(markets).map(key => (
+                    <td>
+                      {this.props.playerState[player] != null
+                        ? this.props.playerState[player][key]
+                        : ""}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            : ""}
         </tbody>
       </Table>
     );
@@ -526,8 +544,11 @@ class App extends Component {
               <br></br>
 
               <Market
+                username={this.state.username}
+                playerState={this.state.players}
                 marketState={this.state["market"]}
-                playerState={this.state.players[this.state.username]}
+                isGameActive={this.state.isGameActive}
+                tradeLog={this.state.tradeLog}
               />
 
               {alert}
