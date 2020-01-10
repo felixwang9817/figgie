@@ -15,10 +15,6 @@ app.get("/players/:username", db.getMoneyByUsername);
 app.post("/players/:username", db.createPlayer);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
-app.get("/userLoggedIn/:username", function(req, res) {
-  const username = req.params.username;
-  res.send(Object.keys(usernameToRoomNumber).includes(username));
-});
 
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {

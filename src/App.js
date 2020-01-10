@@ -264,54 +264,51 @@ function CheatSheet() {
       </Button>
       <Collapse in={open}>
         <div id="rulesCheatSheetText">
-        <Tabs defaultActiveKey="basic">
-          
-          <Tab eventKey="basic" title="Basic">
-    
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                <span>start</span> to start. Market clears after every trade.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>SUIT at X</span> to make an offer, e.g.{" "}
-                <span>spades at 10</span>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>X bid for SUIT</span> to make a bid, e.g.{" "}
-                <span>5 bid for hearts</span>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>take clubs</span> to buy clubs at current offer.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>sell diamonds</span> to sell diamonds.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>clear</span> or <span>out</span> to clear all your bids and
-                offers.
-              </ListGroup.Item>
-            </ListGroup>
-
-          </Tab>
-          <Tab eventKey="advanced" title="Advanced">
-            <ListGroup variant="flush">
-              <ListGroup.Item>
-                All trading commands can be referred by their first letter.
-                <span> c s h d</span> for the four suits.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>h a 15</span> offers hearts at 15.
-                Someone can then enter <span>t h</span> for <span>take hearts</span>.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>4 b f s</span> is <span>4 bid for spades</span>.
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <span>c</span> or <span>o</span> to clear.
-              </ListGroup.Item>
-            </ListGroup>
-          </Tab>
-        </Tabs>
+          <Tabs defaultActiveKey="basic">
+            <Tab eventKey="basic" title="Basic">
+              <ListGroup variant="flush">
+                <ListGroup.Item>
+                  <span>start</span> to start. Market clears after every trade.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>SUIT at X</span> to make an offer, e.g.{" "}
+                  <span>spades at 10</span>
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>X bid for SUIT</span> to make a bid, e.g.{" "}
+                  <span>5 bid for hearts</span>
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>take clubs</span> to buy clubs at current offer.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>sell diamonds</span> to sell diamonds.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>clear</span> or <span>out</span> to clear all your bids
+                  and offers.
+                </ListGroup.Item>
+              </ListGroup>
+            </Tab>
+            <Tab eventKey="advanced" title="Advanced">
+              <ListGroup variant="flush">
+                <ListGroup.Item>
+                  All trading commands can be referred by their first letter.
+                  <span> c s h d</span> for the four suits.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>h a 15</span> offers hearts at 15. Someone can then
+                  enter <span>t h</span> for <span>take hearts</span>.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>4 b f s</span> is <span>4 bid for spades</span>.
+                </ListGroup.Item>
+                <ListGroup.Item>
+                  <span>c</span> or <span>o</span> to clear.
+                </ListGroup.Item>
+              </ListGroup>
+            </Tab>
+          </Tabs>
         </div>
       </Collapse>
     </Card>
@@ -446,14 +443,7 @@ class App extends Component {
     );
     event.preventDefault();
 
-    // check if user is already logged in
-    let userLoggedIn = await fetch(`/userLoggedIn/${this.state.username}`);
-    userLoggedIn = await userLoggedIn.json();
-    if (!userLoggedIn) {
-      this.setState({ loggedIn: true, inRoom: true });
-    } else {
-      this.setState({ username: "", roomNumber: "" });
-    }
+    this.setState({ loggedIn: true, inRoom: true });
   }
 
   render() {
@@ -537,7 +527,11 @@ class App extends Component {
 
               {alert}
 
-              <Form inline className="justify-content-md-center" onSubmit={this.handleSubmit}>
+              <Form
+                inline
+                className="justify-content-md-center"
+                onSubmit={this.handleSubmit}
+              >
                 <Form.Group className="tradeCommandForm">
                   <Form.Control
                     type="text"
@@ -551,7 +545,6 @@ class App extends Component {
                     Submit
                   </Button>
                 </Form.Group>
-                
               </Form>
 
               <br></br>
@@ -562,8 +555,11 @@ class App extends Component {
                 isGameActive={this.state.isGameActive}
               />
 
-              <a class="App-link" href="https://www.janestreet.com/figgie/"
-                target="_blank">
+              <a
+                class="App-link"
+                href="https://www.janestreet.com/figgie/"
+                target="_blank"
+              >
                 Full Game Rules
               </a>
             </Col>
