@@ -13,7 +13,7 @@ import {
   Table,
   Form
 } from "react-bootstrap";
-import { GiSpades, GiClubs, GiDiamonds, GiHearts } from "react-icons/gi";
+import { GiSpades, GiClubs, GiDiamonds, GiHearts, GiTwoCoins } from "react-icons/gi";
 import queryString from "query-string";
 
 function displaySuit(suit) {
@@ -190,8 +190,9 @@ class UserInfo extends React.Component {
     let userState = this.props.playerState[this.props.username];
     return (
       <div>
-        {this.props.username},{" "}
-        {userState != null ? "money: " + userState["money"] : ""}
+        {this.props.username}
+        <GiTwoCoins style={{margin: "0px 8px"}} />
+        {userState != null ? userState["money"] : "???"}
       </div>
     );
   }
