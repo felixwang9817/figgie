@@ -15,7 +15,7 @@ import {
 } from "react-bootstrap";
 import { GiSpades, GiClubs, GiDiamonds, GiHearts, GiTwoCoins } from "react-icons/gi";
 import queryString from "query-string";
-const playerColor = "lightblue";
+const playerColor = "yellow";
 
 function displaySuit(suit) {
   let icon = null;
@@ -414,7 +414,7 @@ class App extends Component {
               />
 
               <a class="App-link" href="rules.html">
-                Rules
+                Full Game Rules
               </a>
             </Col>
 

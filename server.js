@@ -463,6 +463,12 @@ io.on("connection", async function(socket) {
       return;
     }
 
+    if (roomToState[roomNumber]["isGameActive"]) {
+      socket.emit("alert", "Game already active, cannot join!");
+      socket.disconnect();
+      return;
+    }
+
     socketidToUsername[socket.id] = username;
     usernameToRoomNumber[username] = roomNumber;
 
@@ -501,11 +507,11 @@ io.on("connection", async function(socket) {
     delete usernameToRoomNumber[username];
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
-      await fetch(
-        `${server}/players/${username}/${playerState[username]["money"]}`,
-        { method: "PUT" }
-      );
       if (playerState[username] != null) {
+        await fetch(
+          `${server}/players/${username}/${playerState[username]["money"]}`,
+          { method: "PUT" }
+        );
         delete playerState[username];
       }
       if (Object.keys(playerState).length == 0) {
