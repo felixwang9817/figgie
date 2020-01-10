@@ -21,7 +21,9 @@ import {
   GiTwoCoins
 } from "react-icons/gi";
 const playerColor = "yellow";
+const goalColor = "green";
 const ip = process.env.IP || "localhost"; // REPLACE on production!!
+
 
 function displaySuit(suit) {
   let icon = null;
@@ -127,6 +129,7 @@ class Players extends React.Component {
 class Market extends React.Component {
   render() {
     let markets = this.props.marketState;
+    let username = this.props.username;
     if (!markets) {
       return "";
     }
@@ -162,13 +165,14 @@ class Market extends React.Component {
               </td>
             ))}
           </tr>
+
           {this.props.isGameActive ? (
             <tr>
               <td># you have</td>
               {Object.keys(markets).map(key => (
                 <td>
-                  {this.props.playerState[this.props.username] != null
-                    ? this.props.playerState[this.props.username][key]
+                  {this.props.playerState[username] != null
+                    ? this.props.playerState[username][key]
                     : ""}
                 </td>
               ))}
@@ -176,12 +180,19 @@ class Market extends React.Component {
           ) : (
             ""
           )}
+
+          {/* Displaying everyone's cards at end of the game */}
           {!this.props.isGameActive && this.props.tradeLog.length > 0
             ? Object.keys(this.props.playerState).map(player => (
-                <tr>
-                  <td># {player} has</td>
+                <tr style={
+                      player === username ? { color: playerColor } : {}
+                    }>
+                  <td>{player === username ? "you" : "player " + player}</td>
                   {Object.keys(markets).map(key => (
-                    <td>
+                    <td style={
+                      key === this.props.goalSuit ? { color: goalColor,
+                      'font-weight': "bold" } : {}
+                    }>
                       {this.props.playerState[player] != null
                         ? this.props.playerState[player][key]
                         : ""}
@@ -210,6 +221,7 @@ class TradeLog extends React.Component {
 
         <ListGroup variant="flush">
           {Object.values(tradeLog).map(trade => {
+            // hack for showing end-game msgs in a different color
             let variant = trade.substring(0, 4) === "goal" ? "primary" : "";
             return <ListGroup.Item variant={variant}>{trade}</ListGroup.Item>;
           })}
@@ -347,7 +359,8 @@ class App extends Component {
       alertVisible: true,
       loggedIn: false,
       inRoom: false,
-      initialized: false
+      initialized: false,
+      goalSuit: null,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -365,17 +378,6 @@ class App extends Component {
   async componentDidMount() {
     // TODO: make sure can't take a username that's already taken
     // retrieve username from querystring
-
-    // TODO: CHANGE THIS
-    // const values = queryString.parse(this.props.location.search);
-    // let username = values.username;
-    // let roomNumber = values.roomNumber;
-    // console.log("username from query string: " + username);
-    // console.log("room number from query string: " + roomNumber);
-    // if (username == null || roomNumber == null) {
-    //   // for now, if no username or no room number, set to observer
-    //   this.setState({ observer: true });
-    // }
 
     const socket = socketIOClient(ip + ":8080");
     this.state.socket = socket;
@@ -409,6 +411,11 @@ class App extends Component {
       console.log("username");
       console.log(state);
       this.setState({ username: state });
+    });
+
+    socket.on("goalSuit", goalSuit => {
+      console.log("goalSuit is:", goalSuit);
+      this.setState({ goalSuit: goalSuit });
     });
 
     socket.on("maxCapacity", () => {
@@ -549,6 +556,7 @@ class App extends Component {
                 marketState={this.state["market"]}
                 isGameActive={this.state.isGameActive}
                 tradeLog={this.state.tradeLog}
+                goalSuit={this.state.goalSuit}
               />
 
               {alert}

@@ -167,7 +167,7 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(trade);
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
-  io.to(roomNumber).emit("alert", "Trade!");
+  io.to(roomNumber).emit("alert", "Trade! Market cleared.");
 
   clearMarket(roomNumber);
   updatePlayers(roomNumber);
@@ -304,8 +304,6 @@ function updatePlayers(roomNumber, shield = true) {
 
   // for each socket in socketidToUsername, shield appropriately and socket.emit to that socket
   for (const socketid in socketids) {
-    console.log("socketid: " + socketid);
-    console.log("shielded info: " + shieldPlayerInfo(socketid, roomNumber));
     if (shield) {
       io.to(socketid).emit(
         "playerUpdate",
@@ -440,6 +438,7 @@ function endGame(roomNumber, socket) {
     });
   });
   updatePlayers(roomNumber, (shield = false));
+  io.to(roomNumber).emit("goalSuit", goalSuit);
 }
 
 io.on("connection", async function(socket) {
