@@ -24,13 +24,13 @@
 }
 
 
-.commandForm {
+.tradeCommandForm {
   font-size: 18px;
+  width: 60%;
 }
 
-.commandForm label input {
-  margin-right: 5px;
-  margin-left: 3px;
+.tradeCommandForm input {
+  flex: auto;
 }
 
 
@@ -52,6 +52,10 @@
 
 #rulesCheatSheetText span {
   color: red;
+}
+
+#rulesCheatSheetText .nav {
+  margin: 5px;
 }
 
 #rulesCheatSheetText .card-header, #rulesCheatSheetText .list-group-item {
