@@ -248,57 +248,6 @@ class UserInfo extends React.Component {
   }
 }
 
-// class LoginPage extends React.Component {
-//   // TODO: it will have a form, with event handlers passed through props
-//   // because the handlers need to update the state of App
-//   render() {
-//     return (
-//       // <form onSubmit={this.handleSubmit}>
-//       //   <Form inline className="justify-content-md-center">
-//       //     <Form.Group controlId="formBasicPassword">
-//       //       <Form.Control
-//       //         type="text"
-//       //         name="trade"
-//       //         value={this.state.trade_command}
-//       //         placeholder="Enter trades here!"
-//       //         onChange={this.handleChange}
-//       //       />
-//       //     </Form.Group>
-//       //     <Button variant="primary" type="submit">
-//       //       Submit
-//       //     </Button>
-//       //   </Form>
-//       // </form>
-//       <form onSubmit={this.props.handleSubmitLogin}>
-//         <Form>
-//           <Form.Group controlId="formBasicEmail">
-//             <Form.Label>Username</Form.Label>
-//             <Form.Control
-//               type="text"
-//               placeholder="Enter username"
-//               // value={this.props.username}
-//               onChange={this.props.handleChangeUsername}
-//             />
-//           </Form.Group>
-
-//           <Form.Group controlId="formBasicPassword">
-//             <Form.Label>Room Number</Form.Label>
-//             <Form.Control
-//               type="text"
-//               placeholder="Enter room number"
-//               // value={this.props.roomNumber}
-//               onChange={this.props.handleChangeRoomNumber}
-//             />
-//           </Form.Group>
-//           <Button variant="primary" type="submit">
-//             Submit
-//           </Button>
-//         </Form>
-//       </form>
-//     );
-//   }
-// }
-
 function CheatSheet() {
   const [open, setOpen] = useState(false);
 
@@ -349,7 +298,7 @@ class App extends Component {
     this.state = {
       trade_command: "",
       username: "",
-      roomNumber: "",
+      roomNumber: "1",
       market: {},
       players: {},
       tradeLog: [],
@@ -486,6 +435,7 @@ class App extends Component {
                 value={this.state.username}
                 placeholder="Enter username"
                 onChange={this.handleChangeUsername}
+                autoFocus={true}
               />
             </Form.Group>
             <Form.Group controlId="formBasicPassword">
@@ -503,14 +453,6 @@ class App extends Component {
             </Button>
           </Form>
         </Card>
-
-        // <LoginPage
-        //   username={this.state.username}
-        //   roomNumber={this.state.roomNumber}
-        //   onChangeUsername={this.handleChangeUsername}
-        //   onChangeRoomNumber={this.handleChangeRoomNumber}
-        //   onSubmitLogin={this.handleSubmitLogin}
-        // />
       );
     }
 
@@ -561,22 +503,21 @@ class App extends Component {
 
               {alert}
 
-              <form onSubmit={this.handleSubmit}>
-                <Form inline className="justify-content-md-center">
-                  <Form.Group controlId="formBasicPassword">
-                    <Form.Control
-                      type="text"
-                      name="trade"
-                      value={this.state.trade_command}
-                      placeholder="Enter trades here!"
-                      onChange={this.handleChange}
-                    />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    Submit
-                  </Button>
-                </Form>
-              </form>
+              <Form inline className="justify-content-md-center" onSubmit={this.handleSubmit}>
+                <Form.Group controlId="formBasicPassword">
+                  <Form.Control
+                    type="text"
+                    name="trade"
+                    value={this.state.trade_command}
+                    placeholder="Enter trades here!"
+                    onChange={this.handleChange}
+                    autoFocus={true}
+                  />
+                </Form.Group>
+                <Button variant="primary" type="submit">
+                  Submit
+                </Button>
+              </Form>
 
               <br></br>
 
@@ -586,7 +527,8 @@ class App extends Component {
                 isGameActive={this.state.isGameActive}
               />
 
-              <a class="App-link" href="rules.html">
+              <a class="App-link" href="https://www.janestreet.com/figgie/"
+                target="_blank">
                 Full Game Rules
               </a>
             </Col>

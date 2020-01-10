@@ -385,6 +385,7 @@ function startGame(roomNumber, socket) {
   clearMarket(roomNumber);
   updatePlayers(roomNumber);
   updateGameState(true, roomNumber);
+  io.to(roomNumber).emit("goalSuit", "");
   io.to(roomNumber).emit("alert", "Game on!"); // tell all players
 }
 
