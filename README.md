@@ -14,10 +14,10 @@ Multiplayer Figgie built using React, express, and socket.io
 
 - start/end only when all 4 players confirm
 
-- rooms
+- alert on login fail
 
+- rooms
   - waiting room that auto-joins if players leave
-  - **allow multiple games to play at once**
 
 - persistent user
 
@@ -25,8 +25,6 @@ Multiplayer Figgie built using React, express, and socket.io
   - then, make accounts and pw
   - finally, move to actual DB (Postgres, Firebase, etc.)
 
-- hotkeys
 
 - observer
 
-- deploy through AWS or Heroku

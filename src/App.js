@@ -516,7 +516,7 @@ class App extends Component {
       // TODO: ensure that username is capped at 30 characters or overflow is disabled
       <div className="App">
         <header className="App-header">
-          <Row className="">
+          <Row className="gameRow">
             <Col xs={7}>
               <UserInfo
                 username={this.state.username}

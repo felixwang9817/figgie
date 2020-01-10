@@ -23,6 +23,10 @@
   margin-bottom: 30px;
 }
 
+.gameRow {
+  padding: 30px;
+}
+
 
 .tradeCommandForm {
   font-size: 18px;
