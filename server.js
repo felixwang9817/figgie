@@ -478,13 +478,13 @@ io.on("connection", async function(socket) {
     delete usernameToRoomNumber[username];
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
-      if (playerState[username] != null) {
-        delete playerState[username];
-      }
       await fetch(
         `${server}/players/${username}/${playerState[username]["money"]}`,
         { method: "PUT" }
       );
+      if (playerState[username] != null) {
+        delete playerState[username];
+      }
       if (Object.keys(playerState).length == 0) {
         delete roomToState[roomNumber];
       } else {

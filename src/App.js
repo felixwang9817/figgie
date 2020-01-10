@@ -4,7 +4,15 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { Collapse, Button, Card, ListGroup, Alert, Table } from "react-bootstrap";
+import {
+  Collapse,
+  Button,
+  Card,
+  ListGroup,
+  Alert,
+  Table,
+  Form
+} from "react-bootstrap";
 import queryString from "query-string";
 
 class Players extends React.Component {
@@ -136,10 +144,8 @@ class TradeLog extends React.Component {
         <ListGroup variant="flush">
           {Object.values(tradeLog).map(trade => {
             let variant = trade.substring(0, 4) == "goal" ? "primary" : "";
-            return (
-              <ListGroup.Item variant={variant}>{trade}</ListGroup.Item>
-            )}
-          )}
+            return <ListGroup.Item variant={variant}>{trade}</ListGroup.Item>;
+          })}
         </ListGroup>
       </div>
     );
@@ -161,13 +167,27 @@ function CheatSheet() {
       <Collapse in={open}>
         <div id="rulesCheatSheetText">
           <ListGroup variant="flush">
-            <ListGroup.Item><span>start</span> to start. Market clears after every trade.</ListGroup.Item>
-            <ListGroup.Item><span>SUIT at X</span> to make an offer, e.g. <span>spades at 10</span>
+            <ListGroup.Item>
+              <span>start</span> to start. Market clears after every trade.
             </ListGroup.Item>
-            <ListGroup.Item><span>X bid for SUIT</span> to make a bid, e.g. <span>5 bid for hearts</span></ListGroup.Item>
-            <ListGroup.Item><span>take clubs</span> to buy clubs at current offer.</ListGroup.Item>
-            <ListGroup.Item><span>sell diamonds</span> to sell diamonds.</ListGroup.Item>
-            <ListGroup.Item><span>clear</span> or <span>out</span> to clear all your bids and offers.</ListGroup.Item>
+            <ListGroup.Item>
+              <span>SUIT at X</span> to make an offer, e.g.{" "}
+              <span>spades at 10</span>
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <span>X bid for SUIT</span> to make a bid, e.g.{" "}
+              <span>5 bid for hearts</span>
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <span>take clubs</span> to buy clubs at current offer.
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <span>sell diamonds</span> to sell diamonds.
+            </ListGroup.Item>
+            <ListGroup.Item>
+              <span>clear</span> or <span>out</span> to clear all your bids and
+              offers.
+            </ListGroup.Item>
           </ListGroup>
         </div>
       </Collapse>
@@ -189,7 +209,7 @@ class App extends Component {
       observer: false,
       isGameActive: false,
       alertMsg: "",
-      alertVisible: true,
+      alertVisible: true
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -256,11 +276,11 @@ class App extends Component {
     });
 
     socket.on("alert", msg => {
-      this.setState({alertMsg: msg}, ()=>{
-        window.setTimeout(()=>{
-          this.setState({alertMsg:""})
-        },2000);
-      })
+      this.setState({ alertMsg: msg }, () => {
+        window.setTimeout(() => {
+          this.setState({ alertMsg: "" });
+        }, 5000);
+      });
     });
   }
 
@@ -269,8 +289,11 @@ class App extends Component {
   }
 
   handleSubmit(event) {
+    // console.log("submitted: " + event.target.trade.value);
+
     console.log("Sending command to server: " + this.state.trade_command);
     event.preventDefault();
+    window.setTimeout(10000);
 
     this.state.socket.emit("clientCommand", this.state.trade_command);
     this.setState({ trade_command: "" }); // clear form
@@ -288,11 +311,9 @@ class App extends Component {
       );
     }
 
-    let alert = '';
+    let alert = "";
     if (this.state.alertMsg) {
-      alert = (
-        <Alert variant="warning"> {this.state.alertMsg} </Alert>
-      );
+      alert = <Alert variant="warning"> {this.state.alertMsg} </Alert>;
     }
 
     return (
@@ -308,17 +329,24 @@ class App extends Component {
 
               {alert}
 
-              <form class="commandForm" onSubmit={this.handleSubmit}>
-                <label>
-                  Trade:
-                  <input
-                    type="text"
-                    value={this.state.trade_command}
-                    onChange={this.handleChange}
-                  />
-                </label>
-                <input type="submit" value="Submit" />
+              <form onSubmit={this.handleSubmit}>
+                <Form inline className="justify-content-md-center">
+                  <Form.Group controlId="formBasicPassword">
+                    <Form.Control
+                      type="text"
+                      name="trade"
+                      value={this.state.trade_command}
+                      placeholder="Enter trades here!"
+                      onChange={this.handleChange}
+                    />
+                  </Form.Group>
+                  <Button variant="primary" type="submit">
+                    Submit
+                  </Button>
+                </Form>
               </form>
+
+              <br></br>
 
               <Players
                 username={this.state.username}
