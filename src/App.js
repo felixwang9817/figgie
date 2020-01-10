@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import { GiSpades, GiClubs, GiDiamonds, GiHearts, GiTwoCoins } from "react-icons/gi";
 import queryString from "query-string";
+const playerColor = "lightblue";
 
 function displaySuit(suit) {
   let icon = null;
@@ -79,7 +80,9 @@ class Players extends React.Component {
               <td>#</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td>{players[key]}</td>
+                  <td style={players[key] === username ? 
+                        {color: playerColor} : {}}>
+                  {players[key]}</td>
                 ) : (
                   <td></td>
                 )
@@ -91,7 +94,9 @@ class Players extends React.Component {
               <td># cards</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td>{playerState[players[key]]["numCards"]}</td>
+                  <td style={players[key] === username ? 
+                        {color: playerColor} : {}}>
+                  {playerState[players[key]]["numCards"]}</td>
                 ) : (
                   <td></td>
                 )
@@ -189,7 +194,7 @@ class UserInfo extends React.Component {
     }
     let userState = this.props.playerState[this.props.username];
     return (
-      <div>
+      <div style={{color:playerColor}}>
         {this.props.username}
         <GiTwoCoins style={{margin: "0px 8px"}} />
         {userState != null ? userState["money"] : "???"}
