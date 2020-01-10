@@ -5,7 +5,34 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { Collapse, Button, Card, ListGroup, Alert, Table } from "react-bootstrap";
+import { GiSpades, GiClubs, GiDiamonds, GiHearts } from 'react-icons/gi';
 import queryString from "query-string";
+
+
+function displaySuit(suit) {
+  let icon = null;
+  let color = null;
+  switch(suit) {
+    case "clubs":
+      color = "lightgray";
+      icon = (<GiClubs />);
+      break;
+    case "spades":
+      color = "lightgray";
+      icon = (<GiSpades />);
+      break;
+    case "diamonds":
+      color = "red";
+      icon = (<GiDiamonds />);
+      break;
+    case "hearts":
+      color = "red";
+      icon = (<GiHearts />);
+      break;
+  }
+  return (<span style={{color:color}}>{suit} {icon}</span>);
+}
+
 
 class Players extends React.Component {
   render() {
@@ -80,7 +107,7 @@ class Market extends React.Component {
           <tr>
             <th>MARKET</th>
             {Object.keys(markets).map(key => (
-              <td>{key}</td>
+              <td>{displaySuit(key)}</td>
             ))}
           </tr>
         </thead>
@@ -299,7 +326,7 @@ class App extends Component {
       // TODO: ensure that username is capped at 30 characters or overflow is disabled
       <div className="App">
         <header className="App-header">
-          <Row>
+          <Row className="">
             <Col xs={7}>
               <Market
                 marketState={this.state["market"]}
