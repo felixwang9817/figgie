@@ -24,7 +24,6 @@ const playerColor = "yellow";
 const goalColor = "green";
 const ip = process.env.IP || "localhost"; // REPLACE on production!!
 
-
 function displaySuit(suit) {
   let icon = null;
   let color = null;
@@ -184,15 +183,16 @@ class Market extends React.Component {
           {/* Displaying everyone's cards at end of the game */}
           {!this.props.isGameActive && this.props.tradeLog.length > 0
             ? Object.keys(this.props.playerState).map(player => (
-                <tr style={
-                      player === username ? { color: playerColor } : {}
-                    }>
+                <tr style={player === username ? { color: playerColor } : {}}>
                   <td>{player === username ? "you" : "player " + player}</td>
                   {Object.keys(markets).map(key => (
-                    <td style={
-                      key === this.props.goalSuit ? { color: goalColor,
-                      'font-weight': "bold" } : {}
-                    }>
+                    <td
+                      style={
+                        key === this.props.goalSuit
+                          ? { color: goalColor, "font-weight": "bold" }
+                          : {}
+                      }
+                    >
                       {this.props.playerState[player] != null
                         ? this.props.playerState[player][key]
                         : ""}
@@ -360,7 +360,7 @@ class App extends Component {
       loggedIn: false,
       inRoom: false,
       initialized: false,
-      goalSuit: null,
+      goalSuit: null
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -461,7 +461,7 @@ class App extends Component {
     this.setState({ roomNumber: event.target.value });
   }
 
-  handleSubmitLogin(event) {
+  async handleSubmitLogin(event) {
     console.log(
       "Logging in with username " +
         this.state.username +
@@ -470,7 +470,14 @@ class App extends Component {
     );
     event.preventDefault();
 
-    this.setState({ loggedIn: true, inRoom: true });
+    // check if user is already logged in
+    let userLoggedIn = await fetch(`/userLoggedIn/${this.state.username}`);
+    userLoggedIn = await userLoggedIn.json();
+    if (!userLoggedIn) {
+      this.setState({ loggedIn: true, inRoom: true });
+    } else {
+      this.setState({ username: "", roomNumber: "" });
+    }
   }
 
   render() {
