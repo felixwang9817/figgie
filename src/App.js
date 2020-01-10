@@ -13,34 +13,37 @@ import {
   Table,
   Form
 } from "react-bootstrap";
-import { GiSpades, GiClubs, GiDiamonds, GiHearts } from 'react-icons/gi';
+import { GiSpades, GiClubs, GiDiamonds, GiHearts } from "react-icons/gi";
 import queryString from "query-string";
-
 
 function displaySuit(suit) {
   let icon = null;
   let color = null;
-  switch(suit) {
+  switch (suit) {
     case "clubs":
       color = "lightgray";
-      icon = (<GiClubs />);
+      icon = <GiClubs />;
       break;
     case "spades":
       color = "lightgray";
-      icon = (<GiSpades />);
+      icon = <GiSpades />;
       break;
     case "diamonds":
       color = "red";
-      icon = (<GiDiamonds />);
+      icon = <GiDiamonds />;
       break;
     case "hearts":
       color = "red";
-      icon = (<GiHearts />);
+      icon = <GiHearts />;
       break;
+    default:
   }
-  return (<span style={{color:color}}>{suit} {icon}</span>);
+  return (
+    <span style={{ color: color }}>
+      {suit} {icon}
+    </span>
+  );
 }
-
 
 class Players extends React.Component {
   render() {
@@ -170,10 +173,25 @@ class TradeLog extends React.Component {
 
         <ListGroup variant="flush">
           {Object.values(tradeLog).map(trade => {
-            let variant = trade.substring(0, 4) == "goal" ? "primary" : "";
+            let variant = trade.substring(0, 4) === "goal" ? "primary" : "";
             return <ListGroup.Item variant={variant}>{trade}</ListGroup.Item>;
           })}
         </ListGroup>
+      </div>
+    );
+  }
+}
+
+class UserInfo extends React.Component {
+  render() {
+    if (!this.props.username) {
+      return "";
+    }
+    let userState = this.props.playerState[this.props.username];
+    return (
+      <div>
+        {this.props.username},{" "}
+        {userState != null ? "money: " + userState["money"] : ""}
       </div>
     );
   }
@@ -349,6 +367,13 @@ class App extends Component {
         <header className="App-header">
           <Row className="">
             <Col xs={7}>
+              <UserInfo
+                username={this.state.username}
+                playerState={this.state.players}
+              />
+
+              <br></br>
+
               <Market
                 marketState={this.state["market"]}
                 playerState={this.state.players[this.state.username]}
