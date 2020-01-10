@@ -215,6 +215,7 @@ function postOffer(suit, price, player, roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
   let marketState = roomToState[roomNumber]["marketState"];
   let sellerState = playerState[player];
+  if (!sellerState || !marketState || !playerState) return; // check nulls
   if (sellerState[suit] < 1) return false; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
@@ -247,6 +248,7 @@ function postOffer(suit, price, player, roomNumber) {
 
 function postBid(suit, price, player, roomNumber) {
   let marketState = roomToState[roomNumber]["marketState"];
+  if (!marketState) return;
   let currentBid = marketState[suit]["bid"];
   console.log("currentBid: " + currentBid);
   console.log("price: " + price);
@@ -275,6 +277,7 @@ function postBid(suit, price, player, roomNumber) {
 
 function takeOffer(suit, username, roomNumber, socket) {
   let marketState = roomToState[roomNumber]["marketState"];
+  if (!marketState) return;
   let price = marketState[suit]["offer"];
   if (price === null) return socket.emit("alert", "No offer to take!");
   let seller = marketState[suit]["offerPlayer"];
@@ -286,6 +289,7 @@ function takeOffer(suit, username, roomNumber, socket) {
 function sellBid(suit, username, roomNumber, socket) {
   let marketState = roomToState[roomNumber]["marketState"];
   let playerState = roomToState[roomNumber]["playerState"];
+  if (!marketState || !playerState) return;
   let price = marketState[suit]["bid"];
   if (price === null) return socket.emit("alert", "No bid to sell to!");
   let buyer = marketState[suit]["bidPlayer"];
@@ -304,11 +308,11 @@ function clearMarket(roomNumber) {
 function clearPlayer(username, roomNumber) {
   suits.forEach(suit => {
     let suitMarketState = roomToState[roomNumber]["marketState"][suit];
-    if (suitMarketState["bidPlayer"] == username) {
+    if (suitMarketState && suitMarketState["bidPlayer"] == username) {
       suitMarketState["bidPlayer"] = null;
       suitMarketState["bid"] = null;
     }
-    if (suitMarketState["offerPlayer"] == username) {
+    if (suitMarketState && suitMarketState["offerPlayer"] == username) {
       suitMarketState["offerPlayer"] = null;
       suitMarketState["offer"] = null;
     }
