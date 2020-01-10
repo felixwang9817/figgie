@@ -32,15 +32,19 @@ module.exports = {
   splitWinnings: function(remainder, numWinners) {
     let remainingRewards = [];
     if (numWinners == 1 || numWinners == 2 || numWinners == 4) {
+      console.log("1 2 4");
       for (let i = 0; i < numWinners; i++) {
         remainingRewards.push(remainder / numWinners);
       }
     } else if (numWinners == 3) {
-      if (remainder % 3 !== 0) {
+      console.log("3 winners");
+      if (remainder % 3 == 0) {
         for (let i = 0; i < numWinners; i++) {
           remainingRewards.push(remainder / numWinners);
         }
       } else if (remainder % 3 == 1) {
+        console.log("remainder is 1 mod 3");
+        console.log("math.floor: " + Math.floor(remainder / 3));
         remainingRewards.push(Math.floor(remainder / 3));
         remainingRewards.push(Math.floor(remainder / 3));
         remainingRewards.push(Math.floor(remainder / 3) + 1);
