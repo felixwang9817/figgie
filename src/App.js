@@ -203,6 +203,57 @@ class UserInfo extends React.Component {
   }
 }
 
+// class LoginPage extends React.Component {
+//   // TODO: it will have a form, with event handlers passed through props
+//   // because the handlers need to update the state of App
+//   render() {
+//     return (
+//       // <form onSubmit={this.handleSubmit}>
+//       //   <Form inline className="justify-content-md-center">
+//       //     <Form.Group controlId="formBasicPassword">
+//       //       <Form.Control
+//       //         type="text"
+//       //         name="trade"
+//       //         value={this.state.trade_command}
+//       //         placeholder="Enter trades here!"
+//       //         onChange={this.handleChange}
+//       //       />
+//       //     </Form.Group>
+//       //     <Button variant="primary" type="submit">
+//       //       Submit
+//       //     </Button>
+//       //   </Form>
+//       // </form>
+//       <form onSubmit={this.props.handleSubmitLogin}>
+//         <Form>
+//           <Form.Group controlId="formBasicEmail">
+//             <Form.Label>Username</Form.Label>
+//             <Form.Control
+//               type="text"
+//               placeholder="Enter username"
+//               // value={this.props.username}
+//               onChange={this.props.handleChangeUsername}
+//             />
+//           </Form.Group>
+
+//           <Form.Group controlId="formBasicPassword">
+//             <Form.Label>Room Number</Form.Label>
+//             <Form.Control
+//               type="text"
+//               placeholder="Enter room number"
+//               // value={this.props.roomNumber}
+//               onChange={this.props.handleChangeRoomNumber}
+//             />
+//           </Form.Group>
+//           <Button variant="primary" type="submit">
+//             Submit
+//           </Button>
+//         </Form>
+//       </form>
+//     );
+//   }
+// }
+
 function CheatSheet() {
   const [open, setOpen] = useState(false);
 
@@ -260,34 +311,46 @@ class App extends Component {
       observer: false,
       isGameActive: false,
       alertMsg: "",
-      alertVisible: true
+      alertVisible: true,
+      loggedIn: false,
+      inRoom: false,
+      initialized: false
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleChangeUsername = this.handleChangeUsername.bind(this);
+    this.handleChangeRoomNumber = this.handleChangeRoomNumber.bind(this);
+    this.handleSubmitLogin = this.handleSubmitLogin.bind(this);
+  }
+
+  init(userName, roomNumber) {
+    // TODO: do something with username
+    this.state.socket.emit("enterRoom", roomNumber);
   }
 
   async componentDidMount() {
     // TODO: make sure can't take a username that's already taken
     // retrieve username from querystring
-    const values = queryString.parse(this.props.location.search);
-    let username = values.username;
-    let roomNumber = values.roomNumber;
-    console.log("username from query string: " + username);
-    console.log("room number from query string: " + roomNumber);
-    if (username == null || roomNumber == null) {
-      // for now, if no username or no room number, set to observer
-      this.setState({ observer: true });
-    }
+
+    // TODO: CHANGE THIS
+    // const values = queryString.parse(this.props.location.search);
+    // let username = values.username;
+    // let roomNumber = values.roomNumber;
+    // console.log("username from query string: " + username);
+    // console.log("room number from query string: " + roomNumber);
+    // if (username == null || roomNumber == null) {
+    //   // for now, if no username or no room number, set to observer
+    //   this.setState({ observer: true });
+    // }
 
     const socket = socketIOClient();
-    socket.emit("enterRoom", roomNumber);
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {
       console.log("entered room number: " + state);
       // to ensure that no async problems occur with username being set up after the room
-      socket.emit("provideUsername", username);
+      socket.emit("provideUsername", this.state.username);
       this.setState({ roomNumber: state });
     });
 
@@ -341,19 +404,83 @@ class App extends Component {
   }
 
   handleSubmit(event) {
-    // console.log("submitted: " + event.target.trade.value);
-
     console.log("Sending command to server: " + this.state.trade_command);
     event.preventDefault();
-    window.setTimeout(10000);
 
     this.state.socket.emit("clientCommand", this.state.trade_command);
     this.setState({ trade_command: "" }); // clear form
   }
 
+  handleChangeUsername(event) {
+    console.log("changing username");
+    this.setState({ username: event.target.value });
+  }
+
+  handleChangeRoomNumber(event) {
+    console.log("changing room number");
+    this.setState({ roomNumber: event.target.value });
+  }
+
+  handleSubmitLogin(event) {
+    console.log(
+      "Logging in with username " +
+        this.state.username +
+        " and room number " +
+        this.state.roomNumber
+    );
+    event.preventDefault();
+
+    this.setState({ loggedIn: true, inRoom: true });
+  }
+
   render() {
-    console.log("state", this.state);
-    console.log("app is rendering itself");
+    if (!this.state.loggedIn || !this.state.inRoom) {
+      return (
+        <form onSubmit={this.handleSubmitLogin}>
+          <Form>
+            <Form.Group controlId="formBasicPassword">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                name="trade"
+                value={this.state.username}
+                placeholder="Enter username"
+                onChange={this.handleChangeUsername}
+              />
+            </Form.Group>
+            <Form.Group controlId="formBasicPassword">
+              <Form.Label>Room Number</Form.Label>
+              <Form.Control
+                type="text"
+                name="trade"
+                value={this.state.roomNumber}
+                placeholder="Enter room number"
+                onChange={this.handleChangeRoomNumber}
+              />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              Submit
+            </Button>
+          </Form>
+        </form>
+        // <LoginPage
+        //   username={this.state.username}
+        //   roomNumber={this.state.roomNumber}
+        //   onChangeUsername={this.handleChangeUsername}
+        //   onChangeRoomNumber={this.handleChangeRoomNumber}
+        //   onSubmitLogin={this.handleSubmitLogin}
+        // />
+      );
+    }
+
+    console.log("username", this.state.username);
+    console.log("room number", this.state.roomNumber);
+
+    // check that it has not been initialized yet
+    if (!this.state.initialized) {
+      this.init(this.state.username, this.state.roomNumber);
+      this.setState({ initialized: true });
+    }
 
     if (this.state.observer) {
       return (
