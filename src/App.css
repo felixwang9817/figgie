@@ -25,7 +25,7 @@
 
 
 .commandForm {
-  font-size: 12px;
+  font-size: 18px;
 }
 
 .commandForm label input {
@@ -74,4 +74,10 @@
 .FullGame {
   margin: 200px;
   text-align: center;
+}
+
+#loginFormCard {
+  align-items: center;
+  margin: 20%;
+  padding: 10% 0;
 }

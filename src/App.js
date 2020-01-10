@@ -451,8 +451,8 @@ class App extends Component {
   render() {
     if (!this.state.loggedIn || !this.state.inRoom) {
       return (
-        <form onSubmit={this.handleSubmitLogin}>
-          <Form>
+        <Card id="loginFormCard">
+          <Form id="loginForm" onSubmit={this.handleSubmitLogin}>
             <Form.Group controlId="formBasicPassword">
               <Form.Label>Username</Form.Label>
               <Form.Control
@@ -477,7 +477,8 @@ class App extends Component {
               Submit
             </Button>
           </Form>
-        </form>
+        </Card>
+
         // <LoginPage
         //   username={this.state.username}
         //   roomNumber={this.state.roomNumber}
