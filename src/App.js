@@ -303,6 +303,7 @@ class App extends Component {
     });
 
     socket.on("alert", msg => {
+      if (!msg) return;
       this.setState({ alertMsg: msg }, () => {
         window.setTimeout(() => {
           this.setState({ alertMsg: "" });

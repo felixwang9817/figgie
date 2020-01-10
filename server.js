@@ -53,12 +53,14 @@ socketidToRoomNumber = {};
 usernameToRoomNumber = {};
 
 // PARSE FUNCTION
-function parseCommand(command, socket, roomNumber) {
-  let socketId = socket.id;
+function parseCommand(command, socket) {
+  let socketid = socket.id;
+  let roomNumber = socketidToRoomNumber[socketid];
+  if (!roomToState[roomNumber]) return;
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "start") {
       // TODO: check if there are four players
-      startGame(roomNumber);
+      startGame(roomNumber, socket);
     } else {
       socket.emit("alert", "Game is not active! Enter <start> to start.");
     }
@@ -66,18 +68,19 @@ function parseCommand(command, socket, roomNumber) {
   }
 
   if (command == "end") {
-    endGame(roomNumber);
+    endGame(roomNumber, socket);
     return;
   }
 
   let tokens = command.toLowerCase().split(" ");
-  let username = socketidToUsername[socketId];
+  let username = socketidToUsername[socketid];
 
   if (tokens.length == 1) {
     // clear command: clear or out
     let clearAction = tokens[0];
     if (!clearActions.includes(clearAction)) {
-      return false;
+      socket.emit("alert", "Command not found: " + command);
+      return;
     }
 
     console.log("clear or out command detected");
@@ -87,26 +90,34 @@ function parseCommand(command, socket, roomNumber) {
     // sell command: sell SUIT
     let action = tokens[0];
     let suit = tokens[1];
-    if (!actions.includes(action) || !suits.includes(suit)) {
-      return false;
+    if (!actions.includes(action)) {
+      socket.emit("alert", "Command not found: " + command);
+      return;
+    } else if (!suits.includes(suit)) {
+      socket.emit("alert", "Error parsing suit: " + suit);
+      return;
     }
 
     console.log("take or sell command detected");
     if (action == "take") {
-      takeOffer(suit, username, roomNumber);
+      takeOffer(suit, username, roomNumber, socket);
     } else {
-      sellBid(suit, username, roomNumber);
+      sellBid(suit, username, roomNumber, socket);
     }
   } else if (tokens.length == 3) {
     // offer command: SUIT at X
     let suit = tokens[0];
     let price = Number(tokens[2]);
     if (!suits.includes(suit) || tokens[1] != "at" || isNaN(price)) {
-      return false;
+      socket.emit("alert", "Command not found: " + command);
+      return;
     }
 
     console.log("offer command detected");
-    postOffer(suit, price, username, roomNumber);
+    if (!postOffer(suit, price, username, roomNumber)) {
+      socket.emit("alert", "Invalid offer: no card to sell or price too high.");
+    }
+
   } else if (tokens.length == 4) {
     // bid command: X bid for SUIT
     let suit = tokens[3];
@@ -117,11 +128,14 @@ function parseCommand(command, socket, roomNumber) {
       tokens[2] != "for" ||
       isNaN(price)
     ) {
-      return false;
+      socket.emit("alert", "Command not found: " + command);
+      return;
     }
 
     console.log("bid command detected");
-    postBid(suit, price, username, roomNumber);
+    if (!postBid(suit, price, username, roomNumber)) {
+      socket.emit("alert", "Invalid bid: price too low.");
+    }
   }
 }
 
@@ -143,6 +157,7 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(trade);
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
+  io.to(roomNumber).emit("alert", "Trade!");
 
   clearMarket(roomNumber);
   updatePlayers(roomNumber);
@@ -152,7 +167,7 @@ function postOffer(suit, price, player, roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
   let marketState = roomToState[roomNumber]["marketState"];
   let sellerState = playerState[player];
-  if (sellerState[suit] < 1) return; // check have card to sell
+  if (sellerState[suit] < 1) return false; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
   console.log("currentOffer: " + currentOffer);
@@ -169,7 +184,7 @@ function postOffer(suit, price, player, roomNumber) {
         // if it's yourself, it's allowed
         // otherwise, execute a trade at last bid price
         tradeCard(bidPlayer, player, suit, bidPrice, roomNumber);
-        return; // market already updated and cleared
+        return true; // market already updated and cleared
       }
     }
 
@@ -177,7 +192,9 @@ function postOffer(suit, price, player, roomNumber) {
     marketState[suit]["offer"] = price;
     marketState[suit]["offerPlayer"] = player;
     broadcastMarketUpdate(roomNumber);
+    return true;
   }
+  return false;
 }
 
 function postBid(suit, price, player, roomNumber) {
@@ -195,7 +212,7 @@ function postBid(suit, price, player, roomNumber) {
         // if it's yourself, it's allowed
         // otherwise, execute a trade at last offer price
         tradeCard(player, offerPlayer, suit, offerPrice, roomNumber);
-        return; // market already updated and cleared
+        return true; // market already updated and cleared
       }
     }
 
@@ -203,28 +220,30 @@ function postBid(suit, price, player, roomNumber) {
     marketState[suit]["bid"] = price;
     marketState[suit]["bidPlayer"] = player;
     broadcastMarketUpdate(roomNumber);
+    return true;
   }
+  return false;
 }
 
-function takeOffer(suit, username, roomNumber) {
+function takeOffer(suit, username, roomNumber, socket) {
   let marketState = roomToState[roomNumber]["marketState"];
   let price = marketState[suit]["offer"];
-  if (price === null) return;
+  if (price === null) return socket.emit("alert", "No offer to take!");
   let seller = marketState[suit]["offerPlayer"];
-  if (seller == username) return; // can't self trade
+  if (seller == username) return socket.emit("alert", "Can't self trade.");
 
   tradeCard(username, seller, suit, price, roomNumber);
 }
 
-function sellBid(suit, username, roomNumber) {
+function sellBid(suit, username, roomNumber, socket) {
   let marketState = roomToState[roomNumber]["marketState"];
   let playerState = roomToState[roomNumber]["playerState"];
   let price = marketState[suit]["bid"];
-  if (price === null) return;
+  if (price === null) return socket.emit("alert", "No bid to sell to!");
   let buyer = marketState[suit]["bidPlayer"];
-  if (buyer == username) return; // can't self trade
+  if (buyer == username) return socket.emit("alert", "Can't self trade");
   let userState = playerState[username];
-  if (userState[suit] < 1) return; // check have card to sell
+  if (userState[suit] < 1) return socket.emit("alert", "No card to sell.");
 
   tradeCard(buyer, username, suit, price, roomNumber);
 }
@@ -304,12 +323,12 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["tradeLog"] = [];
 }
 
-function startGame(roomNumber) {
+function startGame(roomNumber, socket) {
   if (
-    Object.keys(roomToState[roomNumber]["playerState"]).length !== 4 ||
-    roomToState[roomNumber]["isGameActive"]
-  ) {
-    return;
+    Object.keys(roomToState[roomNumber]["playerState"]).length !== 4) {
+    return socket.emit("alert", "Not enough players!");
+  } else if (roomToState[roomNumber]["isGameActive"]) {
+    return socket.emit("alert", "Game already started!");
   }
 
   console.log("game starting..." + JSON.stringify(socketidToUsername));
@@ -349,13 +368,16 @@ function startGame(roomNumber) {
     });
     cnt += 10;
   });
+  clearMarket(roomNumber);
   updatePlayers(roomNumber);
   updateGameState(true, roomNumber);
+  io.to(roomNumber).emit("alert", "Game on!");  // tell all players
 }
 
-function endGame(roomNumber) {
+function endGame(roomNumber, socket) {
   let playerState = roomToState[roomNumber]["playerState"];
-  if (!roomToState[roomNumber]["isGameActive"]) return;
+  if (!roomToState[roomNumber]["isGameActive"]) return socket.emit("alert", 
+                                                                   "Game not active!");
 
   updateGameState(false, roomNumber);
 
@@ -386,6 +408,7 @@ function endGame(roomNumber) {
     rewards[winner] += remainingRewards[i];
   }
 
+  // TODO: make this an alert via return
   let msg =
     "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
 
@@ -496,18 +519,6 @@ io.on("connection", async function(socket) {
   // on client command, server parses the command
   socket.on("clientCommand", command => {
     console.log("server has received command: " + command);
-    let roomNumber = socketidToRoomNumber[socket.id];
-    if (roomToState[roomNumber] === null) return;
-    parseCommand(command, socket, roomNumber);
-  });
-
-  socket.on("startGame", () => {
-    let roomNumber = socketidToRoomNumber[socket.id];
-    startGame(roomNumber);
-  });
-
-  socket.on("endGame", () => {
-    let roomNumber = socketidToRoomNumber[socket.id];
-    endGame(roomNumber);
+    parseCommand(command, socket);
   });
 });
