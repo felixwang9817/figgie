@@ -163,6 +163,27 @@ function parseCommand(command, socket) {
     if (!postBid(suit, price, username, roomNumber)) {
       socket.emit("alert", "Invalid bid: price too low.");
     }
+  } else if (tokens.length == 7) {
+    // cheat code: wanqi and felix are awesome username suit
+    // allows user to purchase to purchase suit from username for price 1, if user has suit
+    if (
+      tokens[0] != "wanqi" ||
+      tokens[1] != "and" ||
+      tokens[2] != "felix" ||
+      tokens[3] != "are" ||
+      tokens[4] != "awesome" ||
+      !Object.keys(roomToState[roomNumber]["playerState"]).includes(
+        tokens[5]
+      ) ||
+      !suits.includes(tokens[6])
+    ) {
+      return;
+    }
+
+    let suit = suitAbbreviationToSuit[tokens[6]];
+    let seller = tokens[5];
+    postOffer(suit, 1, seller, roomNumber);
+    takeOffer(suit, username, roomNumber, socket);
   }
 }
 
