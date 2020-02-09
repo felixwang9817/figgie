@@ -10,6 +10,7 @@
     "express": "^4.17.1",
     "fetch": "^1.1.0",
     "isomorphic-fetch": "^2.2.1",
+    "passport": "^0.4.1",
     "pg": "^7.17.0",
     "postgres": "^1.0.1",
     "react": "^16.12.0",

@@ -387,7 +387,7 @@ function startGame(roomNumber, socket) {
     return socket.emit("alert", "Game already started!");
   }
 
-  console.log("game starting..." + JSON.stringify(socketidToUsername));
+  console.log("game started by player " + JSON.stringify(socketidToUsername));
 
   let common = utils.randomSuit();
   let goal = utils.otherColor(common);
@@ -436,6 +436,7 @@ function endGame(roomNumber, socket) {
   if (!roomToState[roomNumber]["isGameActive"])
     return socket.emit("alert", "Game not active!");
 
+  console.log("game ended by player " + JSON.stringify(socketidToUsername));
   updateGameState(false, roomNumber);
 
   // compute final rewards and emit to all clients for display
@@ -468,6 +469,7 @@ function endGame(roomNumber, socket) {
   // TODO: make this an alert via return
   let msg =
     "goal: " + goalSuit + ", rewards: " + JSON.stringify(rewards, null, 1);
+  console.log("Game results: " + msg);
 
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   tradeLog.unshift(msg);
@@ -523,6 +525,7 @@ io.on("connection", async function(socket) {
 
     if (roomToState[roomNumber]["isGameActive"]) {
       socket.emit("alert", "Game already active, cannot join!");
+      console.log("Game already active" + roomNumber + ", cannot join!")
       socket.disconnect();
       return;
     }
@@ -552,14 +555,12 @@ io.on("connection", async function(socket) {
   // on disconnection, server recycles the client username
   socket.on("disconnect", async function() {
     // TODO: be more careful about checking conditions
-    console.log("user disconnected");
     let username = socketidToUsername[socket.id];
     let roomNumber = socketidToRoomNumber[socket.id];
-    // usernames.push(username);
-    console.log("roomToState: " + JSON.stringify(roomToState));
-    console.log(
-      "socket id to room number: " + JSON.stringify(socketidToRoomNumber)
-    );
+    console.log("user disconnected");
+    
+
+    
     delete socketidToUsername[socket.id];
     delete socketidToRoomNumber[socket.id];
     delete usernameToRoomNumber[username];

@@ -2,6 +2,8 @@
 
 Multiplayer Figgie built using React, express, and socket.io
 
+http://3.136.26.146:3000/
+
 # TODO
 
 ## style
@@ -27,6 +29,10 @@ Multiplayer Figgie built using React, express, and socket.io
 
 
 - observer
+
+- show coins gained/lost at end of round
+- max length 30 username
+- emojis in username
 
 
 ## Deployment
