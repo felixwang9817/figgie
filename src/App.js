@@ -64,8 +64,6 @@ class Players extends React.Component {
     if (username == null) return "";
     if (playerState[username] == null) return "";
 
-    console.log("playerState " + JSON.stringify(playerState));
-    console.log(username);
     let numPlayers = Object.keys(playerState).length;
     if (numPlayers < 4) {
       msg = "Waiting for players " + numPlayers + "/4...";
@@ -212,7 +210,6 @@ class Market extends React.Component {
 class TradeLog extends React.Component {
   render() {
     let tradeLog = this.props.tradeLog;
-    console.log("Trade log rendering, " + JSON.stringify(tradeLog));
     if (!tradeLog) {
       return "";
     }
@@ -364,30 +361,25 @@ class App extends Component {
 
     socket.on("marketUpdate", state => {
       console.log("market update");
-      console.log(state);
       this.setState({ market: state });
     });
 
     socket.on("playerUpdate", state => {
       console.log("player update");
-      console.log(state);
       this.setState({ players: state });
     });
 
     socket.on("tradeLogUpdate", state => {
       console.log("trade log update");
-      console.log(state);
       this.setState({ tradeLog: state });
     });
 
     socket.on("username", state => {
       console.log("username");
-      console.log(state);
       this.setState({ username: state });
     });
 
     socket.on("goalSuit", goalSuit => {
-      console.log("goalSuit is:", goalSuit);
       this.setState({ goalSuit: goalSuit });
     });
 
@@ -417,7 +409,6 @@ class App extends Component {
   }
 
   handleSubmit(event) {
-    console.log("Sending command to server: " + this.state.trade_command);
     event.preventDefault();
 
     this.state.socket.emit("clientCommand", this.state.trade_command);
@@ -425,12 +416,10 @@ class App extends Component {
   }
 
   handleChangeUsername(event) {
-    console.log("changing username");
     this.setState({ username: event.target.value });
   }
 
   handleChangeRoomNumber(event) {
-    console.log("changing room number");
     this.setState({ roomNumber: event.target.value });
   }
 
@@ -480,9 +469,6 @@ class App extends Component {
         </Card>
       );
     }
-
-    console.log("username", this.state.username);
-    console.log("room number", this.state.roomNumber);
 
     // check that it has not been initialized yet
     if (!this.state.initialized) {

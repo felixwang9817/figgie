@@ -19,6 +19,7 @@ http://3.136.26.146:3000/
 - alert on login fail
 
 - rooms
+
   - waiting room that auto-joins if players leave
 
 - persistent user
@@ -27,17 +28,30 @@ http://3.136.26.146:3000/
   - then, make accounts and pw
   - finally, move to actual DB (Postgres, Firebase, etc.)
 
-
 - observer
 
 - show coins gained/lost at end of round
 - max length 30 username
-- emojis in username
+
+
+- timer for end
+
+- market flash on clear
+
+## Bugs
+
+- random disconnect
+  - two distinct problems
+    - socket disconnects due to transport close (might be a socket.io problem, and might be a chrome / safari issue)
+    - we have to support socket disconnect and handle it properly
+      - alert for all players
+      - if game is not yet started, refresh page
 
 
 ## Deployment
 
 To deploy on aws:
+
 - install node
 - git clone repo
 - npm install
@@ -51,6 +65,7 @@ To deploy on aws:
   - `pm2 logs` to see logs
 - `serve -s build -l 3000` to run client-facing server
   - TODO: figure out a way to restart this on error
+
 
 
 To update:
