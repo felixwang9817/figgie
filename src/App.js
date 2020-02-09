@@ -447,6 +447,7 @@ class App extends Component {
   }
 
   render() {
+
     if (!this.state.loggedIn || !this.state.inRoom) {
       return (
         <Card id="loginFormCard">

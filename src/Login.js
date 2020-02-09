@@ -1,11 +1,10 @@
 import React from "react";
 import queryString from "query-string";
 
-class Room extends React.Component {
+class Login extends React.Component {
   constructor() {
     super();
 
-    this.state = { roomNumber: "" };
 
   }
 
@@ -18,4 +17,4 @@ class Room extends React.Component {
   }
 }
 
-export default Room;
+export default Login;

@@ -42,7 +42,7 @@ To deploy on aws:
 - git clone repo
 - npm install
 - npm run build
-- make sure IP address is set to the server IP (ENV var, but it seems broken sometimes so just hardcode it in App.js) and ports 3000 and 8080 are open
+- **make sure IP address is set to the server IP (ENV var, but it seems broken sometimes so just hardcode it in App.js) and ports 3000 and 8080 are open**
 
 - install serve and pm2
 - make sure postgres is installed and configured (database `players`)
@@ -52,4 +52,9 @@ To deploy on aws:
 - `serve -s build -l 3000` to run client-facing server
   - TODO: figure out a way to restart this on error
 
-To update, just run `git clone` and `npm run build`. You *may* have to restart the client-facing server.
+
+To update:
+- `git stash` to stash the IP address change
+- `git pull` and `git stash apply`
+- `npm run build` to rebuild
+- You *may* have to restart the client-facing server.
