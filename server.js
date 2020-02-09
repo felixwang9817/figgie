@@ -525,7 +525,7 @@ io.on("connection", async function(socket) {
 
     if (roomToState[roomNumber]["isGameActive"]) {
       socket.emit("alert", "Game already active, cannot join!");
-      console.log("Game already active" + roomNumber + ", cannot join!")
+      console.log("Game already active" + roomNumber + ", cannot join!");
       socket.disconnect();
       return;
     }
@@ -558,9 +558,7 @@ io.on("connection", async function(socket) {
     let username = socketidToUsername[socket.id];
     let roomNumber = socketidToRoomNumber[socket.id];
     console.log("user disconnected");
-    
 
-    
     delete socketidToUsername[socket.id];
     delete socketidToRoomNumber[socket.id];
     delete usernameToRoomNumber[username];
@@ -587,3 +585,58 @@ io.on("connection", async function(socket) {
     parseCommand(command, socket);
   });
 });
+
+// PASSPORT AND AUTHENTICATION
+var session = require("express-session"),
+  bodyParser = require("body-parser");
+
+var passport = require("passport"),
+  LocalStrategy = require("passport-local").Strategy;
+
+app.use(express.static("public"));
+app.use(session({ secret: "cats" }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  let user = { id: 1 };
+  return user;
+
+  // done(null, user);
+  // User.findById(id, function(err, user) {
+  //   done(err, user);
+  // });
+});
+
+passport.use(
+  new LocalStrategy(function(username, password, done) {
+    let user = { id: 1 };
+    return done(null, user);
+    // User.findOne({ username: username }, function(err, user) {
+    //   if (err) {
+    //     return done(err);
+    //   }
+    //   if (!user) {
+    //     return done(null, false, { message: "Incorrect username." });
+    //   }
+    //   if (!user.validPassword(password)) {
+    //     return done(null, false, { message: "Incorrect password." });
+    //   }
+    //   return done(null, user);
+    // });
+  })
+);
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/login",
+    failureFlash: true
+  })
+);

@@ -33,10 +33,9 @@ http://3.136.26.146:3000/
 - show coins gained/lost at end of round
 - max length 30 username
 
+* timer for end
 
-- timer for end
-
-- market flash on clear
+* market flash on clear
 
 ## Bugs
 
@@ -46,7 +45,9 @@ http://3.136.26.146:3000/
     - we have to support socket disconnect and handle it properly
       - alert for all players
       - if game is not yet started, refresh page
-
+- persistent user
+  - we have successfully created login page that will post to passport login endpoint to attempt to login
+  - main problem: we do not know how to check whether user is logged in from client without making a post request to login endpoint
 
 ## Deployment
 
@@ -66,10 +67,9 @@ To deploy on aws:
 - `serve -s build -l 3000` to run client-facing server
   - TODO: figure out a way to restart this on error
 
-
-
 To update:
+
 - `git stash` to stash the IP address change
 - `git pull` and `git stash apply`
 - `npm run build` to rebuild
-- You *may* have to restart the client-facing server.
+- You _may_ have to restart the client-facing server.

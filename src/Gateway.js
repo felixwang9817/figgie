@@ -1,7 +1,7 @@
 import React from "react";
 import queryString from "query-string";
 import { Route, BrowserRouter } from "react-router-dom";
-import { Redirect } from 'react-router';
+import { Redirect } from "react-router";
 import App from "./App";
 import Login from "./Login";
 
@@ -9,8 +9,7 @@ class Gateway extends React.Component {
   constructor() {
     super();
 
-    this.state = { loggedIn : false };
-
+    this.state = { loggedIn: true };
   }
 
   render() {
@@ -19,8 +18,7 @@ class Gateway extends React.Component {
         <div>
           <Route path="/Login" component={Login} />
           <Route exact path="/">
-
-            { this.state.loggedIn ? <App /> : <Redirect to="/Login"/> }
+            {this.state.loggedIn ? <App /> : <Redirect to="/Login" />}
           </Route>
 
           <Route
