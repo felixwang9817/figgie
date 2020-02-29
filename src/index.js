@@ -5,6 +5,13 @@ import Gateway from "./Gateway";
 import * as serviceWorker from "./serviceWorker";
 import { Route, BrowserRouter } from "react-router-dom";
 
+var server;
+if (process.env.NODE_ENV == "production") {
+  server = "http://3.136.26.146:8080/";
+} else {
+  server = "http://localhost:3000/";
+}
+
 
 // ReactDOM.render(
 //   <BrowserRouter>
@@ -21,7 +28,7 @@ import { Route, BrowserRouter } from "react-router-dom";
 //   document.getElementById("root")
 // );
 
-fetch('/auth').then((response) => response.json())
+fetch(server + '/auth').then((response) => response.json())
   .then((user) => {
     ReactDOM.render(<Gateway user={user} />, document.getElementById("root"));
   }).catch(err => {
