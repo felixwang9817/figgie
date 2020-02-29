@@ -80,10 +80,28 @@ const deletePlayer = (request, response) => {
   );
 };
 
+// passport.js authenticate
+const findByUsername = function(username, cb) {
+  process.nextTick(function() {
+
+    pool.query(
+      "SELECT * FROM players WHERE username = $1",
+      [username],
+      (error, results) => {
+        if (error) {
+          return cb(null, null);
+        }
+        return cb(null, results.rows[0]);
+      }
+    );
+  });
+}
+
 module.exports = {
   getPlayers,
   getMoneyByUsername,
   createPlayer,
   updatePlayer,
-  deletePlayer
+  deletePlayer,
+  findByUsername
 };

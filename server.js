@@ -6,8 +6,15 @@ const io = require("socket.io")(http);
 // io.set('origins', '*:*');
 const utils = require("./utils");
 const db = require("./queries");
+const passport = require('passport');
+const Strategy = require('passport-local').Strategy;
 const path = require("path");
 require("isomorphic-fetch");
+
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
+
 
 // Postgres db endpoints
 app.get("/players", db.getPlayers);
@@ -15,6 +22,73 @@ app.get("/players/:username", db.getMoneyByUsername);
 app.post("/players/:username", db.createPlayer);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
+
+passport.use(new Strategy(
+  function(username, password, cb) {
+    console.log("passport authenticate: username", username, "password", password);
+    db.findByUsername(username, function(err, user) {
+      if (err) { return cb(err); }
+      if (!user) { return cb(null, false); }
+      if (/*user.password*/ "wow" != password) { return cb(null, false); }
+      return cb(null, user);
+    });
+}));
+
+// Configure Passport authenticated session persistence.
+//
+// In order to restore authentication state across HTTP requests, Passport needs
+// to serialize users into and deserialize users out of the session.  The
+// typical implementation of this is as simple as supplying the user ID when
+// serializing, and querying the user record by ID from the database when
+// deserializing.
+passport.serializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+passport.deserializeUser(function(user, cb) {
+  cb(null, user);
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+app.post("/login", 
+  passport.authenticate('local', { failureRedirect: '/'}),
+  function(req, res) {
+    console.log("router successful login post; user: ", req.user);
+    res.send(req.user);
+  });
+         // function (req, res) {
+
+  // console.log(req.body);
+  // console.log(res.body);
+  // let username = req.body.username;
+  // let password = req.body.password;
+
+  // // TODO: authenticate
+
+  // console.log("login request received on server");
+
+  // res.send(JSON.stringify({
+  //   username: username,
+  //   message: 'Successful'
+  // }));
+// });
+
+
+app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
+  function(req, res) {
+    console.log('router at /auth, user: ', req.user);
+    res.send(req.user);
+  });
+
+// TODO: what triggers this fetch?
+app.get('/logout',
+  function(req, res){
+    req.logout();
+  });
+
 
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
@@ -27,6 +101,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
+
+
 
 let server = "http://localhost:8080";
 

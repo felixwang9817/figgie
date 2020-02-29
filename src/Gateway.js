@@ -8,19 +8,17 @@ import Login from "./Login";
 class Gateway extends React.Component {
   constructor() {
     super();
-
-    this.state = { loggedIn : false };
-
   }
 
   render() {
+    console.log("At gateway render");
+    console.log("user: ", this.props.user);
+
     return (
       <BrowserRouter>
         <div>
-          <Route path="/Login" component={Login} />
           <Route exact path="/">
-
-            { this.state.loggedIn ? <App /> : <Redirect to="/Login"/> }
+            { this.props.user ? <App /> : <Login/> }
           </Route>
 
           <Route

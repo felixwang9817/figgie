@@ -20,7 +20,15 @@ import { Route, BrowserRouter } from "react-router-dom";
 //   </BrowserRouter>,
 //   document.getElementById("root")
 // );
-ReactDOM.render(<Gateway />, document.getElementById("root"));
+
+fetch('/auth').then((response) => response.json())
+  .then((user) => {
+    ReactDOM.render(<Gateway user={user} />, document.getElementById("root"));
+  }).catch(err => {
+    console.log(err);
+    ReactDOM.render(<Gateway />, document.getElementById("root"));
+  });
+
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
