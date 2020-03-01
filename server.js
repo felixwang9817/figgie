@@ -1,5 +1,7 @@
 const express = require("express");
 const app = express();
+const cors = require('cors');
+app.use(cors());  // enable cross-origin access all
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -90,7 +92,7 @@ app.get('/logout',
   });
 
 
-console.log(process.env.NODE_ENV);
+console.log('env:', process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/build")));
   app.get("/*", function(req, res) {
