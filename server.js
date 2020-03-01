@@ -79,6 +79,8 @@ app.post("/login",
 // });
 
 
+// TODO: how to send a failure msg in json format when login fails? right now
+// res.json() will just fail on the response when there's an http error e.g. 404
 app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
   function(req, res) {
     console.log('router at /auth, user: ', req.user);
@@ -91,6 +93,12 @@ app.get('/logout',
     req.logout();
   });
 
+app.get('/login',
+  function(req, res) {
+    res.redirect('/');  // placeholder, should just return nothing
+  }
+)
+
 
 console.log('env:', process.env.NODE_ENV);
 // if (process.env.NODE_ENV === "production") {
@@ -99,7 +107,7 @@ console.log('env:', process.env.NODE_ENV);
 //     res.sendFile(path.join(__dirname, "build", "index.html"));
 //   });
 // } else {
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "public")));
 // }
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));

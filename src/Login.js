@@ -52,7 +52,10 @@ class Login extends React.Component {
     .then((user) => {
       this.setState({ user: user});
       console.log("login.js setting this.state.user: ", user);
-    }).catch(err => console.log(err));
+    }).catch(err => {
+      console.log(err);
+      this.setState({ user: null });
+    });
   }
 
   render() {
