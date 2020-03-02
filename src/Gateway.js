@@ -1,7 +1,5 @@
 import React from "react";
-import queryString from "query-string";
 import { Route, BrowserRouter } from "react-router-dom";
-import { Redirect } from "react-router";
 import App from "./App";
 import Login from "./Login";
 

@@ -12,7 +12,7 @@ var server;
 if (process.env.NODE_ENV == "production") {
   server = "http://3.136.26.146:8080";
 } else {
-  server = "http://localhost:3000";
+  server = "http://localhost:8080";
 }
 
 
@@ -45,7 +45,7 @@ class Login extends React.Component {
           'Content-Type': 'application/json',
         },
         method: "POST",
-        credentials: 'same-origin',
+        credentials: 'include',
         body: JSON.stringify({username: this.state.username,
                               password: this.state.password}),
     }).then((response) => response.json())

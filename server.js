@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
+const session = require('express-session');
 const cors = require('cors');
-app.use(cors());  // enable cross-origin access all
+app.use(cors({ origin: ["http://localhost:3000"], credentials: true}));  // enable cross-origin access
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -15,8 +16,11 @@ require("isomorphic-fetch");
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
-
+app.use(session({ 
+  secret: 'keyboard cat', resave: false, saveUninitialized: false,
+  cookie: { maxAge: 3600000 } }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Postgres db endpoints
 app.get("/players", db.getPlayers);
@@ -44,46 +48,35 @@ passport.use(new Strategy(
 // serializing, and querying the user record by ID from the database when
 // deserializing.
 passport.serializeUser(function(user, cb) {
+  console.log("serializing", user);
   cb(null, user);
 });
 
 passport.deserializeUser(function(user, cb) {
+  console.log("deserializing", user);
   cb(null, user);
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 
 app.post("/login", 
   passport.authenticate('local', { failureRedirect: '/'}),
   function(req, res) {
+    console.log(req.session);
     console.log("router successful login post; user: ", req.user);
     res.send(req.user);
   });
-         // function (req, res) {
-
-  // console.log(req.body);
-  // console.log(res.body);
-  // let username = req.body.username;
-  // let password = req.body.password;
-
-  // // TODO: authenticate
-
-  // console.log("login request received on server");
-
-  // res.send(JSON.stringify({
-  //   username: username,
-  //   message: 'Successful'
-  // }));
-// });
 
 
 // TODO: how to send a failure msg in json format when login fails? right now
 // res.json() will just fail on the response when there's an http error e.g. 404
-app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
+app.get('/auth', //require('connect-ensure-login').ensureLoggedIn(),
   function(req, res) {
+    var status = req.isAuthenticated() ? 'logged in' : 'logged out';
     console.log('router at /auth, user: ', req.user);
+    console.log(req.session);
+    console.log(status);
     res.send(req.user);
   });
 
