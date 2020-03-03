@@ -45,7 +45,7 @@ class Login extends React.Component {
           'Content-Type': 'application/json',
         },
         method: "POST",
-        credentials: 'include',
+        credentials: 'include',  // include cookies on RECEIVE (must be here for browser to process SET-COOKIE response header)
         body: JSON.stringify({username: this.state.username,
                               password: this.state.password}),
     }).then((response) => response.json())

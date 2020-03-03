@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const session = require('express-session');
 const cors = require('cors');
-app.use(cors({ origin: ["http://localhost:3000"], credentials: true}));  // enable cross-origin access
+app.use(cors({ origin: ["http://localhost:3000", "http://3.136.26.146:3000"], credentials: true}));  // enable cross-origin access + cookies
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
@@ -71,12 +71,8 @@ app.post("/login",
 
 // TODO: how to send a failure msg in json format when login fails? right now
 // res.json() will just fail on the response when there's an http error e.g. 404
-app.get('/auth', //require('connect-ensure-login').ensureLoggedIn(),
+app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
   function(req, res) {
-    var status = req.isAuthenticated() ? 'logged in' : 'logged out';
-    console.log('router at /auth, user: ', req.user);
-    console.log(req.session);
-    console.log(status);
     res.send(req.user);
   });
 
@@ -93,6 +89,10 @@ app.get('/login',
 )
 
 
+// ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
+// in Login.js & App
+
+// I'm guessing that ENV is not being set with npx nodemon & pm2 
 console.log('env:', process.env.NODE_ENV);
 // if (process.env.NODE_ENV === "production") {
 //   app.use(express.static(path.join(__dirname, "/build")));
