@@ -24,7 +24,7 @@ import {
 } from "react-icons/gi";
 const playerColor = "yellow";
 const goalColor = "green";
-const ip = process.env.NODE_ENV == "production" ? "3.136.26.146" : "localhost";
+const ip = process.env.NODE_ENV === "production" ? "3.136.26.146" : "localhost";
 const port = "8080"
 
 function displaySuit(suit) {
@@ -546,7 +546,7 @@ class App extends Component {
               <a
                 class="App-link"
                 href="https://www.janestreet.com/figgie/"
-                target="_blank"
+                target="_blank" rel="noopener noreferrer"
               >
                 Full Game Rules
               </a>

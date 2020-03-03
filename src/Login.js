@@ -1,5 +1,4 @@
 import React from "react";
-import queryString from "query-string";
 import {
   Form,
   Button,
@@ -9,7 +8,7 @@ import Gateway from "./Gateway";
 
 // TODO: can we unify a single `server` variable across different .js files?
 var server;
-if (process.env.NODE_ENV == "production") {
+if (process.env.NODE_ENV === "production") {
   server = "http://3.136.26.146:8080";
 } else {
   server = "http://localhost:8080";

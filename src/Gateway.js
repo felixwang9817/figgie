@@ -4,10 +4,6 @@ import App from "./App";
 import Login from "./Login";
 
 class Gateway extends React.Component {
-  constructor() {
-    super();
-  }
-
   render() {
     console.log("At gateway render");
     console.log("user: ", this.props.user);
