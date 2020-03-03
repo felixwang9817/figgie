@@ -92,22 +92,21 @@ app.get('/login',
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
 
-// I'm guessing that ENV is not being set with npx nodemon & pm2 
 console.log('env:', process.env.NODE_ENV);
-// if (process.env.NODE_ENV === "production") {
-//   app.use(express.static(path.join(__dirname, "/build")));
-//   app.get("/*", function(req, res) {
-//     res.sendFile(path.join(__dirname, "build", "index.html"));
-//   });
-// } else {
-app.use(express.static(path.join(__dirname, "public")));
-// }
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "build")));
+  app.get("/*", function(req, res) {
+    res.sendFile(path.join(__dirname, "build", "index.html"));
+  });
+} else {
+  app.use(express.static(path.join(__dirname, "public")));
+}
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
 
-let server = "http://localhost:8080";
+let server = "http://localhost:8080";  // WHY does this not need to be changed for production?
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades", "h", "d", "c", "s"];

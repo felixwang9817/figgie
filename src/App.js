@@ -24,7 +24,8 @@ import {
 } from "react-icons/gi";
 const playerColor = "yellow";
 const goalColor = "green";
-const ip = process.env.IP || "localhost"; // REPLACE on production!!
+const ip = process.env.NODE_ENV == "production" ? "3.136.26.146" : "localhost";
+const port = "8080"
 
 function displaySuit(suit) {
   let icon = null;
@@ -349,7 +350,7 @@ class App extends Component {
     // TODO: make sure can't take a username that's already taken
     // retrieve username from querystring
 
-    const socket = socketIOClient(ip + ":8080");
+    const socket = socketIOClient(ip + ":" + port);
     this.state.socket = socket;
 
     socket.on("enteredRoom", state => {

@@ -7,7 +7,7 @@ import {
 } from "react-bootstrap";
 import Gateway from "./Gateway";
 
-
+// TODO: can we unify a single `server` variable across different .js files?
 var server;
 if (process.env.NODE_ENV == "production") {
   server = "http://3.136.26.146:8080";
