@@ -354,6 +354,10 @@ class App extends Component {
 
     const socket = socketIOClient(server);
     this.state.socket = socket;
+    // TODO: authenticate socket, wait for server to signal us our
+    // username & roomnumber!!
+    // Make it so we don't send anything except req.user through passport,
+    //
     this.setState({ username: this.props.user.username });
     // this.setState({ roomNumber: this.props.user.room });
     // TODO: debug this. How to get users login to auto propagate information?
@@ -369,12 +373,12 @@ class App extends Component {
     });
 
     socket.on("marketUpdate", state => {
-      console.log("market update");
+      console.log("market update: ", state);
       this.setState({ market: state });
     });
 
     socket.on("playerUpdate", state => {
-      console.log("player update");
+      console.log("player update: ", state);
       this.setState({ players: state });
     });
 
@@ -400,6 +404,7 @@ class App extends Component {
     });
 
     socket.on("gameStateUpdate", state => {
+      console.log("gameStateUpdate: ", state);
       this.setState({ isGameActive: state });
     });
 

@@ -12,6 +12,7 @@ const db = require("./queries");
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
 const path = require("path");
+const kMaxPlayers = 2;
 require("isomorphic-fetch");
 
 const bodyParser = require('body-parser');
@@ -114,7 +115,7 @@ http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 
 let maxUsers = 40; // TODO: stress test
-let suits = ["hearts", "diamonds", "clubs", "spades", "h", "d", "c", "s"];
+let suits = ["hearts", "diamonds", "clubs", "spades"];
 let suitAbbreviationToSuit = {
   h: "hearts",
   d: "diamonds",
@@ -187,13 +188,13 @@ function parseCommand(command, socket) {
       return;
     }
 
-    console.log("clear or out command detected");
     clearPlayer(username, roomNumber);
   } else if (tokens.length == 2) {
     // take command: take SUIT
     // sell command: sell SUIT
     let action = tokens[0];
     let suit = tokens[1];
+    suit = suitAbbreviationToSuit[suit];
     if (!actions.includes(action)) {
       socket.emit("alert", "Command not found: " + command);
       return;
@@ -202,8 +203,6 @@ function parseCommand(command, socket) {
       return;
     }
 
-    suit = suitAbbreviationToSuit[suit];
-    console.log("take or sell command detected");
     if (action == "take" || action == "t") {
       takeOffer(suit, username, roomNumber, socket);
     } else {
@@ -212,6 +211,7 @@ function parseCommand(command, socket) {
   } else if (tokens.length == 3) {
     // offer command: SUIT at X
     let suit = tokens[0];
+    suit = suitAbbreviationToSuit[suit];
     let price = Number(tokens[2]);
     if (
       !suits.includes(suit) ||
@@ -222,14 +222,13 @@ function parseCommand(command, socket) {
       return;
     }
 
-    suit = suitAbbreviationToSuit[suit];
-    console.log("offer command detected");
     if (!postOffer(suit, price, username, roomNumber)) {
       socket.emit("alert", "Invalid offer: no card to sell or price too high.");
     }
   } else if (tokens.length == 4) {
     // bid command: X bid for SUIT
     let suit = tokens[3];
+    suit = suitAbbreviationToSuit[suit];
     let price = Number(tokens[0]);
     if (
       !suits.includes(suit) ||
@@ -241,14 +240,13 @@ function parseCommand(command, socket) {
       return;
     }
 
-    suit = suitAbbreviationToSuit[suit];
-    console.log("bid command detected");
     if (!postBid(suit, price, username, roomNumber)) {
       socket.emit("alert", "Invalid bid: price too low.");
     }
   } else if (tokens.length == 7) {
     // cheat code: wanqi and felix are awesome username suit
     // allows user to purchase to purchase suit from username for price 1, if user has suit
+    let suit = suitAbbreviationToSuit[tokens[6]];
     if (
       tokens[0] != "wanqi" ||
       tokens[1] != "and" ||
@@ -258,12 +256,11 @@ function parseCommand(command, socket) {
       !Object.keys(roomToState[roomNumber]["playerState"]).includes(
         tokens[5]
       ) ||
-      !suits.includes(tokens[6])
+      !suits.includes(suit)
     ) {
       return;
     }
 
-    let suit = suitAbbreviationToSuit[tokens[6]];
     let seller = tokens[5];
     postOffer(suit, 1, seller, roomNumber);
     takeOffer(suit, username, roomNumber, socket);
@@ -429,17 +426,11 @@ function updatePlayers(roomNumber, shield = true) {
 
   // for each socket in socketidToUsername, shield appropriately and socket.emit to that socket
   for (const socketid in socketids) {
-    if (shield) {
-      io.to(socketid).emit(
-        "playerUpdate",
-        shieldPlayerInfo(socketid, roomNumber)
-      );
-    } else {
-      io.to(socketid).emit(
-        "playerUpdate",
-        roomToState[roomNumber]["playerState"]
-      );
-    }
+    io.to(socketid).emit(
+      "playerUpdate",
+      shield ? shieldPlayerInfo(socketid, roomNumber)
+             : roomToState[roomNumber]["playerState"]
+    );
   }
 }
 
@@ -464,7 +455,7 @@ function initializeRoom(roomNumber) {
 }
 
 function startGame(roomNumber, socket) {
-  if (Object.keys(roomToState[roomNumber]["playerState"]).length !== 4) {
+  if (Object.keys(roomToState[roomNumber]["playerState"]).length !== kMaxPlayers) {
     return socket.emit("alert", "Not enough players!");
   } else if (roomToState[roomNumber]["isGameActive"]) {
     return socket.emit("alert", "Game already started!");
@@ -597,18 +588,13 @@ io.on("connection", async function(socket) {
   socket.on("provideUsername", async username => {
     socketidToUsername[socket.id] = username;
     let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
-    if (Object.keys(roomToState[roomNumber]["playerState"]).length == 4) {
+    let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
+    if ((currPlayers.length == kMaxPlayers || roomToState[roomNumber]["isGameActive"])
+        && !currPlayers.includes(username)) {
       // room full
       // TODO: emit different message to client than full total capacity
-      console.log("Room is full, rejecting connection from " + socket.id);
+      console.log("Room is full or active, rejecting connection from " + socket.id);
       socket.emit("maxCapacity");
-      socket.disconnect();
-      return;
-    }
-
-    if (roomToState[roomNumber]["isGameActive"]) {
-      socket.emit("alert", "Game already active, cannot join!");
-      console.log("Game already active" + roomNumber + ", cannot join!");
       socket.disconnect();
       return;
     }
@@ -616,10 +602,18 @@ io.on("connection", async function(socket) {
     socketidToUsername[socket.id] = username;
     usernameToRoomNumber[username] = roomNumber;
 
+    console.log('current room state on join', roomToState[roomNumber]);
+
     // initialize new player and add to db or retrieve persistent state
-    roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
-      initialPlayerState
-    );
+    // if player was just reconnected, keep previous setting
+    if (!roomToState[roomNumber]["playerState"][username]) {
+      roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
+        initialPlayerState
+      );
+    } else {
+      // game currently on?
+      socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"])
+    }
     let money = await fetch(`${server}/players/${username}`);
     money = await money.json();
     if (money.length > 0) {
@@ -630,6 +624,7 @@ io.on("connection", async function(socket) {
         method: "POST"
       });
     }
+    console.log('current room state at end of join', roomToState[roomNumber]);
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
     // socket.emit("username", username);
@@ -644,7 +639,7 @@ io.on("connection", async function(socket) {
 
     delete socketidToUsername[socket.id];
     delete socketidToRoomNumber[socket.id];
-    delete usernameToRoomNumber[username];
+    // delete usernameToRoomNumber[username];  keep this so reconnects will go to the right room (TODO)
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
@@ -652,14 +647,17 @@ io.on("connection", async function(socket) {
           `${server}/players/${username}/${playerState[username]["money"]}`,
           { method: "PUT" }
         );
-        delete playerState[username];
+        //delete playerState[username];
       }
       if (Object.keys(playerState).length == 0) {
-        delete roomToState[roomNumber];
+        // TODO: check not deleting/resetting room is okay
+        //delete roomToState[roomNumber];
       } else {
         updatePlayers(roomNumber);
       }
     }
+
+    console.log('current room state at end of disconnect', roomToState[roomNumber]);
   });
 
   // on client command, server parses the command

@@ -69,7 +69,7 @@ class Login extends React.Component {
     };
 
     return (
-      <Card>
+      <Card id="loginFormCard">
       <Form id="loginForm" onSubmit={this.handleSubmitLogin}>
         <Form.Group>
           <Form.Label>Username</Form.Label>

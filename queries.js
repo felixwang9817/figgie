@@ -17,7 +17,6 @@ const getPlayers = (request, response) => {
 };
 
 const getMoneyByUsername = (request, response) => {
-  console.log("getting money by username");
   const username = request.params.username;
 
   pool.query(
