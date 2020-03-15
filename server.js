@@ -12,7 +12,7 @@ const db = require("./queries");
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
 const path = require("path");
-const kMaxPlayers = 2;
+const kMaxPlayers = 4;
 require("isomorphic-fetch");
 
 const bodyParser = require('body-parser');
