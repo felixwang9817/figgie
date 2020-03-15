@@ -2,6 +2,7 @@ import React, { Component, useState } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Gateway from "./Gateway.js"
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import {
@@ -328,23 +329,20 @@ class App extends Component {
       isGameActive: false,
       alertMsg: "",
       alertVisible: true,
-      loggedIn: false,
-      inRoom: false,
-      initialized: false,
+      // loggedIn: false,
+      // inRoom: false,
+      // initialized: false,
       goalSuit: null
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChangeUsername = this.handleChangeUsername.bind(this);
-    this.handleChangeRoomNumber = this.handleChangeRoomNumber.bind(this);
-    this.handleSubmitLogin = this.handleSubmitLogin.bind(this);
   }
 
-  init(userName, roomNumber) {
-    // TODO: do something with username
-    this.state.socket.emit("enterRoom", roomNumber);
-  }
+  // init(userName, roomNumber) {
+  //   // TODO: do something with username
+  //   this.state.socket.emit("enterRoom", roomNumber);
+  // }
 
   async componentDidMount() {
     // TODO: make sure can't take a username that's already taken
@@ -352,7 +350,13 @@ class App extends Component {
 
     const socket = socketIOClient(ip + ":" + port);
     this.state.socket = socket;
+    this.setState({ username: this.props.user.username });
+    // this.setState({ roomNumber: this.props.user.room });
+    // TODO: debug this. How to get users login to auto propagate information?
+    // look at system design on server end
+    socket.emit("enterRoom", this.state.roomNumber);
 
+    // TODO: combine this with above
     socket.on("enteredRoom", state => {
       console.log("entered room number: " + state);
       // to ensure that no async problems occur with username being set up after the room
@@ -375,10 +379,10 @@ class App extends Component {
       this.setState({ tradeLog: state });
     });
 
-    socket.on("username", state => {
-      console.log("username");
-      this.setState({ username: state });
-    });
+    // socket.on("username", state => {
+    //   console.log("username");
+    //   this.setState({ username: state });
+    // });
 
     socket.on("goalSuit", goalSuit => {
       this.setState({ goalSuit: goalSuit });
@@ -416,66 +420,12 @@ class App extends Component {
     this.setState({ trade_command: "" }); // clear form
   }
 
-  handleChangeUsername(event) {
-    this.setState({ username: event.target.value });
-  }
-
-  handleChangeRoomNumber(event) {
-    this.setState({ roomNumber: event.target.value });
-  }
-
-  async handleSubmitLogin(event) {
-    console.log(
-      "Logging in with username " +
-        this.state.username +
-        " and room number " +
-        this.state.roomNumber
-    );
-    event.preventDefault();
-
-    this.setState({ loggedIn: true, inRoom: true });
-  }
 
   render() {
+    if (!this.props.user) {
+      return (<Gateway />);
+    };
 
-    if (!this.state.loggedIn || !this.state.inRoom) {
-      return (
-        <Card id="loginFormCard">
-          <Form id="loginForm" onSubmit={this.handleSubmitLogin}>
-            <Form.Group controlId="formBasicPassword">
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                type="text"
-                name="trade"
-                value={this.state.username}
-                placeholder="Enter username"
-                onChange={this.handleChangeUsername}
-                autoFocus={true}
-              />
-            </Form.Group>
-            <Form.Group controlId="formBasicPassword">
-              <Form.Label>Room Number</Form.Label>
-              <Form.Control
-                type="text"
-                name="trade"
-                value={this.state.roomNumber}
-                placeholder="Enter room number"
-                onChange={this.handleChangeRoomNumber}
-              />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              Submit
-            </Button>
-          </Form>
-        </Card>
-      );
-    }
-
-    // check that it has not been initialized yet
-    if (!this.state.initialized) {
-      this.init(this.state.username, this.state.roomNumber);
-      this.setState({ initialized: true });
-    }
 
     if (this.state.observer) {
       return (

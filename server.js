@@ -627,7 +627,7 @@ io.on("connection", async function(socket) {
     }
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
-    socket.emit("username", username);
+    // socket.emit("username", username);
   });
 
   // on disconnection, server recycles the client username

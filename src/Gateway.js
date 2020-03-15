@@ -5,14 +5,11 @@ import Login from "./Login";
 
 class Gateway extends React.Component {
   render() {
-    console.log("At gateway render");
-    console.log("user: ", this.props.user);
-
     return (
       <BrowserRouter>
         <div>
           <Route exact path="/">
-            { this.props.user ? <App /> : <Login/> }
+            { this.props.user ? <App user={this.props.user} /> : <Login/> }
           </Route>
 
           <Route

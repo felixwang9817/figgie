@@ -23,6 +23,7 @@ class Login extends React.Component {
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
+    this.handleChangeRoom = this.handleChangeRoom.bind(this);
     this.handleSubmitLogin = this.handleSubmitLogin.bind(this);
   }
 
@@ -33,6 +34,10 @@ class Login extends React.Component {
 
   handleChangePassword(event) {
     this.setState({ password: event.target.value });
+  }
+
+  handleChangeRoom(event) {
+    this.setState({ room: event.target.value });
   }
 
   async handleSubmitLogin(event) {
@@ -46,7 +51,8 @@ class Login extends React.Component {
         method: "POST",
         credentials: 'include',  // include cookies on RECEIVE (must be here for browser to process SET-COOKIE response header)
         body: JSON.stringify({username: this.state.username,
-                              password: this.state.password}),
+                              password: this.state.password,
+                              room: this.state.room}),
     }).then((response) => response.json())
     .then((user) => {
       this.setState({ user: user});
@@ -82,6 +88,16 @@ class Login extends React.Component {
             value={this.state.password}
             placeholder="Enter password"
             onChange={this.handleChangePassword}
+          />
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Room</Form.Label>
+          <Form.Control
+            type="text"
+            value={this.state.room}
+            placeholder="Enter Room"
+            onChange={this.handleChangeRoom}
+            autoFocus={true}
           />
         </Form.Group>
         <Button variant="primary" type="submit">
