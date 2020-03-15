@@ -58,6 +58,12 @@ passport.deserializeUser(function(user, cb) {
 });
 
 
+var server;
+if (process.env.NODE_ENV === "production") {
+  server = "http://3.136.26.146:8080";
+} else {
+  server = "http://localhost:8080";
+}
 
 
 app.post("/login", 
@@ -79,14 +85,16 @@ app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
 // TODO: what triggers this fetch?
 app.get('/logout',
   function(req, res){
+    console.log('logging out');
     req.logout();
+    res.send('bye');
   });
 
 app.get('/login',
   function(req, res) {
+    console.log('get /login');
     res.redirect('/');  // placeholder, should just return nothing
-  }
-)
+  })
 
 
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
@@ -104,9 +112,6 @@ if (process.env.NODE_ENV === "production") {
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-
-
-let server = "http://localhost:8080";  // WHY does this not need to be changed for production?
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades", "h", "d", "c", "s"];

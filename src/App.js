@@ -23,10 +23,10 @@ import {
   GiHearts,
   GiTwoCoins
 } from "react-icons/gi";
+import server from "./index.js";
 const playerColor = "yellow";
 const goalColor = "green";
-const ip = process.env.NODE_ENV === "production" ? "3.136.26.146" : "localhost";
-const port = "8080"
+
 
 function displaySuit(suit) {
   let icon = null;
@@ -209,6 +209,7 @@ class Market extends React.Component {
   }
 }
 
+
 class TradeLog extends React.Component {
   render() {
     let tradeLog = this.props.tradeLog;
@@ -244,6 +245,10 @@ class UserInfo extends React.Component {
         <GiTwoCoins style={{ margin: "0px 8px" }} />
         {userState != null ? userState["money"] : "???"}, room{" "}
         {this.props.roomNumber}
+
+        <span id="logoutText" onClick={this.props.handleLogout}>
+          Logout
+        </span>
       </div>
     );
   }
@@ -329,9 +334,6 @@ class App extends Component {
       isGameActive: false,
       alertMsg: "",
       alertVisible: true,
-      // loggedIn: false,
-      // inRoom: false,
-      // initialized: false,
       goalSuit: null
     };
 
@@ -339,16 +341,18 @@ class App extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  // init(userName, roomNumber) {
-  //   // TODO: do something with username
-  //   this.state.socket.emit("enterRoom", roomNumber);
-  // }
+  handleLogout() {
+    fetch(server + '/logout', { credentials: 'include'});
+    console.log(this);
+    this.setState({ username: null });
+  }
+
 
   async componentDidMount() {
     // TODO: make sure can't take a username that's already taken
     // retrieve username from querystring
 
-    const socket = socketIOClient(ip + ":" + port);
+    const socket = socketIOClient(server);
     this.state.socket = socket;
     this.setState({ username: this.props.user.username });
     // this.setState({ roomNumber: this.props.user.room });
@@ -422,7 +426,7 @@ class App extends Component {
 
 
   render() {
-    if (!this.props.user) {
+    if ((!this.props.user) || (!this.state.username)) {
       return (<Gateway />);
     };
 
@@ -450,6 +454,7 @@ class App extends Component {
                 username={this.state.username}
                 playerState={this.state.players}
                 roomNumber={this.state.roomNumber}
+                handleLogout={() => this.handleLogout()}
               />
 
               <br></br>

@@ -89,3 +89,8 @@
   margin: 14%;
   padding: 8% 0%;
 }
+
+#logoutText {
+  float: right;
+  color: red;
+}

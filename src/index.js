@@ -12,7 +12,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 
-
 fetch(server + '/auth', { credentials: 'include'}  // include cookies
       ).then((response) => response.json())
   .then((user) => {
@@ -22,6 +21,8 @@ fetch(server + '/auth', { credentials: 'include'}  // include cookies
     ReactDOM.render(<Gateway/>, document.getElementById("root"));
   });
 
+
+export default server;
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
