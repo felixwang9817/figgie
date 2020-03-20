@@ -5,6 +5,7 @@ import {
   Card
 } from "react-bootstrap";
 import Gateway from "./Gateway";
+import { Redirect } from "react-router-dom";
 
 // TODO: can we unify a single `server` variable across different .js files?
 var server;
@@ -15,7 +16,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 
-class Login extends React.Component {
+class Signup extends React.Component {
   constructor() {
     super();
 
@@ -23,10 +24,8 @@ class Login extends React.Component {
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
-    this.handleChangeRoom = this.handleChangeRoom.bind(this);
-    this.handleSubmitLogin = this.handleSubmitLogin.bind(this);
+    this.handleSubmitSignup = this.handleSubmitSignup.bind(this);
   }
-
 
   handleChangeUsername(event) {
     this.setState({ username: event.target.value });
@@ -36,27 +35,21 @@ class Login extends React.Component {
     this.setState({ password: event.target.value });
   }
 
-  handleChangeRoom(event) {
-    this.setState({ room: event.target.value });
-  }
-
-  async handleSubmitLogin(event) {
+  async handleSubmitSignup(event) {
     event.preventDefault();
 
-    fetch(server + '/login', {
+    fetch(server + '/signup', {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         method: "POST",
-        credentials: 'include',  // include cookies on RECEIVE (must be here for browser to process SET-COOKIE response header)
         body: JSON.stringify({username: this.state.username,
-                              password: this.state.password,
-                              room: this.state.room}),
-    }).then((response) => response.json())
+                              password: this.state.password}),
+    }).then((response) => response.text())
     .then((user) => {
-      this.setState({ user: user});
-      console.log("login.js setting this.state.user: ", user);
+      this.setState({ user: user});  // placeholder string value to enable redirect to /
+      console.log("signup.js setting this.state.user: ", user);
     }).catch(err => {
       console.log(err);
       this.setState({ user: null });
@@ -64,14 +57,14 @@ class Login extends React.Component {
   }
 
   render() {
-    if (this.state.user) {
-      return (<Gateway user={this.state.user} />);
+    if (this.state.user) {  // if signup successful
+      return (<Redirect to="/" />);
     };
 
     return (
       <Card id="loginSignupFormCard">
-      <h2>Login</h2>
-      <Form id="loginSignupForm" onSubmit={this.handleSubmitLogin}>
+      <h2>Signup</h2>
+      <Form id="loginSignupForm" onSubmit={this.handleSubmitSignup}>
         <Form.Group>
           <Form.Label>Username</Form.Label>
           <Form.Control
@@ -91,24 +84,14 @@ class Login extends React.Component {
             onChange={this.handleChangePassword}
           />
         </Form.Group>
-        <Form.Group>
-          <Form.Label>Room</Form.Label>
-          <Form.Control
-            type="text"
-            value={this.state.room}
-            placeholder="Enter Room"
-            onChange={this.handleChangeRoom}
-            autoFocus={true}
-          />
-        </Form.Group>
         <Button variant="primary" type="submit">
           Submit
         </Button>
       </Form>
-      <a href="/signup">Sign Up</a>
+      <a href="/">Login</a>
       </Card>
     );
   }
 }
 
-export default Login;
+export default Signup;

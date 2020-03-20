@@ -24,9 +24,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Postgres db endpoints
+// TODO: restrict these endpoints to only be accessible from 8080
 app.get("/players", db.getPlayers);
 app.get("/players/:username", db.getMoneyByUsername);
-app.post("/players/:username", db.createPlayer);
+// app.post("/players/:username", db.createPlayer);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
 
@@ -73,6 +74,14 @@ app.post("/login",
     console.log(req.session);
     console.log("router successful login post; user: ", req.user);
     res.send(req.user);
+  });
+
+app.post("/signup",
+  function(req, res) {
+    console.log("at signup, body: ", req.body);
+    db.createPlayer(req.body.username, req.body.password);
+
+    res.send("signup success");
   });
 
 
@@ -620,9 +629,11 @@ io.on("connection", async function(socket) {
       roomToState[roomNumber]["playerState"][username]["money"] =
         money[0]["money"]; // populate from db
     } else {
-      await fetch(`${server}/players/${username}`, {
-        method: "POST"
-      });
+      // TODO: should never input an unknown username here
+      socket.disconnect();
+      // await fetch(`${server}/players/${username}`, {
+      //   method: "POST"
+      // });
     }
     console.log('current room state at end of join', roomToState[roomNumber]);
     updatePlayers(roomNumber);

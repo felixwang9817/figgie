@@ -31,19 +31,20 @@ const getMoneyByUsername = (request, response) => {
   );
 };
 
-const createPlayer = (request, response) => {
+function createPlayer(username, password) {
   console.log("creating player");
-  const username = request.params.username;
   const money = 300;
+  let hashedpw = password; // TODO: actually hash it
+  // TODO: check user isn't currently in db, propagate failure msg up
 
   pool.query(
-    "INSERT INTO players (username, money) VALUES ($1, $2)",
-    [username, money],
+    "INSERT INTO players (username, money, hashedpw) VALUES ($1, $2, $3)",
+    [username, money, hashedpw],
     (error, results) => {
       if (error) {
         throw error;
       }
-      response.status(201).send(`User added with username: ${username}`);
+      return;
     }
   );
 };
