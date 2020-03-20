@@ -73,3 +73,12 @@ To update:
 - `git pull` and `git stash apply`
 - `npm run build` to rebuild
 - You _may_ have to restart the client-facing server.
+
+
+## postgres
+
+https://blog.logrocket.com/setting-up-a-restful-api-with-node-js-and-postgresql-d96d6fc892d8
+
+psql -d postgres -U me
+\c api
+select * from players;

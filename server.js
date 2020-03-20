@@ -36,7 +36,7 @@ passport.use(new Strategy(
     db.findByUsername(username, function(err, user) {
       if (err) { return cb(err); }
       if (!user) { return cb(null, false); }
-      if (/*user.password*/ "wow" != password) { return cb(null, false); }
+      if (user.hashedpw != password) { return cb(null, false); }
       return cb(null, user);
     });
 }));
