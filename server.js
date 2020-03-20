@@ -12,8 +12,10 @@ const db = require("./queries");
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
 const path = require("path");
-const kMaxPlayers = 4;
 require("isomorphic-fetch");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const kMaxPlayers = 4;
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
@@ -37,8 +39,11 @@ passport.use(new Strategy(
     db.findByUsername(username, function(err, user) {
       if (err) { return cb(err); }
       if (!user) { return cb(null, false); }
-      if (user.hashedpw != password) { return cb(null, false); }
-      return cb(null, user);
+
+      // compare hashed pw
+      bcrypt.compare(password, user.hashedpw, function(err, result) {
+          return result ? cb(null, user) : cb(null, false);
+      });
     });
 }));
 

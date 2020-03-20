@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 const Pool = require("pg").Pool;
 const pool = new Pool({
   user: "me",
@@ -34,19 +36,26 @@ const getMoneyByUsername = (request, response) => {
 function createPlayer(username, password) {
   console.log("creating player");
   const money = 300;
-  let hashedpw = password; // TODO: actually hash it
-  // TODO: check user isn't currently in db, propagate failure msg up
-
-  pool.query(
-    "INSERT INTO players (username, money, hashedpw) VALUES ($1, $2, $3)",
-    [username, money, hashedpw],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      return;
+  bcrypt.hash(password, saltRounds, function(err, hashedpw) {
+    if (err) {
+      console.log("error during hashing", err)
+      throw err;
     }
-  );
+
+    // Store hash in your password DB.
+    pool.query(
+      "INSERT INTO players (username, money, hashedpw) VALUES ($1, $2, $3)",
+      [username, money, hashedpw],
+      (error, results) => {
+        if (error) {
+          throw error;
+        }
+        return;
+      }
+    );
+  });
+
+  // TODO: check user isn't currently in db, propagate failure msg up
 };
 
 const updatePlayer = (request, response) => {
