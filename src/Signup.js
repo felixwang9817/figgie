@@ -69,7 +69,7 @@ class Signup extends React.Component {
           <Form.Label>Username</Form.Label>
           <Form.Control
             type="text"
-            value={this.state.username}
+            value={this.state.username || ''}
             placeholder="Enter username"
             onChange={this.handleChangeUsername}
             autoFocus={true}
@@ -79,7 +79,7 @@ class Signup extends React.Component {
           <Form.Label>Password</Form.Label>
           <Form.Control
             type="password"
-            value={this.state.password}
+            value={this.state.password || ''}
             placeholder="Enter password"
             onChange={this.handleChangePassword}
           />

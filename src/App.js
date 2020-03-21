@@ -89,7 +89,7 @@ class Players extends React.Component {
               <td>#</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td
+                  <td key={key}
                     style={
                       players[key] === username ? { color: playerColor } : {}
                     }
@@ -97,7 +97,7 @@ class Players extends React.Component {
                     {players[key]}
                   </td>
                 ) : (
-                  <td></td>
+                  <td key={key}></td>
                 )
               )}
             </tr>
@@ -107,7 +107,7 @@ class Players extends React.Component {
               <td># cards</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td
+                  <td key={key}
                     style={
                       players[key] === username ? { color: playerColor } : {}
                     }
@@ -115,7 +115,7 @@ class Players extends React.Component {
                     {playerState[players[key]]["numCards"]}
                   </td>
                 ) : (
-                  <td></td>
+                  <td key={key}></td>
                 )
               )}
             </tr>
@@ -141,37 +141,36 @@ class Market extends React.Component {
           <tr>
             <th>MARKET</th>
             {Object.keys(markets).map(key => (
-              <td>{displaySuit(key)}</td>
+              <td key={key}>{displaySuit(key)}</td>
             ))}
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>bids</td>
-            {Object.values(markets).map(suitMarket => (
-              <td>
-                {suitMarket["bid"] !== null
-                  ? suitMarket["bid"] + " by " + suitMarket["bidPlayer"]
+            {Object.keys(markets).map(key => (
+              <td key={key}>
+                {markets[key]["bid"] !== null
+                  ? markets[key]["bid"] + " by " + markets[key]["bidPlayer"]
                   : ""}
               </td>
             ))}
           </tr>
           <tr>
             <td>offers</td>
-            {Object.values(markets).map(suitMarket => (
-              <td>
-                {suitMarket["offer"] !== null
-                  ? suitMarket["offer"] + " by " + suitMarket["offerPlayer"]
+            {Object.keys(markets).map(key => (
+              <td key={key}>
+                {markets[key]["offer"] !== null
+                  ? markets[key]["offer"] + " by " + markets[key]["offerPlayer"]
                   : ""}
               </td>
             ))}
           </tr>
-
           {this.props.isGameActive ? (
             <tr>
               <td># you have</td>
               {Object.keys(markets).map(key => (
-                <td>
+                <td key={key}>
                   {this.props.playerState[username] != null
                     ? this.props.playerState[username][key]
                     : ""}
@@ -179,16 +178,15 @@ class Market extends React.Component {
               ))}
             </tr>
           ) : (
-            ""
+            <tr></tr>
           )}
-
           {/* Displaying everyone's cards at end of the game */}
           {!this.props.isGameActive && this.props.tradeLog.length > 0
             ? Object.keys(this.props.playerState).map(player => (
                 <tr style={player === username ? { color: playerColor } : {}}>
                   <td>{player === username ? "you" : "player " + player}</td>
                   {Object.keys(markets).map(key => (
-                    <td
+                    <td key={key}
                       style={
                         key === this.props.goalSuit
                           ? { color: goalColor, "font-weight": "bold" }
@@ -202,7 +200,7 @@ class Market extends React.Component {
                   ))}
                 </tr>
               ))
-            : ""}
+            : <tr></tr>}
         </tbody>
       </Table>
     );
@@ -504,7 +502,7 @@ class App extends Component {
               />
 
               <a
-                class="App-link"
+                className="App-link"
                 href="https://www.janestreet.com/figgie/"
                 target="_blank" rel="noopener noreferrer"
               >

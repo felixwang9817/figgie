@@ -97,7 +97,7 @@ app.post("/signup",
 // res.json() will just fail on the response when there's an http error e.g. 404
 app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
   function(req, res) {
-    res.send(req.user);
+    res.send({user: req.user});
   });
 
 // TODO: what triggers this fetch?
@@ -108,10 +108,10 @@ app.get('/logout',
     res.send('bye');
   });
 
-app.get('/login',
+app.get('/login',  // happens when /auth fails
   function(req, res) {
     console.log('get /login');
-    res.redirect('/');  // placeholder, should just return nothing
+    res.send({user: null});
   })
 
 

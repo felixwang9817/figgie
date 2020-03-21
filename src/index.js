@@ -14,9 +14,9 @@ if (process.env.NODE_ENV === "production") {
 
 fetch(server + '/auth', { credentials: 'include'}  // include cookies
       ).then((response) => response.json())
-  .then((user) => {
-    ReactDOM.render(<Gateway user={user}/>, document.getElementById("root"));
-  }).catch(err => {
+  .then((response) => {
+    ReactDOM.render(<Gateway user={response.user}/>, document.getElementById("root"));
+  }).catch((err) => {
     console.log(err);
     ReactDOM.render(<Gateway/>, document.getElementById("root"));
   });

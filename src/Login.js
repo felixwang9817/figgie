@@ -76,7 +76,7 @@ class Login extends React.Component {
           <Form.Label>Username</Form.Label>
           <Form.Control
             type="text"
-            value={this.state.username}
+            value={this.state.username || ''}
             placeholder="Enter username"
             onChange={this.handleChangeUsername}
             autoFocus={true}
@@ -86,7 +86,7 @@ class Login extends React.Component {
           <Form.Label>Password</Form.Label>
           <Form.Control
             type="password"
-            value={this.state.password}
+            value={this.state.password || ''}
             placeholder="Enter password"
             onChange={this.handleChangePassword}
           />
@@ -95,7 +95,7 @@ class Login extends React.Component {
           <Form.Label>Room</Form.Label>
           <Form.Control
             type="text"
-            value={this.state.room}
+            value={this.state.room || ''}
             placeholder="Enter Room"
             onChange={this.handleChangeRoom}
             autoFocus={true}
