@@ -8,6 +8,7 @@ const pool = new Pool({
   password: "password",
   port: 5432
 });
+const kStartingMoney = 300;
 
 const getPlayers = (request, response) => {
   pool.query("SELECT * FROM players ORDER BY id ASC", (error, results) => {
@@ -38,12 +39,11 @@ function createPlayer(username, password, cb) {
   findByUsername(username, ((_, result) => {
     console.log(_, result);
     if (result) {
-      // TODO: propagate username already exists error
       return cb(false, "Username already exists!");
     }
 
     console.log("creating player");
-    const money = 300;
+    const money = kStartingMoney;
     bcrypt.hash(password, saltRounds, function(err, hashedpw) {
       if (err) {
         console.log("error during hashing", err)
@@ -59,6 +59,7 @@ function createPlayer(username, password, cb) {
             console.log("error during player insertion", err);
             return cb(false, "Error adding player to db.");
           }
+          console.log("signup successful!");
           return cb(true, "Signup successful!");
         }
       );

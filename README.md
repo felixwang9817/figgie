@@ -19,14 +19,7 @@ http://3.136.26.146:3000/
 - alert on login fail
 
 - rooms
-
   - waiting room that auto-joins if players leave
-
-- persistent user
-
-  - then allow users to choose username upon joining
-  - then, make accounts and pw
-  - finally, move to actual DB (Postgres, Firebase, etc.)
 
 - observer
 
@@ -45,9 +38,7 @@ http://3.136.26.146:3000/
     - we have to support socket disconnect and handle it properly
       - alert for all players
       - if game is not yet started, refresh page
-- persistent user
-  - we have successfully created login page that will post to passport login endpoint to attempt to login
-  - main problem: we do not know how to check whether user is logged in from client without making a post request to login endpoint
+
 
 ## Deployment
 
@@ -57,20 +48,18 @@ To deploy on aws:
 - git clone repo
 - npm install
 - npm run build
-- **make sure IP address is set to the server IP (ENV var, but it seems broken sometimes so just hardcode it in App.js) and ports 3000 and 8080 are open**
+- **make sure ENV=production!**
 
 - install serve and pm2
 - make sure postgres is installed and configured (database `players`)
 - `pm2 start server.js --watch` to start backend server and watch changes
 - `pm2 save && pm2 startup`, then run the code returned by pm2 startup, to auto restart server on machine restart. You can test server is running with `IP:8080/players`
   - `pm2 logs` to see logs
-- `serve -s build -l 3000` to run client-facing server
-  - TODO: figure out a way to restart this on error
+- `serve -s build -l 3000` on a tmux window in background to run client-facing server
 
 To update:
 
-- `git stash` to stash the IP address change
-- `git pull` and `git stash apply`
+- `git pull`
 - `npm run build` to rebuild
 - You _may_ have to restart the client-facing server.
 

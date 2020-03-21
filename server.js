@@ -84,11 +84,11 @@ app.post("/signup",
   function(req, res) {
     console.log("at signup, body: ", req.body);
     
-    db.createPlayer(req.body.username, req.body.password, 
-                    (success, msg) => { 
-                        console.log("signup result: ", success, msg);
-                        res.send({success: success,
-                                  msg: msg}) });
+    db.createPlayer(req.body.username, 
+                    req.body.password, 
+                    (success, msg) => {
+                      res.send({success: success,
+                                msg: msg}) });
   
   });
 
