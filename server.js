@@ -29,7 +29,6 @@ app.use(passport.session());
 // TODO: restrict these endpoints to only be accessible from 8080
 app.get("/players", db.getPlayers);
 app.get("/players/:username", db.getMoneyByUsername);
-// app.post("/players/:username", db.createPlayer);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
 
@@ -84,9 +83,13 @@ app.post("/login",
 app.post("/signup",
   function(req, res) {
     console.log("at signup, body: ", req.body);
-    db.createPlayer(req.body.username, req.body.password);
-
-    res.send("signup success");
+    
+    db.createPlayer(req.body.username, req.body.password, 
+                    (success, msg) => { 
+                        console.log("signup result: ", success, msg);
+                        res.send({success: success,
+                                  msg: msg}) });
+  
   });
 
 

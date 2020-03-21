@@ -46,18 +46,18 @@ class Signup extends React.Component {
         method: "POST",
         body: JSON.stringify({username: this.state.username,
                               password: this.state.password}),
-    }).then((response) => response.text())
-    .then((user) => {
-      this.setState({ user: user});  // placeholder string value to enable redirect to /
-      console.log("signup.js setting this.state.user: ", user);
+    }).then((response) => response.json())
+    .then((res) => {
+      this.setState(res);  // placeholder string value to enable redirect to /
+      console.log("signup.js receiving response", res);
     }).catch(err => {
       console.log(err);
-      this.setState({ user: null });
+      this.setState({ success: false });
     });
   }
 
   render() {
-    if (this.state.user) {  // if signup successful
+    if (this.state.success) {  // if signup successful
       return (<Redirect to="/" />);
     };
 

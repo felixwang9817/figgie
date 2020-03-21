@@ -33,29 +33,37 @@ const getMoneyByUsername = (request, response) => {
   );
 };
 
-function createPlayer(username, password) {
-  console.log("creating player");
-  const money = 300;
-  bcrypt.hash(password, saltRounds, function(err, hashedpw) {
-    if (err) {
-      console.log("error during hashing", err)
-      throw err;
+function createPlayer(username, password, cb) {
+  // check if player exists
+  findByUsername(username, ((_, result) => {
+    console.log(_, result);
+    if (result) {
+      // TODO: propagate username already exists error
+      return cb(false, "Username already exists!");
     }
 
-    // Store hash in your password DB.
-    pool.query(
-      "INSERT INTO players (username, money, hashedpw) VALUES ($1, $2, $3)",
-      [username, money, hashedpw],
-      (error, results) => {
-        if (error) {
-          throw error;
-        }
-        return;
+    console.log("creating player");
+    const money = 300;
+    bcrypt.hash(password, saltRounds, function(err, hashedpw) {
+      if (err) {
+        console.log("error during hashing", err)
+        return cb(false, "Error hashing pw.");
       }
-    );
-  });
 
-  // TODO: check user isn't currently in db, propagate failure msg up
+      // Store hash in your password DB.
+      pool.query(
+        "INSERT INTO players (username, money, hashedpw) VALUES ($1, $2, $3)",
+        [username, money, hashedpw],
+        (error, results) => {
+          if (error) {
+            console.log("error during player insertion", err);
+            return cb(false, "Error adding player to db.");
+          }
+          return cb(true, "Signup successful!");
+        }
+      );
+    });
+  }));
 };
 
 const updatePlayer = (request, response) => {
@@ -91,19 +99,16 @@ const deletePlayer = (request, response) => {
 
 // passport.js authenticate
 const findByUsername = function(username, cb) {
-  process.nextTick(function() {
-
-    pool.query(
-      "SELECT * FROM players WHERE username = $1",
-      [username],
-      (error, results) => {
-        if (error) {
-          return cb(null, null);
-        }
-        return cb(null, results.rows[0]);
+  pool.query(
+    "SELECT * FROM players WHERE username = $1",
+    [username],
+    (error, results) => {
+      if (error) {
+        return cb(null, null);
       }
-    );
-  });
+      return cb(null, results.rows[0]);
+    }
+  );
 }
 
 module.exports = {
