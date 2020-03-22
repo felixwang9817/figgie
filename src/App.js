@@ -355,7 +355,10 @@ class App extends Component {
     // TODO: authenticate socket, wait for server to signal us our
     // username & roomnumber!!
     // Make it so we don't send anything except req.user through passport,
-    //
+    // TODO: get username and room number form this.props.user
+    // Remove socket.emit enterRoom/provideUsername
+
+
     this.setState({ username: this.props.user.username });
     // this.setState({ roomNumber: this.props.user.room });
     // TODO: debug this. How to get users login to auto propagate information?
@@ -384,11 +387,6 @@ class App extends Component {
       console.log("trade log update");
       this.setState({ tradeLog: state });
     });
-
-    // socket.on("username", state => {
-    //   console.log("username");
-    //   this.setState({ username: state });
-    // });
 
     socket.on("goalSuit", goalSuit => {
       this.setState({ goalSuit: goalSuit });

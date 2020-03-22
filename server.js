@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
-const session = require('express-session');
+const session = require('express-session')({ 
+  secret: 'keyboard cat', resave: false, saveUninitialized: false,
+  cookie: { maxAge: 3600000 } });
 const cors = require('cors');
 app.use(cors({ origin: ["http://localhost:3000", "http://3.136.26.146:3000"], credentials: true}));  // enable cross-origin access + cookies
 const port = 8080;
@@ -19,9 +21,11 @@ const kMaxPlayers = 4;
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-app.use(session({ 
-  secret: 'keyboard cat', resave: false, saveUninitialized: false,
-  cookie: { maxAge: 3600000 } }));
+app.use(session);
+const sharedsession = require("express-socket.io-session");
+io.use(sharedsession(session, {
+    autoSave:true
+})); 
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -77,6 +81,9 @@ app.post("/login",
   function(req, res) {
     console.log(req.session);
     console.log("router successful login post; user: ", req.user);
+    
+    // TODO: store the room information for this user, so that socket on connect will know
+    // also add a room property for req.user
     res.send(req.user);
   });
 
@@ -177,6 +184,12 @@ usernameToRoomNumber = {};
 // PARSE FUNCTION
 function parseCommand(command, socket) {
   let socketid = socket.id;
+  let user = socket.handshake.session.passport.user;
+  // TODO: get username from user
+  // get room from username
+
+  // TODO: remove all reliance on socketid
+
   let roomNumber = socketidToRoomNumber[socketid];
   if (!roomToState[roomNumber]) return;
   if (!roomToState[roomNumber]["isGameActive"]) {
@@ -588,9 +601,19 @@ io.on("connection", async function(socket) {
   }
 
   console.log("A user connected with socket id: " + socket.id);
+  let user = socket.handshake.session.passport.user;
+  console.log("socket.handshake.session.passport.user", user);
 
-  // join specific room
+  if (!user) {
+    console.log("Unauthenticated socket connection, rejecting");
+    socket.disconnect();
+    return;
+  }
+
+  // TODO: just pull room info from /login or previous session, should already exist
+  // kill enterRoom
   socket.on("enterRoom", roomNumber => {
+    // still initialize room here, since /login only updates username->room#
     if (!Object.keys(roomToState).includes(roomNumber)) {
       initializeRoom(roomNumber);
     }
@@ -600,6 +623,9 @@ io.on("connection", async function(socket) {
 
     socket.emit("enteredRoom", roomNumber); // user data is added on provideUsername
   });
+
+  // TODO: kill provideUsername, move all logic to 'enterRoom' b/c
+  // username is already known from ...session.passport.user
 
   // allow client to specify username
   socket.on("provideUsername", async username => {
@@ -621,7 +647,7 @@ io.on("connection", async function(socket) {
 
     console.log('current room state on join', roomToState[roomNumber]);
 
-    // initialize new player and add to db or retrieve persistent state
+    // initialize new player and retrieve persistent state
     // if player was just reconnected, keep previous setting
     if (!roomToState[roomNumber]["playerState"][username]) {
       roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
@@ -637,11 +663,8 @@ io.on("connection", async function(socket) {
       roomToState[roomNumber]["playerState"][username]["money"] =
         money[0]["money"]; // populate from db
     } else {
-      // TODO: should never input an unknown username here
+      // should never input an unknown username here
       socket.disconnect();
-      // await fetch(`${server}/players/${username}`, {
-      //   method: "POST"
-      // });
     }
     console.log('current room state at end of join', roomToState[roomNumber]);
     updatePlayers(roomNumber);
@@ -649,7 +672,13 @@ io.on("connection", async function(socket) {
     // socket.emit("username", username);
   });
 
-  // on disconnection, server recycles the client username
+
+  // TODO: on disconnect, actually remove user IF game is not active
+  // if gamte is active, then keep that user's room and state to allow reconnects
+
+  // TODO2: eventually add cleanup on a timer after game ends, boot people to lobby unless
+  // they are active and want to restart a game in the room
+
   socket.on("disconnect", async function() {
     // TODO: be more careful about checking conditions
     let username = socketidToUsername[socket.id];
