@@ -1,27 +1,37 @@
 const express = require("express");
 const app = express();
-const session = require('express-session');
-const cors = require('cors');
-app.use(cors({ origin: ["http://localhost:3000", "http://3.136.26.146:3000"], credentials: true}));  // enable cross-origin access + cookies
+const session = require("express-session");
+const cors = require("cors");
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "http://3.136.26.146:3000"],
+    credentials: true
+  })
+); // enable cross-origin access + cookies
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 // io.set('origins', '*:*');
 const utils = require("./utils");
 const db = require("./queries");
-const passport = require('passport');
-const Strategy = require('passport-local').Strategy;
+const passport = require("passport");
+const Strategy = require("passport-local").Strategy;
 const path = require("path");
 require("isomorphic-fetch");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const kMaxPlayers = 4;
+const kMaxPlayers = 2;
 
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 app.use(bodyParser.json());
-app.use(session({ 
-  secret: 'keyboard cat', resave: false, saveUninitialized: false,
-  cookie: { maxAge: 3600000 } }));
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 3600000 }
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -32,19 +42,29 @@ app.get("/players/:username", db.getMoneyByUsername);
 app.put("/players/:username/:money", db.updatePlayer);
 app.delete("/players/:username", db.deletePlayer);
 
-passport.use(new Strategy(
-  function(username, password, cb) {
-    console.log("passport authenticate: username", username, "password", password);
+passport.use(
+  new Strategy(function(username, password, cb) {
+    console.log(
+      "passport authenticate: username",
+      username,
+      "password",
+      password
+    );
     db.findByUsername(username, function(err, user) {
-      if (err) { return cb(err); }
-      if (!user) { return cb(null, false); }
+      if (err) {
+        return cb(err);
+      }
+      if (!user) {
+        return cb(null, false);
+      }
 
       // compare hashed pw
       bcrypt.compare(password, user.hashedpw, function(err, result) {
-          return result ? cb(null, user) : cb(null, false);
+        return result ? cb(null, user) : cb(null, false);
       });
     });
-}));
+  })
+);
 
 // Configure Passport authenticated session persistence.
 //
@@ -63,7 +83,6 @@ passport.deserializeUser(function(user, cb) {
   cb(null, user);
 });
 
-
 var server;
 if (process.env.NODE_ENV === "production") {
   server = "http://3.136.26.146:8080";
@@ -71,54 +90,52 @@ if (process.env.NODE_ENV === "production") {
   server = "http://localhost:8080";
 }
 
-
-app.post("/login", 
-  passport.authenticate('local', { failureRedirect: '/'}),
+app.post(
+  "/login",
+  passport.authenticate("local", { failureRedirect: "/" }),
   function(req, res) {
     console.log(req.session);
     console.log("router successful login post; user: ", req.user);
     res.send(req.user);
-  });
+  }
+);
 
-app.post("/signup",
-  function(req, res) {
-    console.log("at signup, body: ", req.body);
-    
-    db.createPlayer(req.body.username, 
-                    req.body.password, 
-                    (success, msg) => {
-                      res.send({success: success,
-                                msg: msg}) });
-  
-  });
+app.post("/signup", function(req, res) {
+  console.log("at signup, body: ", req.body);
 
+  db.createPlayer(req.body.username, req.body.password, (success, msg) => {
+    res.send({ success: success, msg: msg });
+  });
+});
 
 // TODO: how to send a failure msg in json format when login fails? right now
 // res.json() will just fail on the response when there's an http error e.g. 404
-app.get('/auth', require('connect-ensure-login').ensureLoggedIn(),
-  function(req, res) {
-    res.send({user: req.user});
-  });
+app.get("/auth", require("connect-ensure-login").ensureLoggedIn(), function(
+  req,
+  res
+) {
+  res.send({ user: req.user });
+});
 
 // TODO: what triggers this fetch?
-app.get('/logout',
-  function(req, res){
-    console.log('logging out');
-    req.logout();
-    res.send('bye');
-  });
+app.get("/logout", function(req, res) {
+  console.log("logging out");
+  req.logout();
+  res.send("bye");
+});
 
-app.get('/login',  // happens when /auth fails
+app.get(
+  "/login", // happens when /auth fails
   function(req, res) {
-    console.log('get /login');
-    res.send({user: null});
-  })
-
+    console.log("get /login");
+    res.send({ user: null });
+  }
+);
 
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
 
-console.log('env:', process.env.NODE_ENV);
+console.log("env:", process.env.NODE_ENV);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "build")));
   app.get("/*", function(req, res) {
@@ -129,7 +146,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -445,8 +461,9 @@ function updatePlayers(roomNumber, shield = true) {
   for (const socketid in socketids) {
     io.to(socketid).emit(
       "playerUpdate",
-      shield ? shieldPlayerInfo(socketid, roomNumber)
-             : roomToState[roomNumber]["playerState"]
+      shield
+        ? shieldPlayerInfo(socketid, roomNumber)
+        : roomToState[roomNumber]["playerState"]
     );
   }
 }
@@ -472,7 +489,9 @@ function initializeRoom(roomNumber) {
 }
 
 function startGame(roomNumber, socket) {
-  if (Object.keys(roomToState[roomNumber]["playerState"]).length !== kMaxPlayers) {
+  if (
+    Object.keys(roomToState[roomNumber]["playerState"]).length !== kMaxPlayers
+  ) {
     return socket.emit("alert", "Not enough players!");
   } else if (roomToState[roomNumber]["isGameActive"]) {
     return socket.emit("alert", "Game already started!");
@@ -606,11 +625,16 @@ io.on("connection", async function(socket) {
     socketidToUsername[socket.id] = username;
     let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
     let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
-    if ((currPlayers.length == kMaxPlayers || roomToState[roomNumber]["isGameActive"])
-        && !currPlayers.includes(username)) {
+    if (
+      (currPlayers.length == kMaxPlayers ||
+        roomToState[roomNumber]["isGameActive"]) &&
+      !currPlayers.includes(username)
+    ) {
       // room full
       // TODO: emit different message to client than full total capacity
-      console.log("Room is full or active, rejecting connection from " + socket.id);
+      console.log(
+        "Room is full or active, rejecting connection from " + socket.id
+      );
       socket.emit("maxCapacity");
       socket.disconnect();
       return;
@@ -619,7 +643,7 @@ io.on("connection", async function(socket) {
     socketidToUsername[socket.id] = username;
     usernameToRoomNumber[username] = roomNumber;
 
-    console.log('current room state on join', roomToState[roomNumber]);
+    console.log("current room state on join", roomToState[roomNumber]);
 
     // initialize new player and add to db or retrieve persistent state
     // if player was just reconnected, keep previous setting
@@ -629,7 +653,7 @@ io.on("connection", async function(socket) {
       );
     } else {
       // game currently on?
-      socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"])
+      socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
     }
     let money = await fetch(`${server}/players/${username}`);
     money = await money.json();
@@ -643,7 +667,7 @@ io.on("connection", async function(socket) {
       //   method: "POST"
       // });
     }
-    console.log('current room state at end of join', roomToState[roomNumber]);
+    console.log("current room state at end of join", roomToState[roomNumber]);
     updatePlayers(roomNumber);
     broadcastMarketUpdate(roomNumber);
     // socket.emit("username", username);
@@ -676,7 +700,10 @@ io.on("connection", async function(socket) {
       }
     }
 
-    console.log('current room state at end of disconnect', roomToState[roomNumber]);
+    console.log(
+      "current room state at end of disconnect",
+      roomToState[roomNumber]
+    );
   });
 
   // on client command, server parses the command
