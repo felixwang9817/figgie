@@ -19,12 +19,16 @@ http://3.136.26.146:3000/
 - alert on login fail
 
 - rooms
+
   - waiting room that auto-joins if players leave
 
 - observer
 
 - show coins gained/lost at end of round
 - max length 30 username
+
+- support player leaving and re-entering
+  - keep player name muted gray when gone
 
 * timer for end
 
@@ -38,7 +42,6 @@ http://3.136.26.146:3000/
     - we have to support socket disconnect and handle it properly
       - alert for all players
       - if game is not yet started, refresh page
-
 
 ## Deployment
 
@@ -63,11 +66,10 @@ To update:
 - `npm run build` to rebuild
 - You _may_ have to restart the client-facing server.
 
-
 ## postgres
 
 https://blog.logrocket.com/setting-up-a-restful-api-with-node-js-and-postgresql-d96d6fc892d8
 
 psql -d postgres -U me
 \c api
-select * from players;
+select \* from players;
