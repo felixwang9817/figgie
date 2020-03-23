@@ -189,7 +189,7 @@ class Market extends React.Component {
                     <td key={key}
                       style={
                         key === this.props.goalSuit
-                          ? { color: goalColor, "font-weight": "bold" }
+                          ? { color: goalColor, "fontWeight": "bold" }
                           : {}
                       }
                     >

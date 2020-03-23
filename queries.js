@@ -10,18 +10,16 @@ const pool = new Pool({
 });
 const kStartingMoney = 300;
 
-const getPlayers = (request, response) => {
-  pool.query("SELECT * FROM players ORDER BY id ASC", (error, results) => {
-    if (error) {
-      throw error;
-    }
-    response.status(200).json(results.rows);
-  });
-};
+// const getPlayers = (request, response) => {
+//   pool.query("SELECT * FROM players ORDER BY id ASC", (error, results) => {
+//     if (error) {
+//       throw error;
+//     }
+//     response.status(200).json(results.rows);
+//   });
+// };
 
-const getMoneyByUsername = (request, response) => {
-  const username = request.params.username;
-
+const getMoneyByUsername = (username, cb) => {
   pool.query(
     "SELECT money FROM players WHERE username = $1",
     [username],
@@ -29,7 +27,7 @@ const getMoneyByUsername = (request, response) => {
       if (error) {
         throw error;
       }
-      response.status(200).json(results.rows);
+      cb(results.rows[0]["money"]);
     }
   );
 };
@@ -67,36 +65,35 @@ function createPlayer(username, password, cb) {
   }));
 };
 
-const updatePlayer = (request, response) => {
-  const username = request.params.username;
-  const money = request.params.money;
-
-  pool.query(
-    "UPDATE players SET money = $1 WHERE username = $2",
-    [money, username],
-    (error, results) => {
-      if (error) {
-        throw error;
+const updatePlayer = (username, money) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(
+      "UPDATE players SET money = $1 WHERE username = $2",
+      [money, username],
+      (error, results) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve();
       }
-      response.status(200).send(`User modified with username: ${username}`);
-    }
-  );
+    );
+  });
 };
 
-const deletePlayer = (request, response) => {
-  const username = request.params.username;
+// const deletePlayer = (request, response) => {
+//   const username = request.params.username;
 
-  pool.query(
-    "DELETE FROM players WHERE username = $1",
-    [username],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send(`User deleted with username: ${username}`);
-    }
-  );
-};
+//   pool.query(
+//     "DELETE FROM players WHERE username = $1",
+//     [username],
+//     (error, results) => {
+//       if (error) {
+//         throw error;
+//       }
+//       response.status(200).send(`User deleted with username: ${username}`);
+//     }
+//   );
+// };
 
 // passport.js authenticate
 const findByUsername = function(username, cb) {
@@ -113,10 +110,10 @@ const findByUsername = function(username, cb) {
 }
 
 module.exports = {
-  getPlayers,
+  // getPlayers,
   getMoneyByUsername,
   createPlayer,
   updatePlayer,
-  deletePlayer,
+  // deletePlayer,
   findByUsername
 };

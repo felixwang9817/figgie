@@ -18,7 +18,6 @@ app.use(
 const port = 8080;
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-// io.set('origins', '*:*');
 const utils = require("./utils");
 const db = require("./queries");
 const passport = require("passport");
@@ -27,7 +26,7 @@ const path = require("path");
 require("isomorphic-fetch");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const kMaxPlayers = 2;
+const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 2;
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -41,19 +40,12 @@ io.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Postgres db endpoints
-// TODO: restrict these endpoints to only be accessible from 8080
-app.get("/players", db.getPlayers);
-app.get("/players/:username", db.getMoneyByUsername);
-app.put("/players/:username/:money", db.updatePlayer);
-app.delete("/players/:username", db.deletePlayer);
-
 passport.use(
   new Strategy(function(username, password, cb) {
     console.log(
       "passport authenticate: username",
       username,
-      "password",
+      "password:",
       password
     );
     db.findByUsername(username, function(err, user) {
@@ -79,6 +71,10 @@ passport.use(
 // typical implementation of this is as simple as supplying the user ID when
 // serializing, and querying the user record by ID from the database when
 // deserializing.
+
+// Currently, we keep the whole user since we need access to session.passport.user
+// from our socket. TODO: In future, we should serialize users to just their id/username
+// and reconstruct their data from db
 passport.serializeUser(function(user, cb) {
   console.log("serializing", user);
   cb(null, user);
@@ -100,8 +96,7 @@ app.post(
   "/login",
   passport.authenticate("local", { failureRedirect: "/" }),
   function(req, res) {
-    // console.log(req.session);
-    // console.log("router successful login post; user: ", req.user);
+    console.log("successful login from user: ", req.user.username);
 
     // store room number for this username, so that socket can be put into room upon socket connection
     let username = req.user.username;
@@ -141,7 +136,6 @@ app.get("/logout", function(req, res) {
 app.get(
   "/login", // happens when /auth fails
   function(req, res) {
-    console.log("get /login");
     res.send({ user: null });
   }
 );
@@ -600,9 +594,8 @@ function endGame(roomNumber, socket) {
   // give out rewards and update persistent state
   Object.keys(playerState).map(async player => {
     playerState[player]["money"] += rewards[player];
-    await fetch(`${server}/players/${player}/${playerState[player]["money"]}`, {
-      method: "PUT"
-    });
+    // let update resolve async
+    db.updatePlayer(player, playerState[player]["money"])
   });
   updatePlayers(roomNumber, (shield = false));
   io.to(roomNumber).emit("goalSuit", goalSuit);
@@ -619,7 +612,7 @@ io.on("connection", async function(socket) {
   }
 
   if (!socket.handshake.session.passport) {
-    // passport haven't been initialized yet, reset
+    console.log("Err: passport haven't been initialized yet.")
     socket.disconnect();
     return;
   }
@@ -667,26 +660,18 @@ io.on("connection", async function(socket) {
       initialPlayerState
     );
   }
-  let money = await fetch(`${server}/players/${username}`);
-  money = await money.json();
-  if (money.length > 0) {
-    roomToState[roomNumber]["playerState"][username]["money"] =
-      money[0]["money"]; // populate from db
-  } else {
-    // username not found in db, disconnect
-    socket.disconnect();
-  }
-  console.log("current room state at end of join", roomToState[roomNumber]);
+
+  // async update money
+  db.getMoneyByUsername(username, (money) => {
+    roomToState[roomNumber]["playerState"][username]["money"] = money;
+    updatePlayers(roomNumber);
+  })
   
   // update cliend UI to reflect current game state
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
   let tradeLog = roomToState[roomNumber]["tradeLog"];  
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
-  updatePlayers(roomNumber);
   broadcastMarketUpdate(roomNumber);
-
-  // TODO: on disconnect, actually remove user IF game is not active
-  // if gamte is active, then keep that user's room and state to allow reconnects
 
   // TODO2: eventually add cleanup on a timer after game ends, boot people to lobby unless
   // they are active and want to restart a game in the room
@@ -699,23 +684,22 @@ io.on("connection", async function(socket) {
     let roomNumber = usernameToRoomNumber[username];
     console.log("user disconnected", username);
 
-
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
-        await fetch(
-          `${server}/players/${username}/${playerState[username]["money"]}`,
-          { method: "PUT" }
-        );
+
+        await db.updatePlayer(username, playerState[username]["money"])
+
         // game is over, we don't need to save user's state
         if (!roomToState[roomNumber]["isGameActive"]) {
           delete playerState[username];
+
+          if (Object.keys(playerState).length == 0) {
+            delete roomToState[roomNumber];
+          } else {
+            updatePlayers(roomNumber);
+          }
         }
-      }
-      if (Object.keys(playerState).length == 0) {
-        delete roomToState[roomNumber];
-      } else {
-        updatePlayers(roomNumber);
       }
     }
 
