@@ -32,7 +32,7 @@
     "socket.io-client": "^2.3.0"
   },
   "scripts": {
-    "start": "concurrently 'NODE_ENV=development npx nodemon server.js' 'react-scripts start'",
+    "start": "concurrently 'NODE_ENV=development npx nodemon server.js' 'react-scripts start' -k",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
