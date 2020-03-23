@@ -31,7 +31,7 @@ class Login extends React.Component {
   }
 
   handleChangeRoom(event) {
-    this.setState({ room: event.target.value });
+    this.setState({ roomNumber: event.target.value });
   }
 
   async handleSubmitLogin(event) {
@@ -47,7 +47,7 @@ class Login extends React.Component {
       body: JSON.stringify({
         username: this.state.username,
         password: this.state.password,
-        roomNumber: this.state.room
+        roomNumber: this.state.roomNumber
       })
     })
       .then(response => response.json())
@@ -93,10 +93,9 @@ class Login extends React.Component {
             <Form.Label>Room</Form.Label>
             <Form.Control
               type="text"
-              value={this.state.room || ""}
+              value={this.state.roomNumber || ""}
               placeholder="Enter Room"
               onChange={this.handleChangeRoom}
-              autoFocus={true}
             />
           </Form.Group>
           <Button variant="primary" type="submit">

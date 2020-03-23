@@ -45,7 +45,7 @@ class Signup extends React.Component {
     })
       .then(response => response.json())
       .then(res => {
-        this.setState(res); // placeholder string value to enable redirect to /
+        this.setState(res);
         console.log("signup.js receiving response", res);
       })
       .catch(err => {

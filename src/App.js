@@ -341,15 +341,12 @@ class App extends Component {
 
   handleLogout() {
     fetch(server + '/logout', { credentials: 'include'});
-    console.log(this);
+    this.state.socket.disconnect();
     this.setState({ username: null });
   }
 
 
   async componentDidMount() {
-    // TODO: make sure can't take a username that's already taken
-    // retrieve username from querystring
-
     const socket = socketIOClient(server);
     this.state.socket = socket;
     // TODO: authenticate socket, wait for server to signal us our
@@ -360,19 +357,8 @@ class App extends Component {
 
 
     this.setState({ username: this.props.user.username });
-    // this.setState({ roomNumber: this.props.user.room });
-    // TODO: debug this. How to get users login to auto propagate information?
-    // look at system design on server end
-    socket.emit("enterRoom", this.state.roomNumber);
-
-    // TODO: combine this with above
-    socket.on("enteredRoom", state => {
-      console.log("entered room number: " + state);
-      // to ensure that no async problems occur with username being set up after the room
-      socket.emit("provideUsername", this.state.username);
-      this.setState({ roomNumber: state });
-    });
-
+    this.setState({ roomNumber: this.props.user.roomNumber });
+    
     socket.on("marketUpdate", state => {
       console.log("market update: ", state);
       this.setState({ market: state });

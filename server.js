@@ -107,11 +107,9 @@ app.post(
     let username = req.user.username;
     let roomNumber = req.body.roomNumber;
     usernameToRoomNumber[username] = roomNumber;
-    if (roomNumberToUsernames[roomNumber]) {
-      roomNumberToUsernames[roomNumber].push(username);
-    } else {
-      roomNumberToUsernames[roomNumber] = [username];
-    }
+
+    // send back to client its roomNumber
+    req.user['roomNumber'] = roomNumber;
     res.send(req.user);
   }
 );
@@ -204,7 +202,6 @@ let roomToState = {}; // room number -> market state and player state for that r
 // socket and room info
 usernameToRoomNumber = {};
 usernameToSocketid = {};
-roomNumberToUsernames = {};
 
 // PARSE FUNCTION
 function parseCommand(command, socket) {
@@ -470,11 +467,11 @@ function shieldPlayerInfo(username, roomNumber) {
 
 function updatePlayers(roomNumber, shield = true) {
   // first, get usernames associated with roomNumber
-  let usernames = roomNumberToUsernames[roomNumber];
-  console.log("usernames: " + JSON.stringify(usernames));
+  let usernames = Object.keys(roomToState[roomNumber]["playerState"]);
+  console.log("usernames of room", roomNumber, usernames);
 
   // for each username, shield appropriately and emit to corresponding socket
-  for (const username in usernames) {
+  for (const username of usernames) {
     let socketid = usernameToSocketid[username];
     io.to(socketid).emit(
       "playerUpdate",
@@ -562,6 +559,7 @@ function endGame(roomNumber, socket) {
     return socket.emit("alert", "Game not active!");
 
   updateGameState(false, roomNumber);
+  clearMarket(roomNumber);
 
   // compute final rewards and emit to all clients for display
   let winners = [];
@@ -620,7 +618,11 @@ io.on("connection", async function(socket) {
     return;
   }
 
-  let user = await socket.handshake.session.passport.user;
+  if (!socket.handshake.session.passport) {
+    socket.disconnect();
+    return;
+  }
+  let user = socket.handshake.session.passport.user;
   if (!user) {
     console.log("Unauthenticated socket connection, rejecting");
     socket.disconnect();
@@ -630,11 +632,6 @@ io.on("connection", async function(socket) {
   // handle room and username
   let username = user.username;
   let roomNumber = usernameToRoomNumber[username];
-  // send room and username
-  socket.emit("usernameUpdate", username);
-  console.log("emit username");
-  socket.emit("roomNumberUpdate", roomNumber);
-  console.log("emit room number");
   console.log(
     "The user " + username + " connected with socket id " + socket.id
   );
@@ -643,6 +640,7 @@ io.on("connection", async function(socket) {
     initializeRoom(roomNumber);
   }
 
+  usernameToSocketid[username] = socket.id;
   socket.join(roomNumber);
 
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
@@ -662,7 +660,7 @@ io.on("connection", async function(socket) {
 
   console.log("current room state on join", roomToState[roomNumber]);
 
-  // initialize new player and retrieve persistent state
+  // initialize new player or retrieve persistent state
   // if player was just reconnected, keep previous setting
   if (!roomToState[roomNumber]["playerState"][username]) {
     roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
@@ -675,79 +673,17 @@ io.on("connection", async function(socket) {
     roomToState[roomNumber]["playerState"][username]["money"] =
       money[0]["money"]; // populate from db
   } else {
-    // should never input an unknown username here
+    // username not found in db, disconnect
     socket.disconnect();
   }
   console.log("current room state at end of join", roomToState[roomNumber]);
+  
+  // update cliend UI to reflect current game state
+  socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
+  let tradeLog = roomToState[roomNumber]["tradeLog"];  
+  io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   updatePlayers(roomNumber);
   broadcastMarketUpdate(roomNumber);
-
-  // TODO: just pull room info from /login or previous session, should already exist
-  // kill enterRoom
-  // socket.on("enterRoom", roomNumber => {
-  //   // still initialize room here, since /login only updates username->room#
-  //   if (!Object.keys(roomToState).includes(roomNumber)) {
-  //     initializeRoom(roomNumber);
-  //   }
-
-  //   socket.join(roomNumber);
-  //   socketidToRoomNumber[socket.id] = roomNumber;
-
-  //   socket.emit("enteredRoom", roomNumber); // user data is added on provideUsername
-  // });
-
-  // TODO: kill provideUsername, move all logic to 'enterRoom' b/c
-  // username is already known from ...session.passport.user
-
-  // allow client to specify username
-  // socket.on("provideUsername", async username => {
-  //   socketidToUsername[socket.id] = username;
-  //   let roomNumber = socketidToRoomNumber[socket.id]; // assumes enterRoom was already received
-  //   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
-  //   if (
-  //     (currPlayers.length == kMaxPlayers ||
-  //       roomToState[roomNumber]["isGameActive"]) &&
-  //     !currPlayers.includes(username)
-  //   ) {
-  //     // room full
-  //     // TODO: emit different message to client than full total capacity
-  //     console.log(
-  //       "Room is full or active, rejecting connection from " + socket.id
-  //     );
-  //     socket.emit("maxCapacity");
-  //     socket.disconnect();
-  //     return;
-  //   }
-
-  //   socketidToUsername[socket.id] = username;
-  //   usernameToRoomNumber[username] = roomNumber;
-
-  //   console.log("current room state on join", roomToState[roomNumber]);
-
-  //   // initialize new player and retrieve persistent state
-  //   // if player was just reconnected, keep previous setting
-  //   if (!roomToState[roomNumber]["playerState"][username]) {
-  //     roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
-  //       initialPlayerState
-  //     );
-  //   } else {
-  //     // game currently on?
-  //     socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
-  //   }
-  //   let money = await fetch(`${server}/players/${username}`);
-  //   money = await money.json();
-  //   if (money.length > 0) {
-  //     roomToState[roomNumber]["playerState"][username]["money"] =
-  //       money[0]["money"]; // populate from db
-  //   } else {
-  //     // should never input an unknown username here
-  //     socket.disconnect();
-  //   }
-  //   console.log("current room state at end of join", roomToState[roomNumber]);
-  //   updatePlayers(roomNumber);
-  //   broadcastMarketUpdate(roomNumber);
-  //   // socket.emit("username", username);
-  // });
 
   // TODO: on disconnect, actually remove user IF game is not active
   // if gamte is active, then keep that user's room and state to allow reconnects
@@ -757,12 +693,12 @@ io.on("connection", async function(socket) {
 
   socket.on("disconnect", async function() {
     // TODO: be more careful about checking conditions
-    // let user = socket.handshake.session.passport.user;
+    if (!socket.handshake.session.passport) return;
+    let user = socket.handshake.session.passport.user;
     let username = user.username;
     let roomNumber = usernameToRoomNumber[username];
-    console.log("user disconnected");
+    console.log("user disconnected", username);
 
-    // delete usernameToRoomNumber[username];  keep this so reconnects will go to the right room (TODO)
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
@@ -770,11 +706,13 @@ io.on("connection", async function(socket) {
           `${server}/players/${username}/${playerState[username]["money"]}`,
           { method: "PUT" }
         );
-        //delete playerState[username];
+        // game is over, we don't need to save user's state
+        if (!roomToState[roomNumber]["isGameActive"]) {
+          delete playerState[username];
+        }
       }
       if (Object.keys(playerState).length == 0) {
-        // TODO: check not deleting/resetting room is okay
-        //delete roomToState[roomNumber];
+        delete roomToState[roomNumber];
       } else {
         updatePlayers(roomNumber);
       }
