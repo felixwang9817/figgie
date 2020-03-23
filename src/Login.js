@@ -76,7 +76,7 @@ class Login extends React.Component {
 
     let alert = "";
     if (this.state.msg) {
-      alert = (<Alert variant="error"> {this.state.msg} </Alert>);
+      alert = (<Alert variant="danger"> {this.state.msg} </Alert>);
     }
 
     return (
