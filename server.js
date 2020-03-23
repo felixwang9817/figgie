@@ -104,7 +104,7 @@ app.post(
     usernameToRoomNumber[username] = roomNumber;
 
     // send back to client its roomNumber
-    req.user['roomNumber'] = roomNumber;
+    req.user["roomNumber"] = roomNumber;
     res.send(req.user);
   }
 );
@@ -595,7 +595,7 @@ function endGame(roomNumber, socket) {
   Object.keys(playerState).map(async player => {
     playerState[player]["money"] += rewards[player];
     // let update resolve async
-    db.updatePlayer(player, playerState[player]["money"])
+    db.updatePlayer(player, playerState[player]["money"]);
   });
   updatePlayers(roomNumber, (shield = false));
   io.to(roomNumber).emit("goalSuit", goalSuit);
@@ -612,7 +612,7 @@ io.on("connection", async function(socket) {
   }
 
   if (!socket.handshake.session.passport) {
-    console.log("Err: passport haven't been initialized yet.")
+    console.log("Err: passport haven't been initialized yet.");
     socket.disconnect();
     return;
   }
@@ -652,7 +652,6 @@ io.on("connection", async function(socket) {
     return;
   }
 
-
   // initialize new player or retrieve persistent state
   // if player was just reconnected, keep previous setting
   if (!roomToState[roomNumber]["playerState"][username]) {
@@ -662,14 +661,14 @@ io.on("connection", async function(socket) {
   }
 
   // async update money
-  db.getMoneyByUsername(username, (money) => {
+  db.getMoneyByUsername(username, money => {
     roomToState[roomNumber]["playerState"][username]["money"] = money;
     updatePlayers(roomNumber);
-  })
-  
+  });
+
   // update cliend UI to reflect current game state
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
-  let tradeLog = roomToState[roomNumber]["tradeLog"];  
+  let tradeLog = roomToState[roomNumber]["tradeLog"];
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   broadcastMarketUpdate(roomNumber);
 
@@ -687,8 +686,7 @@ io.on("connection", async function(socket) {
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
-
-        await db.updatePlayer(username, playerState[username]["money"])
+        await db.updatePlayer(username, playerState[username]["money"]);
 
         // game is over, we don't need to save user's state
         if (!roomToState[roomNumber]["isGameActive"]) {
