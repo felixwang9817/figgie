@@ -87,7 +87,7 @@ class Signup extends React.Component {
             Submit
           </Button>
         </Form>
-        <a href="/">Login</a>
+        <a class="footerRedirect" href="/">Login</a>
       </Card>
     );
   }
