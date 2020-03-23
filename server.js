@@ -39,6 +39,8 @@ io.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+const flash = require('express-flash');
+app.use(flash());
 
 passport.use(
   new Strategy(function(username, password, cb) {
@@ -53,12 +55,12 @@ passport.use(
         return cb(err);
       }
       if (!user) {
-        return cb(null, false);
+        return cb(null, false, {message: "Username not found."});
       }
 
       // compare hashed pw
       bcrypt.compare(password, user.hashedpw, function(err, result) {
-        return result ? cb(null, user) : cb(null, false);
+        return result ? cb(null, user) : cb(null, false, {message: "Incorrect password."});
       });
     });
   })
@@ -94,7 +96,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.post(
   "/login",
-  passport.authenticate("local", { failureRedirect: "/" }),
+  passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }),
   function(req, res) {
     console.log("successful login from user: ", req.user.username);
 
@@ -105,7 +107,7 @@ app.post(
 
     // send back to client its roomNumber
     req.user["roomNumber"] = roomNumber;
-    res.send(req.user);
+    res.send({user: req.user});
   }
 );
 
@@ -136,7 +138,8 @@ app.get("/logout", function(req, res) {
 app.get(
   "/login", // happens when /auth fails
   function(req, res) {
-    res.send({ user: null });
+    let msg = req.flash("error") || "";
+    res.send({ user: null, msg: msg });
   }
 );
 

@@ -72,7 +72,7 @@ class Players extends React.Component {
     } else {
       msg = this.props.isGameActive
         ? "Game On. Enter 'end' to stop"
-        : "enter 'start'";
+        : "Enter 'start'";
     }
 
     // fill players up to four names

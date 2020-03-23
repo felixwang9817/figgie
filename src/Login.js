@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Button, Card } from "react-bootstrap";
+import { Form, Button, Card, Alert } from "react-bootstrap";
 import Gateway from "./Gateway";
 
 // TODO: can we unify a single `server` variable across different .js files?
@@ -14,7 +14,7 @@ class Login extends React.Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {validated: false};
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -36,6 +36,14 @@ class Login extends React.Component {
 
   async handleSubmitLogin(event) {
     event.preventDefault();
+    this.setState({validated: true});  // this just triggers green/red UI
+    // it doesn't mean the form passed validation
+
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+      return;
+    }
 
     fetch(server + "/login", {
       headers: {
@@ -51,9 +59,9 @@ class Login extends React.Component {
       })
     })
       .then(response => response.json())
-      .then(user => {
-        this.setState({ user: user });
-        console.log("login.js setting this.state.user: ", user);
+      .then(res => {
+        this.setState(res);
+        console.log("login.js setting this.state.user: ", res.user);
       })
       .catch(err => {
         console.log(err);
@@ -66,10 +74,16 @@ class Login extends React.Component {
       return <Gateway user={this.state.user} />;
     }
 
+    let alert = "";
+    if (this.state.msg) {
+      alert = (<Alert variant="error"> {this.state.msg} </Alert>);
+    }
+
     return (
       <Card id="loginSignupFormCard">
+        {alert}
         <h2>Login</h2>
-        <Form id="loginSignupForm" onSubmit={this.handleSubmitLogin}>
+        <Form noValidate validated={this.state.validated} id="loginSignupForm" onSubmit={this.handleSubmitLogin}>
           <Form.Group>
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -78,7 +92,12 @@ class Login extends React.Component {
               placeholder="Enter username"
               onChange={this.handleChangeUsername}
               autoFocus={true}
+              maxLength={30}
+              required
             />
+            <Form.Control.Feedback type="invalid">
+              Please enter your username.
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Password</Form.Label>
@@ -87,7 +106,12 @@ class Login extends React.Component {
               value={this.state.password || ""}
               placeholder="Enter password"
               onChange={this.handleChangePassword}
+              maxLength={30}
+              required
             />
+            <Form.Control.Feedback type="invalid">
+              Please enter your password.
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Room</Form.Label>
@@ -96,7 +120,12 @@ class Login extends React.Component {
               value={this.state.roomNumber || ""}
               placeholder="Enter Room"
               onChange={this.handleChangeRoom}
+              maxLength={30}
+              required
             />
+            <Form.Control.Feedback type="invalid">
+              Please choose a room.
+            </Form.Control.Feedback>
           </Form.Group>
           <Button variant="primary" type="submit">
             Submit
