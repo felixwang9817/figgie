@@ -16,8 +16,6 @@ http://3.136.26.146:3000/
 
 - start/end only when all 4 players confirm
 
-- alert on login fail
-
 - rooms
 
   - waiting room that auto-joins if players leave
@@ -25,7 +23,6 @@ http://3.136.26.146:3000/
 - observer
 
 - show coins gained/lost at end of round
-- max length 30 username
 
 - support player leaving and re-entering
   - keep player name muted gray when gone
@@ -34,14 +31,6 @@ http://3.136.26.146:3000/
 
 * market flash on clear
 
-## Bugs
-
-- random disconnect
-  - two distinct problems
-    - socket disconnects due to transport close (might be a socket.io problem, and might be a chrome / safari issue)
-    - we have to support socket disconnect and handle it properly
-      - alert for all players
-      - if game is not yet started, refresh page
 
 ## Deployment
 
