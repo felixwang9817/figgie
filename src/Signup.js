@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Button, Card } from "react-bootstrap";
+import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
 
 // TODO: can we unify a single `server` variable across different .js files?
@@ -14,7 +14,7 @@ class Signup extends React.Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {validated: false};
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -31,7 +31,15 @@ class Signup extends React.Component {
 
   async handleSubmitSignup(event) {
     event.preventDefault();
+    this.setState({validated: true});  // this just triggers green/red UI
+    // it doesn't mean the form passed validation
 
+    const form = event.currentTarget;
+    if (form.checkValidity() === false) {
+      event.stopPropagation();
+      return;
+    }
+    
     fetch(server + "/signup", {
       headers: {
         Accept: "application/json",
@@ -45,25 +53,38 @@ class Signup extends React.Component {
     })
       .then(response => response.json())
       .then(res => {
-        this.setState(res);
         console.log("signup.js receiving response", res);
+
+        this.setState(res);
+        // window.setTimeout(() => {
+        //   this.setState({ msg: "" });
+        // }, 5000);
       })
       .catch(err => {
         console.log(err);
-        this.setState({ success: false });
+        this.setState({ success: false, msg: "An unknown error occured." });
       });
   }
 
   render() {
+
     if (this.state.success) {
       // if signup successful
       return <Redirect to="/" />;
     }
 
+    let alert = "";
+    if (this.state.msg) {
+      alert = (<Alert variant="warning"> {this.state.msg} </Alert>);
+    }
+
     return (
       <Card id="loginSignupFormCard">
+        
+        {alert}
         <h2>Signup</h2>
-        <Form id="loginSignupForm" onSubmit={this.handleSubmitSignup}>
+        
+        <Form noValidate validated={this.state.validated} id="loginSignupForm" onSubmit={this.handleSubmitSignup}>
           <Form.Group>
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -72,7 +93,12 @@ class Signup extends React.Component {
               placeholder="Enter username"
               onChange={this.handleChangeUsername}
               autoFocus={true}
+              maxLength={30}
+              required
             />
+            <Form.Control.Feedback type="invalid">
+              Please choose a username (max 30 characters).
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Password</Form.Label>
@@ -81,13 +107,18 @@ class Signup extends React.Component {
               value={this.state.password || ""}
               placeholder="Enter password"
               onChange={this.handleChangePassword}
+              maxLength={30}
+              required
             />
+            <Form.Control.Feedback type="invalid">
+              Please choose a password (max 30 characters).
+            </Form.Control.Feedback>
           </Form.Group>
           <Button variant="primary" type="submit">
             Submit
           </Button>
         </Form>
-        <a class="footerRedirect" href="/">Login</a>
+        <a className="footerRedirect" href="/">Login</a>
       </Card>
     );
   }
