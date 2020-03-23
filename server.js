@@ -189,7 +189,8 @@ let initialPlayerState = {
   hearts: null,
   spades: null,
   numCards: 10,
-  money: 300
+  money: 300,
+  connected: true
 };
 let roomToState = {}; // room number -> market state and player state for that room
 
@@ -652,12 +653,14 @@ io.on("connection", async function(socket) {
     return;
   }
 
-  // initialize new player or retrieve persistent state
-  // if player was just reconnected, keep previous setting
   if (!roomToState[roomNumber]["playerState"][username]) {
+    // user is joining so they get initial player state
     roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
       initialPlayerState
     );
+  } else {
+    // user is reconnecting so we restore player state and change connected to true
+    roomToState[roomNumber]["playerState"][username]["connected"] = true;
   }
 
   // async update money
@@ -686,7 +689,9 @@ io.on("connection", async function(socket) {
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
       if (playerState[username] != null) {
-        await db.updatePlayer(username, playerState[username]["money"]);
+        await db.updatePlayer(username, playerState[username]["money"]); // update money
+        playerState[username]["connected"] = false; // user is disconnected
+        updatePlayers(roomNumber);
 
         // game is over, we don't need to save user's state
         if (!roomToState[roomNumber]["isGameActive"]) {

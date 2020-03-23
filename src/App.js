@@ -2,7 +2,7 @@ import React, { Component, useState } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Gateway from "./Gateway.js"
+import Gateway from "./Gateway.js";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import {
@@ -25,8 +25,8 @@ import {
 } from "react-icons/gi";
 import server from "./index.js";
 const playerColor = "yellow";
+const disconnectedColor = "gray";
 const goalColor = "green";
-
 
 function displaySuit(suit) {
   let icon = null;
@@ -89,9 +89,14 @@ class Players extends React.Component {
               <td>#</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td key={key}
+                  <td
+                    key={key}
                     style={
-                      players[key] === username ? { color: playerColor } : {}
+                      players[key] === username
+                        ? { color: playerColor }
+                        : playerState[players[key]]["connected"] === false
+                        ? { color: disconnectedColor }
+                        : {}
                     }
                   >
                     {players[key]}
@@ -107,9 +112,14 @@ class Players extends React.Component {
               <td># cards</td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
-                  <td key={key}
+                  <td
+                    key={key}
                     style={
-                      players[key] === username ? { color: playerColor } : {}
+                      players[key] === username
+                        ? { color: playerColor }
+                        : playerState[players[key]]["connected"] === false
+                        ? { color: disconnectedColor }
+                        : {}
                     }
                   >
                     {playerState[players[key]]["numCards"]}
@@ -181,32 +191,34 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive && this.props.tradeLog.length > 0
-            ? Object.keys(this.props.playerState).map(player => (
-                <tr style={player === username ? { color: playerColor } : {}}>
-                  <td>{player === username ? "you" : "player " + player}</td>
-                  {Object.keys(markets).map(key => (
-                    <td key={key}
-                      style={
-                        key === this.props.goalSuit
-                          ? { color: goalColor, "fontWeight": "bold" }
-                          : {}
-                      }
-                    >
-                      {this.props.playerState[player] != null
-                        ? this.props.playerState[player][key]
-                        : ""}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            : <tr></tr>}
+          {!this.props.isGameActive && this.props.tradeLog.length > 0 ? (
+            Object.keys(this.props.playerState).map(player => (
+              <tr style={player === username ? { color: playerColor } : {}}>
+                <td>{player === username ? "you" : "player " + player}</td>
+                {Object.keys(markets).map(key => (
+                  <td
+                    key={key}
+                    style={
+                      key === this.props.goalSuit
+                        ? { color: goalColor, fontWeight: "bold" }
+                        : {}
+                    }
+                  >
+                    {this.props.playerState[player] != null
+                      ? this.props.playerState[player][key]
+                      : ""}
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            <tr></tr>
+          )}
         </tbody>
       </Table>
     );
   }
 }
-
 
 class TradeLog extends React.Component {
   render() {
@@ -243,7 +255,6 @@ class UserInfo extends React.Component {
         <GiTwoCoins style={{ margin: "0px 8px" }} />
         {userState != null ? userState["money"] : "???"}, room{" "}
         {this.props.roomNumber}
-
         <span id="logoutText" onClick={this.props.handleLogout}>
           Logout
         </span>
@@ -340,11 +351,10 @@ class App extends Component {
   }
 
   handleLogout() {
-    fetch(server + '/logout', { credentials: 'include'});
+    fetch(server + "/logout", { credentials: "include" });
     this.state.socket.disconnect();
     this.setState({ username: null });
   }
-
 
   async componentDidMount() {
     const socket = socketIOClient(server);
@@ -355,10 +365,9 @@ class App extends Component {
     // TODO: get username and room number form this.props.user
     // Remove socket.emit enterRoom/provideUsername
 
-
     this.setState({ username: this.props.user.username });
     this.setState({ roomNumber: this.props.user.roomNumber });
-    
+
     socket.on("marketUpdate", state => {
       console.log("market update: ", state);
       this.setState({ market: state });
@@ -411,12 +420,10 @@ class App extends Component {
     this.setState({ trade_command: "" }); // clear form
   }
 
-
   render() {
-    if ((!this.props.user) || (!this.state.username)) {
-      return (<Gateway />);
-    };
-
+    if (!this.props.user || !this.state.username) {
+      return <Gateway />;
+    }
 
     if (this.state.observer) {
       return (
@@ -488,7 +495,8 @@ class App extends Component {
               <a
                 className="App-link"
                 href="https://www.janestreet.com/figgie/"
-                target="_blank" rel="noopener noreferrer"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 Full Game Rules
               </a>
