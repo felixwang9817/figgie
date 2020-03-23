@@ -3,8 +3,8 @@ const app = express();
 
 const session = require("express-session")({
   secret: "keyboard cat",
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: { maxAge: 3600000 }
 });
 
@@ -619,6 +619,7 @@ io.on("connection", async function(socket) {
   }
 
   if (!socket.handshake.session.passport) {
+    // passport haven't been initialized yet, reset
     socket.disconnect();
     return;
   }
@@ -658,7 +659,6 @@ io.on("connection", async function(socket) {
     return;
   }
 
-  console.log("current room state on join", roomToState[roomNumber]);
 
   // initialize new player or retrieve persistent state
   // if player was just reconnected, keep previous setting
@@ -693,11 +693,12 @@ io.on("connection", async function(socket) {
 
   socket.on("disconnect", async function() {
     // TODO: be more careful about checking conditions
-    if (!socket.handshake.session.passport) return;
+    // if (!socket.handshake.session.passport) return;
     let user = socket.handshake.session.passport.user;
     let username = user.username;
     let roomNumber = usernameToRoomNumber[username];
     console.log("user disconnected", username);
+
 
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
