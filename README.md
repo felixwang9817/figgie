@@ -9,27 +9,40 @@ http://3.136.26.146:3000/
 ## style
 
 - favicon
-- prettier rules page
-- prettier waiting page
 
 ## functionality
 
-- start/end only when all 4 players confirm
+Ideal flow:
+- can play as a guest, init landing page in lobby
+- lobby:
+  - see list of rooms, can join or create new room
+    - support private rooms by adding in optional pw to room creation
+  - can sign up / login / logout
+  - rules
+  - leaderboard
+  - can see active games and spectate
+  - can observe full rooms, and join if it becomes unfull
 
-- rooms
+- game room:
+  - button to leave room & return to lobby --> instead of logout
+  - each player can toggle ready/not-ready --> goes where #-cards currently is
+  - people can chat --> this merges with trade-log
+  - game starts when all 4 players are ready, sets a timer for auto end --> top left
 
-  - waiting room that auto-joins if players leave
+  - show net delta in money for each player at end of round
+  - if player leaves while game not active, server waits 5s to see if player will reconnect. If not, remove player from room.
 
-- observer
+  - flash visualization on each market update
 
-- show coins gained/lost at end of round
 
-- support player leaving and re-entering
-  - keep player name muted gray when gone
+- logging & robustness
+  - automated tests? (UI flow tests via puppeteer?)
+  - metrics
+    - daily active users, avg minutes/session, avg games/session, etc.
+  - unclear what to do with logging, but ideally server side logs should tell us about bugs and help us debug
+  - split larger files into smaller components, have one person own each file (for documentation & understanding)
 
-* timer for end
 
-* market flash on clear
 
 
 ## Deployment
