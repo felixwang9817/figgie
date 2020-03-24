@@ -11,7 +11,7 @@ const session = require("express-session")({
 const cors = require("cors");
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://3.136.26.146:3000"],
+    origin: ["http://localhost:3000", "http://3.22.23.96:3000"],
     credentials: true
   })
 ); // enable cross-origin access + cookies
@@ -89,7 +89,7 @@ passport.deserializeUser(function(user, cb) {
 
 var server;
 if (process.env.NODE_ENV === "production") {
-  server = "http://3.136.26.146:8080";
+  server = "http://3.22.23.96:8080";
 } else {
   server = "http://localhost:8080";
 }

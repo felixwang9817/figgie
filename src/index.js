@@ -6,7 +6,7 @@ import * as serviceWorker from "./serviceWorker";
 
 var server;
 if (process.env.NODE_ENV === "production") {
-  server = "http://3.136.26.146:8080";
+  server = "http://3.22.23.96:8080";
 } else {
   server = "http://localhost:8080";
 }
