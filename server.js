@@ -11,7 +11,7 @@ const session = require("express-session")({
 const cors = require("cors");
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://3.22.23.96:3000"],
+    origin: ["http://localhost:3000", "http://3.22.23.96:80"],
     credentials: true
   })
 ); // enable cross-origin access + cookies
