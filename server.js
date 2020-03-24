@@ -11,7 +11,8 @@ const session = require("express-session")({
 const cors = require("cors");
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://3.22.23.96:80"],
+    origin: ["http://localhost:3000", "http://3.22.23.96:80",
+    "http://figgie.io", "http://www.figgie.io"],
     credentials: true
   })
 ); // enable cross-origin access + cookies
