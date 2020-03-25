@@ -216,7 +216,6 @@ function parseCommand(command, socket) {
     } else if (command == "not ready") {
       markPlayerReady(username, false);
     } else if (command == "start") {
-      // TODO: check if there are four players
       startGame(roomNumber, socket);
     } else {
       socket.emit("alert", "Game is not active! Enter <start> to start.");
@@ -518,11 +517,21 @@ function initializeRoom(roomNumber) {
 }
 
 function startGame(roomNumber, socket) {
+  let playerState = roomToState[roomNumber]["playerState"];
   if (
-    Object.keys(roomToState[roomNumber]["playerState"]).length !== kMaxPlayers
+    Object.keys(playerState).length !== kMaxPlayers
   ) {
     return socket.emit("alert", "Not enough players!");
-  } else if (roomToState[roomNumber]["isGameActive"]) {
+  }
+
+  // check if all players are ready
+  for (const player in playerState) {
+    if (!playerState[player]["ready"]) {
+      return socket.emit("alert", "Not all players are ready!")
+    }
+  }
+
+  if (roomToState[roomNumber]["isGameActive"]) {
     return socket.emit("alert", "Game already started!");
   }
 
@@ -548,7 +557,6 @@ function startGame(roomNumber, socket) {
 
   // distribute cards to players
   let cnt = 0;
-  let playerState = roomToState[roomNumber]["playerState"];
   Object.keys(playerState).map(player => {
     let playerCards = cards.slice(cnt, cnt + 10);
     playerState[player]["money"] -= 50;
