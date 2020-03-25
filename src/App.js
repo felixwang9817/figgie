@@ -156,6 +156,10 @@ class Market extends React.Component {
             {Object.keys(markets).map(key => (
               <td key={key}>{displaySuit(key)}</td>
             ))}
+
+            {!this.props.isGameActive && this.props.tradeLog.length > 0  
+              && <td>Net Gain <GiTwoCoins/> </td>
+            }
           </tr>
         </thead>
         <tbody>
@@ -185,8 +189,7 @@ class Market extends React.Component {
               {Object.keys(markets).map(key => (
                 <td key={key}>
                   {this.props.playerState[username] != null
-                    ? this.props.playerState[username][key]
-                    : ""}
+                   && this.props.playerState[username][key]}
                 </td>
               ))}
             </tr>
@@ -194,7 +197,7 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive && this.props.tradeLog.length > 0 ? (
+          {!this.props.isGameActive && this.props.tradeLog.length > 0 && (
             Object.keys(this.props.playerState).map(player => (
               <tr style={player === username ? { color: playerColor } : {}}>
                 <td>{player === username ? "you" : "player " + player}</td>
@@ -203,19 +206,18 @@ class Market extends React.Component {
                     key={key}
                     style={
                       key === this.props.goalSuit
-                        ? { color: goalColor, fontWeight: "bold" }
-                        : {}
+                      ? { color: goalColor, fontWeight: "bold" } : {}
                     }
                   >
                     {this.props.playerState[player] != null
-                      ? this.props.playerState[player][key]
-                      : ""}
+                     && this.props.playerState[player][key]
+                    }
                   </td>
                 ))}
+
+                <td>{this.props.playerState[player]["netGain"]}</td>
               </tr>
             ))
-          ) : (
-            <tr></tr>
           )}
         </tbody>
       </Table>

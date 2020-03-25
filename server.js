@@ -194,6 +194,7 @@ let initialPlayerState = {
   spades: null,
   numCards: 10,
   money: 300,
+  netGain: 0, // delta for a single game
   connected: true,
   ready: false
 };
@@ -559,6 +560,8 @@ function startGame(roomNumber, socket) {
   let cnt = 0;
   Object.keys(playerState).map(player => {
     let playerCards = cards.slice(cnt, cnt + 10);
+    // for simplicity, netGain will track money after game ends minus money before game start
+    playerState[player]["netGain"] = -playerState[player]["money"]
     playerState[player]["money"] -= 50;
 
     suits.forEach(suit => {
@@ -623,6 +626,8 @@ function endGame(roomNumber, socket) {
   // give out rewards and update persistent state
   Object.keys(playerState).map(async player => {
     playerState[player]["money"] += rewards[player];
+    // remember, netGain was -player["money"] before the game, so this tracks their delta
+    playerState[player]["netGain"] += playerState[player]["money"];
     // let update resolve async
     db.updatePlayer(player, playerState[player]["money"]);
   });
