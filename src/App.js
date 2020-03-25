@@ -441,6 +441,13 @@ class App extends Component {
       alert = <Alert variant="warning"> {this.state.alertMsg} </Alert>;
     }
 
+    let currPlayerState = this.state.players[this.state.username];
+    let placeholderString = this.state.isGameActive 
+                            ? "Enter trades here!"
+                            : currPlayerState && currPlayerState.ready
+                              ? "Enter <start>!" 
+                              : "Enter <ready> when you're ready!"
+
     return (
       // TODO: ensure that username is capped at 30 characters or overflow is disabled
       <div className="App">
@@ -477,7 +484,7 @@ class App extends Component {
                     type="text"
                     name="trade"
                     value={this.state.trade_command}
-                    placeholder="Enter trades here!"
+                    placeholder={placeholderString}
                     onChange={this.handleChange}
                     autoFocus={true}
                   />
