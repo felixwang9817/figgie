@@ -194,7 +194,8 @@ let initialPlayerState = {
   spades: null,
   numCards: 10,
   money: 300,
-  connected: true
+  connected: true,
+  ready: false
 };
 let roomToState = {}; // room number -> market state and player state for that room
 
@@ -210,7 +211,11 @@ function parseCommand(command, socket) {
 
   if (!roomToState[roomNumber]) return;
   if (!roomToState[roomNumber]["isGameActive"]) {
-    if (command == "start") {
+    if (command == "ready") {
+      markPlayerReady(username);
+    } else if (command == "not ready") {
+      markPlayerReady(username, false);
+    } else if (command == "start") {
       // TODO: check if there are four players
       startGame(roomNumber, socket);
     } else {
@@ -311,6 +316,18 @@ function parseCommand(command, socket) {
     postOffer(suit, 1, seller, roomNumber);
     takeOffer(suit, username, roomNumber, socket);
   }
+}
+
+
+function markPlayerReady(username, target=true) {
+  // target: null [i.e. flip], true, false
+  let roomNumber = usernameToRoomNumber[username];
+  let playerState = roomToState[roomNumber]["playerState"];
+  if (target === null) {  // flip current state
+    target = !playerState[username]["ready"];
+  }
+  playerState[username]["ready"] = target;
+  updatePlayers(roomNumber);
 }
 
 // TRADING AND MARKET FUNCTIONS
@@ -467,7 +484,6 @@ function shieldPlayerInfo(username, roomNumber) {
 function updatePlayers(roomNumber, shield = true) {
   // first, get usernames associated with roomNumber
   let usernames = Object.keys(roomToState[roomNumber]["playerState"]);
-  console.log("usernames of room", roomNumber, usernames);
 
   // for each username, shield appropriately and emit to corresponding socket
   for (const username of usernames) {
@@ -695,6 +711,7 @@ io.on("connection", async function(socket) {
       if (playerState[username] != null) {
         await db.updatePlayer(username, playerState[username]["money"]); // update money
         playerState[username]["connected"] = false; // user is disconnected
+        playerState[username]["ready"] = false;
         updatePlayers(roomNumber);
 
         // game is over, we don't need to save user's state

@@ -109,7 +109,7 @@ class Players extends React.Component {
           </thead>
           <tbody>
             <tr>
-              <td># cards</td>
+              <td>{this.props.isGameActive ? "# cards" : "Ready?"} </td>
               {Object.keys(players).map(key =>
                 playerState[players[key]] != null ? (
                   <td
@@ -122,7 +122,10 @@ class Players extends React.Component {
                         : {}
                     }
                   >
-                    {playerState[players[key]]["numCards"]}
+                    {this.props.isGameActive
+                     ? playerState[players[key]]["numCards"]
+                     : playerState[players[key]]["ready"]
+                       ? "Ready" : "" }
                   </td>
                 ) : (
                   <td key={key}></td>
