@@ -339,6 +339,7 @@ function markPlayerReady(username, target=true) {
     return //socket.emit("alert", "Game already started!");
   }
 
+  io.to(roomNumber).emit("alert", "Game on!");
   startGame(roomNumber);
 }
 
@@ -582,6 +583,7 @@ function startGame(roomNumber) {
 
 function endGame(roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) return;
+  io.to(roomNumber).emit("alert", "Time's up!");
 
   let playerState = roomToState[roomNumber]["playerState"];
   updateGameState(false, roomNumber);
