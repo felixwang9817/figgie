@@ -28,6 +28,7 @@ require("isomorphic-fetch");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 2;
+const gameTime = 4 * 60 * 1000;  // in ms
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -514,6 +515,7 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["playerState"] = {};
   roomToState[roomNumber]["goalSuit"] = null;
   roomToState[roomNumber]["isGameActive"] = false;
+  roomToState[roomNumber]["gameTimeStart"] = null;
   roomToState[roomNumber]["tradeLog"] = [];
 }
 
@@ -575,6 +577,8 @@ function startGame(roomNumber, socket) {
   clearMarket(roomNumber);
   updatePlayers(roomNumber);
   updateGameState(true, roomNumber);
+  roomToState[roomNumber]["gameTimeStart"] = Date.now();
+  io.to(roomNumber).emit("gameTimeStart", roomToState[roomNumber]["gameTimeStart"]);
   io.to(roomNumber).emit("goalSuit", "");
   io.to(roomNumber).emit("alert", "Game on!"); // tell all players
 }
@@ -635,6 +639,9 @@ function endGame(roomNumber, socket) {
 
   updatePlayers(roomNumber, (shield = false));
   io.to(roomNumber).emit("goalSuit", goalSuit);
+  // reset timer
+  roomToState[roomNumber]["gameTimeStart"] = null;
+  io.to(roomNumber).emit("gameTimeStart", roomToState[roomNumber]['gameTimeStart'])
 }
 
 io.on("connection", async function(socket) {
@@ -706,6 +713,7 @@ io.on("connection", async function(socket) {
 
   // update cliend UI to reflect current game state
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
+  socket.emit("gameTimeStart", roomToState[roomNumber]["gameTimeStart"]);
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   broadcastMarketUpdate(roomNumber);

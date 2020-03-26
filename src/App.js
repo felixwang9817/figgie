@@ -249,13 +249,36 @@ class TradeLog extends React.Component {
 }
 
 class UserInfo extends React.Component {
+  componentDidMount() {
+    this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
+
   render() {
     if (!this.props.username) {
       return "";
     }
+
+    function formatDate(ms) {
+      let minutes = Math.floor(ms / 60000);
+      let seconds = Math.floor((ms - 60000 * minutes) / 1000);
+      return (<span id="timer">
+              { minutes }:{seconds}
+              </span>)
+    }
+
     let userState = this.props.playerState[this.props.username];
     return (
       <div style={{ color: playerColor }}>
+        { this.props.gameTimeStart &&
+          (this.props.gameTimeStart + 4 * 60 * 1000 > this.state.time
+          ? formatDate(this.props.gameTimeStart + 4 * 60 * 1000 - this.state.time)
+          : "0:00")
+        }
+
         {this.props.username}
         <GiTwoCoins style={{ margin: "0px 8px" }} />
         {userState != null ? userState["money"] : "???"}, room{" "}
@@ -346,6 +369,7 @@ class App extends Component {
       tradeLog: [],
       observer: false,
       isGameActive: false,
+      gameTimeStart: null,
       alertMsg: "",
       alertVisible: true,
       goalSuit: null
@@ -404,6 +428,10 @@ class App extends Component {
       this.setState({ isGameActive: state });
     });
 
+    socket.on("gameTimeStart", state => {
+      this.setState({ gameTimeStart: state });
+    })
+
     socket.on("alert", msg => {
       if (!msg) return;
       this.setState({ alertMsg: msg }, () => {
@@ -461,6 +489,7 @@ class App extends Component {
                 playerState={this.state.players}
                 roomNumber={this.state.roomNumber}
                 handleLogout={() => this.handleLogout()}
+                gameTimeStart={this.state.gameTimeStart}
               />
 
               <br></br>

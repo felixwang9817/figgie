@@ -94,6 +94,10 @@
   margin-top: 40px;
 }
 
+#timer {
+  float: left;
+}
+
 #logoutText {
   float: right;
   color: red;
