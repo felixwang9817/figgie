@@ -72,8 +72,8 @@ class Players extends React.Component {
       msg = "Waiting for players " + numPlayers + "/4...";
     } else {
       msg = this.props.isGameActive
-        ? "Game On. Enter 'end' to stop"
-        : "Enter 'start'";
+        ? "Game on!"
+        : "Game will start when all players are ready!";
     }
 
     // fill players up to four names
@@ -477,7 +477,7 @@ class App extends Component {
     let placeholderString = this.state.isGameActive 
                             ? "Enter trades here!"
                             : currPlayerState && currPlayerState.ready
-                              ? "Enter <start>!" 
+                              ? "Waiting for all players to be ready..." 
                               : "Enter <ready> when you're ready!"
 
     return (

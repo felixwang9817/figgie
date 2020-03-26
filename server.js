@@ -217,16 +217,9 @@ function parseCommand(command, socket) {
       markPlayerReady(username);
     } else if (command == "not ready") {
       markPlayerReady(username, false);
-    } else if (command == "start") {
-      startGame(roomNumber, socket);
     } else {
-      socket.emit("alert", "Game is not active! Enter <start> to start.");
+      socket.emit("alert", "Game is not active! Please wait for all players to be ready.");
     }
-    return;
-  }
-
-  if (command == "end") {
-    endGame(roomNumber, socket);
     return;
   }
 
@@ -329,6 +322,24 @@ function markPlayerReady(username, target=true) {
   }
   playerState[username]["ready"] = target;
   updatePlayers(roomNumber);
+
+  // check if game should start
+  if (Object.keys(playerState).length !== kMaxPlayers) {
+    return //socket.emit("alert", "Not enough players!");
+  }
+
+  // check if all players are ready
+  for (const player in playerState) {
+    if (!playerState[player]["ready"]) {
+      return //socket.emit("alert", "Not all players are ready!")
+    }
+  }
+
+  if (roomToState[roomNumber]["isGameActive"]) {
+    return //socket.emit("alert", "Game already started!");
+  }
+
+  startGame(roomNumber);
 }
 
 // TRADING AND MARKET FUNCTIONS
@@ -519,24 +530,8 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["tradeLog"] = [];
 }
 
-function startGame(roomNumber, socket) {
+function startGame(roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
-  if (
-    Object.keys(playerState).length !== kMaxPlayers
-  ) {
-    return socket.emit("alert", "Not enough players!");
-  }
-
-  // check if all players are ready
-  for (const player in playerState) {
-    if (!playerState[player]["ready"]) {
-      return socket.emit("alert", "Not all players are ready!")
-    }
-  }
-
-  if (roomToState[roomNumber]["isGameActive"]) {
-    return socket.emit("alert", "Game already started!");
-  }
 
   let common = utils.randomSuit();
   let goal = utils.otherColor(common);
@@ -582,14 +577,13 @@ function startGame(roomNumber, socket) {
   io.to(roomNumber).emit("goalSuit", "");
   io.to(roomNumber).emit("alert", "Game on!"); // tell all players
 
-  setTimeout(() => endGame(roomNumber, socket), gameTime);
+  setTimeout(() => endGame(roomNumber), gameTime);
 }
 
-function endGame(roomNumber, socket) {
-  let playerState = roomToState[roomNumber]["playerState"];
-  if (!roomToState[roomNumber]["isGameActive"])
-    return socket.emit("alert", "Game not active!");
+function endGame(roomNumber) {
+  if (!roomToState[roomNumber]["isGameActive"]) return;
 
+  let playerState = roomToState[roomNumber]["playerState"];
   updateGameState(false, roomNumber);
   clearMarket(roomNumber);
 
