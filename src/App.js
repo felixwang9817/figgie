@@ -21,7 +21,8 @@ import {
   GiClubs,
   GiDiamonds,
   GiHearts,
-  GiTwoCoins
+  GiTwoCoins,
+  GiSandsOfTime
 } from "react-icons/gi";
 import server from "./index.js";
 const playerColor = "yellow";
@@ -263,20 +264,21 @@ class UserInfo extends React.Component {
     }
 
     function formatDate(ms) {
+      if (ms < 0) {
+        return "0:00"
+      }
       let minutes = Math.floor(ms / 60000);
       let seconds = Math.floor((ms - 60000 * minutes) / 1000);
       return (<span id="timer">
-              { minutes }:{seconds}
+              { minutes }:{seconds} <GiSandsOfTime />
               </span>)
     }
 
     let userState = this.props.playerState[this.props.username];
     return (
       <div style={{ color: playerColor }}>
-        { this.props.gameTimeStart &&
-          (this.props.gameTimeStart + 4 * 60 * 1000 > this.state.time
-          ? formatDate(this.props.gameTimeStart + 4 * 60 * 1000 - this.state.time)
-          : "0:00")
+        { this.props.gameTimeEnd &&
+          formatDate(this.props.gameTimeEnd - this.state.time)
         }
 
         {this.props.username}
@@ -369,7 +371,7 @@ class App extends Component {
       tradeLog: [],
       observer: false,
       isGameActive: false,
-      gameTimeStart: null,
+      gameTimeEnd: null,
       alertMsg: "",
       alertVisible: true,
       goalSuit: null
@@ -428,8 +430,8 @@ class App extends Component {
       this.setState({ isGameActive: state });
     });
 
-    socket.on("gameTimeStart", state => {
-      this.setState({ gameTimeStart: state });
+    socket.on("gameTimeEnd", state => {
+      this.setState({ gameTimeEnd: state });
     })
 
     socket.on("alert", msg => {
@@ -489,7 +491,7 @@ class App extends Component {
                 playerState={this.state.players}
                 roomNumber={this.state.roomNumber}
                 handleLogout={() => this.handleLogout()}
-                gameTimeStart={this.state.gameTimeStart}
+                gameTimeEnd={this.state.gameTimeEnd}
               />
 
               <br></br>
