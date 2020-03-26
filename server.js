@@ -628,9 +628,11 @@ function endGame(roomNumber, socket) {
     playerState[player]["money"] += rewards[player];
     // remember, netGain was -player["money"] before the game, so this tracks their delta
     playerState[player]["netGain"] += playerState[player]["money"];
+    playerState[player]["ready"] = false;
     // let update resolve async
     db.updatePlayer(player, playerState[player]["money"]);
   });
+
   updatePlayers(roomNumber, (shield = false));
   io.to(roomNumber).emit("goalSuit", goalSuit);
 }
