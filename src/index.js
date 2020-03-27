@@ -12,16 +12,22 @@ if (process.env.NODE_ENV === "production") {
   server = "http://localhost:8080";
 }
 
-
-fetch(server + '/auth', { credentials: 'include'}  // include cookies
-      ).then((response) => response.json())
-  .then((response) => {
-    ReactDOM.render(<Gateway user={response.user}/>, document.getElementById("root"));
-  }).catch((err) => {
+fetch(
+  server + "/auth",
+  { credentials: "include" } // include cookies
+)
+  .then(response => response.json())
+  .then(response => {
+    console.log("response.user", response.user);
+    ReactDOM.render(
+      <Gateway user={response.user} />,
+      document.getElementById("root")
+    );
+  })
+  .catch(err => {
     console.log(err);
-    ReactDOM.render(<Gateway/>, document.getElementById("root"));
+    ReactDOM.render(<Gateway />, document.getElementById("root"));
   });
-
 
 export default server;
 

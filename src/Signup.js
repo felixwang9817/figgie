@@ -7,7 +7,7 @@ class Signup extends React.Component {
   constructor() {
     super();
 
-    this.state = {validated: false};
+    this.state = { validated: false };
 
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
@@ -24,7 +24,7 @@ class Signup extends React.Component {
 
   async handleSubmitSignup(event) {
     event.preventDefault();
-    this.setState({validated: true});  // this just triggers green/red UI
+    this.setState({ validated: true }); // this just triggers green/red UI
     // it doesn't mean the form passed validation
 
     const form = event.currentTarget;
@@ -32,7 +32,7 @@ class Signup extends React.Component {
       event.stopPropagation();
       return;
     }
-    
+
     fetch(server + "/signup", {
       headers: {
         Accept: "application/json",
@@ -60,24 +60,26 @@ class Signup extends React.Component {
   }
 
   render() {
-
     if (this.state.success) {
-      // if signup successful
       return <Redirect to="/" />;
     }
 
     let alert = "";
     if (this.state.msg) {
-      alert = (<Alert variant="warning"> {this.state.msg} </Alert>);
+      alert = <Alert variant="warning"> {this.state.msg} </Alert>;
     }
 
     return (
       <Card id="loginSignupFormCard">
-        
         {alert}
         <h2>Signup</h2>
-        
-        <Form noValidate validated={this.state.validated} id="loginSignupForm" onSubmit={this.handleSubmitSignup}>
+
+        <Form
+          noValidate
+          validated={this.state.validated}
+          id="loginSignupForm"
+          onSubmit={this.handleSubmitSignup}
+        >
           <Form.Group>
             <Form.Label>Username</Form.Label>
             <Form.Control
@@ -111,7 +113,9 @@ class Signup extends React.Component {
             Submit
           </Button>
         </Form>
-        <a className="footerRedirect" href="/">Login</a>
+        <a className="footerRedirect" href="/">
+          Login
+        </a>
       </Card>
     );
   }

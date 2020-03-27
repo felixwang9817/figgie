@@ -1,7 +1,8 @@
 import React from "react";
-import { Route, BrowserRouter } from "react-router-dom";
+import { Route, Redirect, BrowserRouter } from "react-router-dom";
 import App from "./App";
 import Login from "./Login";
+import Lobby from "./Lobby";
 import Signup from "./Signup";
 import { createBrowserHistory } from 'history';
 import ReactGA from 'react-ga';
@@ -17,19 +18,49 @@ history.listen(location => {
 });
 
 class Gateway extends React.Component {
+  constructor() {
+    super();
+    this.state = {};
+  }
+
+  componentWillMount() {
+    this.setState({ user: this.props.user });
+  }
+
+  updateUser(user) {
+    this.setState({ user: user });
+  }
+
+  handleLogout() {
+    this.setState({ user: null });
+  }
+
   render() {
     return (
       <BrowserRouter history={history}>
         <div>
           <Route exact path="/">
-            { this.props.user ? <App user={this.props.user} /> : <Login/> }
+            <Lobby
+              user={this.state.user}
+              handleLogout={_ => this.handleLogout()}
+            />
           </Route>
 
+          <Route exact path="/play">
+            {this.state.user ? (
+              <App user={this.state.user} />
+            ) : (
+              <Redirect to="/login" />
+            )}
+          </Route>
+
+          <Route exact path="/login">
+            <Login onLogin={user => this.updateUser(user)} />
+          </Route>
 
           <Route exact path="/signup">
-            <Signup />  
+            <Signup />
           </Route>
-
 
           <Route
             render={function() {

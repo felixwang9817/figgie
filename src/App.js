@@ -2,7 +2,7 @@ import React, { Component, useState } from "react";
 import socketIOClient from "socket.io-client";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Gateway from "./Gateway.js";
+import { Redirect } from "react-router-dom";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import {
@@ -124,9 +124,10 @@ class Players extends React.Component {
                     }
                   >
                     {this.props.isGameActive
-                     ? playerState[players[key]]["numCards"]
-                     : playerState[players[key]]["ready"]
-                       ? "Ready" : "" }
+                      ? playerState[players[key]]["numCards"]
+                      : playerState[players[key]]["ready"]
+                      ? "Ready"
+                      : ""}
                   </td>
                 ) : (
                   <td key={key}></td>
@@ -158,9 +159,11 @@ class Market extends React.Component {
               <td key={key}>{displaySuit(key)}</td>
             ))}
 
-            {!this.props.isGameActive && this.props.tradeLog.length > 0  
-              && <td>Net Gain <GiTwoCoins/> </td>
-            }
+            {!this.props.isGameActive && this.props.tradeLog.length > 0 && (
+              <td>
+                Net Gain <GiTwoCoins />{" "}
+              </td>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -189,8 +192,8 @@ class Market extends React.Component {
               <td># you have</td>
               {Object.keys(markets).map(key => (
                 <td key={key}>
-                  {this.props.playerState[username] != null
-                   && this.props.playerState[username][key]}
+                  {this.props.playerState[username] != null &&
+                    this.props.playerState[username][key]}
                 </td>
               ))}
             </tr>
@@ -198,7 +201,8 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive && this.props.tradeLog.length > 0 && (
+          {!this.props.isGameActive &&
+            this.props.tradeLog.length > 0 &&
             Object.keys(this.props.playerState).map(player => (
               <tr style={player === username ? { color: playerColor } : {}}>
                 <td>{player === username ? "you" : "player " + player}</td>
@@ -207,19 +211,18 @@ class Market extends React.Component {
                     key={key}
                     style={
                       key === this.props.goalSuit
-                      ? { color: goalColor, fontWeight: "bold" } : {}
+                        ? { color: goalColor, fontWeight: "bold" }
+                        : {}
                     }
                   >
-                    {this.props.playerState[player] != null
-                     && this.props.playerState[player][key]
-                    }
+                    {this.props.playerState[player] != null &&
+                      this.props.playerState[player][key]}
                   </td>
                 ))}
 
                 <td>{this.props.playerState[player]["netGain"]}</td>
               </tr>
-            ))
-          )}
+            ))}
         </tbody>
       </Table>
     );
@@ -251,7 +254,10 @@ class TradeLog extends React.Component {
 
 class UserInfo extends React.Component {
   componentDidMount() {
-    this.interval = setInterval(() => this.setState({ time: Date.now() }), 1000);
+    this.interval = setInterval(
+      () => this.setState({ time: Date.now() }),
+      1000
+    );
   }
 
   componentWillUnmount() {
@@ -265,29 +271,26 @@ class UserInfo extends React.Component {
 
     function formatDate(ms) {
       if (ms < 0) {
-        return "0:00"
+        return "0:00";
       }
       let minutes = Math.floor(ms / 60000);
       let seconds = Math.floor((ms - 60000 * minutes) / 1000);
-      return (<span id="timer">
-              { minutes }:{seconds} <GiSandsOfTime />
-              </span>)
+      return (
+        <span id="timer">
+          {minutes}:{seconds} <GiSandsOfTime />
+        </span>
+      );
     }
 
     let userState = this.props.playerState[this.props.username];
     return (
       <div style={{ color: playerColor }}>
-        { this.props.gameTimeEnd &&
-          formatDate(this.props.gameTimeEnd - this.state.time)
-        }
-
+        {this.props.gameTimeEnd &&
+          formatDate(this.props.gameTimeEnd - this.state.time)}
         {this.props.username}
         <GiTwoCoins style={{ margin: "0px 8px" }} />
         {userState != null ? userState["money"] : "???"}, room{" "}
         {this.props.roomNumber}
-        <span id="logoutText" onClick={this.props.handleLogout}>
-          Logout
-        </span>
       </div>
     );
   }
@@ -381,23 +384,18 @@ class App extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  handleLogout() {
-    fetch(server + "/logout", { credentials: "include" });
-    this.state.socket.disconnect();
-    this.setState({ username: null });
+  // state must be set before render to prevent redirect to /
+  async componentWillMount() {
+    this.setState({ username: this.props.user.username });
+    this.setState({ roomNumber: this.props.user.roomNumber });
   }
 
   async componentDidMount() {
     const socket = socketIOClient(server);
     this.state.socket = socket;
-    // TODO: authenticate socket, wait for server to signal us our
-    // username & roomnumber!!
-    // Make it so we don't send anything except req.user through passport,
-    // TODO: get username and room number form this.props.user
-    // Remove socket.emit enterRoom/provideUsername
 
-    this.setState({ username: this.props.user.username });
-    this.setState({ roomNumber: this.props.user.roomNumber });
+    // TODO: fix bug where refreshing makes room number disappear
+    // fix: query server for room number upon refresh
 
     socket.on("marketUpdate", state => {
       console.log("market update: ", state);
@@ -432,7 +430,7 @@ class App extends Component {
 
     socket.on("gameTimeEnd", state => {
       this.setState({ gameTimeEnd: state });
-    })
+    });
 
     socket.on("alert", msg => {
       if (!msg) return;
@@ -457,7 +455,7 @@ class App extends Component {
 
   render() {
     if (!this.props.user || !this.state.username) {
-      return <Gateway />;
+      return <Redirect to="/" />;
     }
 
     if (this.state.observer) {
@@ -474,11 +472,11 @@ class App extends Component {
     }
 
     let currPlayerState = this.state.players[this.state.username];
-    let placeholderString = this.state.isGameActive 
-                            ? "Enter trades here!"
-                            : currPlayerState && currPlayerState.ready
-                              ? "Waiting for all players to be ready..." 
-                              : "Enter <ready> when you're ready!"
+    let placeholderString = this.state.isGameActive
+      ? "Enter trades here!"
+      : currPlayerState && currPlayerState.ready
+      ? "Waiting for all players to be ready..."
+      : "Enter <ready> when you're ready!";
 
     return (
       // TODO: ensure that username is capped at 30 characters or overflow is disabled
@@ -490,7 +488,6 @@ class App extends Component {
                 username={this.state.username}
                 playerState={this.state.players}
                 roomNumber={this.state.roomNumber}
-                handleLogout={() => this.handleLogout()}
                 gameTimeEnd={this.state.gameTimeEnd}
               />
 

@@ -11,8 +11,12 @@ const session = require("express-session")({
 const cors = require("cors");
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://3.22.23.96:80",
-    "http://figgie.io", "http://www.figgie.io"],
+    origin: [
+      "http://localhost:3000",
+      "http://3.22.23.96:80",
+      "http://figgie.io",
+      "http://www.figgie.io"
+    ],
     credentials: true
   })
 ); // enable cross-origin access + cookies
@@ -28,7 +32,8 @@ require("isomorphic-fetch");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 2;
-const gameTime = process.env.NODE_ENV === "production" ? 4 * 60 * 1000 : 30 * 1000;  // in ms
+const gameTime =
+  process.env.NODE_ENV === "production" ? 4 * 60 * 1000 : 30 * 1000; // in ms
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -41,7 +46,7 @@ io.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-const flash = require('express-flash');
+const flash = require("express-flash");
 app.use(flash());
 
 passport.use(
@@ -57,12 +62,14 @@ passport.use(
         return cb(err);
       }
       if (!user) {
-        return cb(null, false, {message: "Username not found."});
+        return cb(null, false, { message: "Username not found." });
       }
 
       // compare hashed pw
       bcrypt.compare(password, user.hashedpw, function(err, result) {
-        return result ? cb(null, user) : cb(null, false, {message: "Incorrect password."});
+        return result
+          ? cb(null, user)
+          : cb(null, false, { message: "Incorrect password." });
       });
     });
   })
@@ -98,18 +105,12 @@ if (process.env.NODE_ENV === "production") {
 
 app.post(
   "/login",
-  passport.authenticate("local", { failureRedirect: "/login", failureFlash: true }),
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    failureFlash: true
+  }),
   function(req, res) {
-    console.log("successful login from user: ", req.user.username);
-
-    // store room number for this username, so that socket can be put into room upon socket connection
-    let username = req.user.username;
-    let roomNumber = req.body.roomNumber;
-    usernameToRoomNumber[username] = roomNumber;
-
-    // send back to client its roomNumber
-    req.user["roomNumber"] = roomNumber;
-    res.send({user: req.user});
+    res.send({ user: req.user });
   }
 );
 
@@ -119,6 +120,14 @@ app.post("/signup", function(req, res) {
   db.createPlayer(req.body.username, req.body.password, (success, msg) => {
     res.send({ success: success, msg: msg });
   });
+});
+
+app.post("/enterRoom", function(req, res) {
+  // store room number for this username, so that socket can be put into room upon socket connection
+  let username = req.body.username;
+  let roomNumber = req.body.roomNumber;
+  usernameToRoomNumber[username] = roomNumber;
+  res.send({ redirect: true });
 });
 
 // TODO: how to send a failure msg in json format when login fails? right now
@@ -218,7 +227,10 @@ function parseCommand(command, socket) {
     } else if (command == "not ready") {
       markPlayerReady(username, false);
     } else {
-      socket.emit("alert", "Game is not active! Please wait for all players to be ready.");
+      socket.emit(
+        "alert",
+        "Game is not active! Please wait for all players to be ready."
+      );
     }
     return;
   }
@@ -312,12 +324,12 @@ function parseCommand(command, socket) {
   }
 }
 
-
-function markPlayerReady(username, target=true) {
+function markPlayerReady(username, target = true) {
   // target: null [i.e. flip], true, false
   let roomNumber = usernameToRoomNumber[username];
   let playerState = roomToState[roomNumber]["playerState"];
-  if (target === null) {  // flip current state
+  if (target === null) {
+    // flip current state
     target = !playerState[username]["ready"];
   }
   playerState[username]["ready"] = target;
@@ -325,18 +337,18 @@ function markPlayerReady(username, target=true) {
 
   // check if game should start
   if (Object.keys(playerState).length !== kMaxPlayers) {
-    return //socket.emit("alert", "Not enough players!");
+    return; //socket.emit("alert", "Not enough players!");
   }
 
   // check if all players are ready
   for (const player in playerState) {
     if (!playerState[player]["ready"]) {
-      return //socket.emit("alert", "Not all players are ready!")
+      return; //socket.emit("alert", "Not all players are ready!")
     }
   }
 
   if (roomToState[roomNumber]["isGameActive"]) {
-    return //socket.emit("alert", "Game already started!");
+    return; //socket.emit("alert", "Game already started!");
   }
 
   io.to(roomNumber).emit("alert", "Game on!");
@@ -559,7 +571,7 @@ function startGame(roomNumber) {
   Object.keys(playerState).map(player => {
     let playerCards = cards.slice(cnt, cnt + 10);
     // for simplicity, netGain will track money after game ends minus money before game start
-    playerState[player]["netGain"] = -playerState[player]["money"]
+    playerState[player]["netGain"] = -playerState[player]["money"];
     playerState[player]["money"] -= 50;
 
     suits.forEach(suit => {
@@ -639,7 +651,7 @@ function endGame(roomNumber) {
   io.to(roomNumber).emit("goalSuit", goalSuit);
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;
-  io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]['gameTimeEnd'])
+  io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
 }
 
 io.on("connection", async function(socket) {
