@@ -1,14 +1,7 @@
 import React from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
-
-// TODO: can we unify a single `server` variable across different .js files?
-var server;
-if (process.env.NODE_ENV === "production") {
-  server = "http://3.22.23.96:8080";
-} else {
-  server = "http://localhost:8080";
-}
+import server from "./index";
 
 class Signup extends React.Component {
   constructor() {
