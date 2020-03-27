@@ -2,7 +2,7 @@ import React from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import ReactGA from "react-ga";
 import server from "./index";
-import { Redirect } from "react-router-dom";
+import { Redirect, useLocation } from "react-router-dom";
 
 class Login extends React.Component {
   constructor() {
@@ -13,6 +13,13 @@ class Login extends React.Component {
     this.handleChangeUsername = this.handleChangeUsername.bind(this);
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleSubmitLogin = this.handleSubmitLogin.bind(this);
+  }
+
+  componentDidMount() {
+    if (this.props.newUser) {
+      this.setState({ msg: "Signup successful! Please log in.",
+                      msgType: "success"});
+    }
   }
 
   handleChangeUsername(event) {
@@ -69,7 +76,7 @@ class Login extends React.Component {
 
     let alert = "";
     if (this.state.msg) {
-      alert = <Alert variant="danger"> {this.state.msg} </Alert>;
+      alert = <Alert variant={this.state.msgType || "danger"}> {this.state.msg} </Alert>;
     }
 
     return (

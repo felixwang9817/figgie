@@ -23,10 +23,12 @@ class Gateway extends React.Component {
     this.state = {};
     this.updateUser = this.updateUser.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
+    this.onSignup = this.onSignup.bind(this);
   }
 
   componentWillMount() {
-    this.setState({ user: this.props.user });
+    this.setState({ user: this.props.user,
+                    newUser: false });
   }
 
   updateUser(user) {
@@ -35,6 +37,10 @@ class Gateway extends React.Component {
 
   handleLogout() {
     this.setState({ user: null });
+  }
+
+  onSignup() {
+    this.setState({ newUser: true});
   }
 
   render() {
@@ -57,11 +63,11 @@ class Gateway extends React.Component {
           </Route>
 
           <Route exact path="/login">
-            <Login onLogin={user => this.updateUser(user)} />
+            <Login onLogin={user => this.updateUser(user)} newUser={this.state.newUser} />
           </Route>
 
           <Route exact path="/signup">
-            <Signup />
+            <Signup onSignup={this.onSignup} />
           </Route>
 
           <Route
