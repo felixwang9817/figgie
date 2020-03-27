@@ -10,7 +10,7 @@ import {
   Row
 } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
-import server from "./index";
+import {server} from "./consts";
 
 class Lobby extends React.Component {
   constructor() {
@@ -101,6 +101,7 @@ class Lobby extends React.Component {
                           value={this.state.roomNumber || ""}
                           placeholder="Enter Room"
                           onChange={this.handleChangeRoom}
+                          autoFocus={true}
                           maxLength={30}
                           required
                         />

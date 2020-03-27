@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
-import server from "./index";
+import { server } from "./consts";
 
 class Signup extends React.Component {
   constructor() {

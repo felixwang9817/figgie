@@ -1,8 +1,8 @@
 import React from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import ReactGA from "react-ga";
-import server from "./index";
-import { Redirect, useLocation } from "react-router-dom";
+import { server } from "./consts";
+import { Redirect } from "react-router-dom";
 
 class Login extends React.Component {
   constructor() {
