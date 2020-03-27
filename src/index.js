@@ -4,6 +4,7 @@ import "./index.css";
 import Gateway from "./Gateway";
 import * as serviceWorker from "./serviceWorker";
 
+
 var server;
 if (process.env.NODE_ENV === "production") {
   server = "http://3.22.23.96:8080";

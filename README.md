@@ -28,7 +28,7 @@ Ideal flow:
   - button to leave room & return to lobby --> instead of logout
   - [done] each player can toggle ready/not-ready --> goes where #-cards currently is
   - people can chat --> this merges with trade-log
-  - game starts when all 4 players are ready, sets a timer for auto end --> top left
+  - [done] game starts when all 4 players are ready, sets a timer for auto end --> top left
 
   - [done] show net delta in money for each player at end of round
   - if player leaves while game not active, server waits 5s to see if player will reconnect. If not, remove player from room.

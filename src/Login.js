@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import Gateway from "./Gateway";
+import ReactGA from 'react-ga';
 
 // TODO: can we unify a single `server` variable across different .js files?
 var server;
@@ -44,6 +45,12 @@ class Login extends React.Component {
       event.stopPropagation();
       return;
     }
+
+    ReactGA.event({
+      category: "Login",
+      action: "Login attempt"
+    });
+
 
     fetch(server + "/login", {
       headers: {
