@@ -113,7 +113,7 @@ class Signup extends React.Component {
             Submit
           </Button>
         </Form>
-        <a className="footerRedirect" href="/">
+        <a className="footerRedirect" href="/login">
           Login
         </a>
       </Card>

@@ -8,19 +8,21 @@ import { createBrowserHistory } from 'history';
 import ReactGA from 'react-ga';
 ReactGA.initialize('UA-77066601-2');
 
-const history = createBrowserHistory();
+// const history = createBrowserHistory();
 
 // Initialize google analytics page view tracking
-history.listen(location => {
-  console.log("logging ", location.pathname);
-  ReactGA.set({ page: location.pathname }); // Update the user's current page
-  ReactGA.pageview(location.pathname); // Record a pageview for the given page
-});
+// history.listen(location => {
+//   console.log("logging ", location.pathname);
+//   ReactGA.set({ page: location.pathname }); // Update the user's current page
+//   ReactGA.pageview(location.pathname); // Record a pageview for the given page
+// });
 
 class Gateway extends React.Component {
   constructor() {
     super();
     this.state = {};
+    this.updateUser = this.updateUser.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   componentWillMount() {
@@ -37,7 +39,7 @@ class Gateway extends React.Component {
 
   render() {
     return (
-      <BrowserRouter history={history}>
+      <BrowserRouter>
         <div>
           <Route exact path="/">
             <Lobby

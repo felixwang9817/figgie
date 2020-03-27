@@ -161,7 +161,7 @@ class Market extends React.Component {
 
             {!this.props.isGameActive && this.props.tradeLog.length > 0 && (
               <td>
-                Net Gain <GiTwoCoins />{" "}
+                Net Gain <GiTwoCoins />
               </td>
             )}
           </tr>
@@ -291,6 +291,9 @@ class UserInfo extends React.Component {
         <GiTwoCoins style={{ margin: "0px 8px" }} />
         {userState != null ? userState["money"] : "???"}, room{" "}
         {this.props.roomNumber}
+        <span id="logoutText" onClick={this.props.returnToLobby}>  
+          Return to Lobby  
+        </span>
       </div>
     );
   }
@@ -382,6 +385,7 @@ class App extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.returnToLobby = this.returnToLobby.bind(this);
   }
 
   // state must be set before render to prevent redirect to /
@@ -453,6 +457,10 @@ class App extends Component {
     this.setState({ trade_command: "" }); // clear form
   }
 
+  returnToLobby() {
+    this.setState({username: null}); // triggers redirect
+  }
+
   render() {
     if (!this.props.user || !this.state.username) {
       return <Redirect to="/" />;
@@ -479,7 +487,6 @@ class App extends Component {
       : "Enter <ready> when you're ready!";
 
     return (
-      // TODO: ensure that username is capped at 30 characters or overflow is disabled
       <div className="App">
         <header className="App-header">
           <Row className="gameRow">
@@ -489,6 +496,7 @@ class App extends Component {
                 playerState={this.state.players}
                 roomNumber={this.state.roomNumber}
                 gameTimeEnd={this.state.gameTimeEnd}
+                returnToLobby={() => this.returnToLobby()}
               />
 
               <br></br>
