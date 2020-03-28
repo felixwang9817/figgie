@@ -42,6 +42,39 @@ function displaySuit(suit) {
 }
 
 class Market extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      didMarketChange:
+      {
+        clubs: { bid: false, offer: false },
+        spades: { bid: false, offer: false },
+        hearts: { bid: false, offer: false },
+        diamonds: { bid: false, offer: false }
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    let markets = this.props.marketState;
+    let prevMarkets = prevProps.marketState;
+    if (Object.keys(prevMarkets).length === 0) return;
+    if (JSON.stringify(markets) === JSON.stringify(prevMarkets)) return;  // no change
+
+    let didMarketChange = {}
+
+    Object.keys(markets).map(key => {
+      didMarketChange[key] = {};
+      didMarketChange[key]["bid"] = markets[key]["bid"] !== prevMarkets[key]["bid"];
+      didMarketChange[key]["offer"] = markets[key]["offer"] !== prevMarkets[key]["offer"];
+    })
+
+    console.log(didMarketChange);
+    this.setState({ didMarketChange: didMarketChange });
+  }
+
+
   render() {
     let markets = this.props.marketState;
     let username = this.props.username;
@@ -69,7 +102,7 @@ class Market extends React.Component {
           <tr>
             <td>bids</td>
             {Object.keys(markets).map(key => (
-              <td key={key}>
+              <td key={key} className={this.state.didMarketChange[key]["bid"] ? "marketFlash" : ""} >
                 {markets[key]["bid"] !== null
                   ? markets[key]["bid"] + " by " + markets[key]["bidPlayer"]
                   : ""}
@@ -79,7 +112,7 @@ class Market extends React.Component {
           <tr>
             <td>offers</td>
             {Object.keys(markets).map(key => (
-              <td key={key}>
+              <td key={key} className={this.state.didMarketChange[key]["offer"] ? "marketFlash" : ""}>
                 {markets[key]["offer"] !== null
                   ? markets[key]["offer"] + " by " + markets[key]["offerPlayer"]
                   : ""}
