@@ -1,17 +1,9 @@
 import React from "react";
-import {
-  Form,
-  Button,
-  Card,
-  Nav,
-  Jumbotron,
-  Container,
-  Col,
-  Row
-} from "react-bootstrap";
+import { Form, Button, Card, Nav, Container, Col, Row } from "react-bootstrap";
 import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
+import { defaultTextColor, disconnectedColor } from "./consts";
 
 class Lobby extends React.Component {
   constructor() {
@@ -72,27 +64,67 @@ class Lobby extends React.Component {
     }
 
     return (
-      <Container>
-        <Row>
-          <Col>
-            <Jumbotron>
-              <h1>
-                username: {this.state.user ? this.state.user.username : "N/A"}
-              </h1>
-              <a
+      <header className="Lobby-header">
+        <Container>
+          <Row className="justify-content-md-center">
+            <Col xs sm md lg xl={3}></Col>
+            <Col xs sm md lg xl="auto">
+              <h1>Figgie</h1>
+            </Col>
+            <Col xs sm md lg xl={3}></Col>
+          </Row>
+          <Row>
+            <Col xs={6}>
+              {/* <a
                 className="App-link"
                 href="https://www.janestreet.com/figgie/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Full Game Rules
-              </a>
-              <Leaderboard />
+              </a> */}
               {this.state.user ? (
                 <div>
+                  <h3>username: {this.state.user.username}</h3>
                   <span id="logoutText" onClick={_ => this.handleLogout()}>
                     Logout
                   </span>
+                </div>
+              ) : (
+                <Card bg={"secondary"} style={{ width: "18rem" }}>
+                  <Card.Body>
+                    <Card.Title>User Info</Card.Title>
+                    <Nav>
+                      <Nav.Item>
+                        <Nav.Link
+                          href="/login"
+                          style={{ color: defaultTextColor }}
+                        >
+                          Login
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link
+                          href="/signup"
+                          style={{ color: defaultTextColor }}
+                        >
+                          Signup
+                        </Nav.Link>
+                      </Nav.Item>
+                    </Nav>
+                  </Card.Body>
+                </Card>
+              )}
+              <Leaderboard />
+            </Col>
+            <Col xs={6}>
+              <Row className="justify-content-md-center">
+                <Col md="auto">
+                  <h2>Rooms</h2>
+                </Col>
+              </Row>
+              {this.state.user ? (
+                <div>
                   <Card id="loginSignupFormCard">
                     {alert}
                     <h2>Enter Room</h2>
@@ -124,19 +156,12 @@ class Lobby extends React.Component {
                   </Card>
                 </div>
               ) : (
-                <Nav>
-                  <Nav.Item>
-                    <Nav.Link href="/login">Login</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link href="/signup">Signup</Nav.Link>
-                  </Nav.Item>
-                </Nav>
+                <div></div>
               )}
-            </Jumbotron>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Container>
+      </header>
     );
   }
 }

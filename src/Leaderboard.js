@@ -10,7 +10,7 @@ class Leaderboard extends React.Component {
     // before componentWillMount, thus attempting to iterate through the keys
     // of a non-existent leaderboard, which causes an error
     // NB: this is confusing because componentWillMount should finish executing before render
-    this.state = { leaderboard: [{ username: "", money: 0 }] };
+    this.state = { leaderboard: [{ username: "", money: "" }] };
   }
 
   async componentWillMount() {
