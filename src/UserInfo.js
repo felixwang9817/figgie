@@ -7,6 +7,11 @@ import { playerColor } from "./consts";
 
 
 class UserInfo extends React.Component {
+  constructor() {
+    super();
+    this.state = { time: Date.now() };
+  }
+
   componentDidMount() {
     this.interval = setInterval(
       () => this.setState({ time: Date.now() }),

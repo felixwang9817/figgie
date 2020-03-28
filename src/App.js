@@ -113,7 +113,6 @@ class App extends Component {
 
   // state must be set before render to prevent redirect to /
   async componentWillMount() {
-    if (!this.props.user) return;
     this.setState({ username: this.props.user.username });
     this.setState({ roomNumber: this.props.user.roomNumber });
   }
