@@ -78,7 +78,6 @@ class Lobby extends React.Component {
               <h1>
                 username: {this.state.user ? this.state.user.username : "N/A"}
               </h1>
-
               <a
                 className="App-link"
                 href="https://www.janestreet.com/figgie/"
@@ -87,7 +86,11 @@ class Lobby extends React.Component {
               >
                 Full Game Rules
               </a>
-
+              <Nav>
+                <Nav.Item>
+                  <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
+                </Nav.Item>
+              </Nav>
               {this.state.user ? (
                 <div>
                   <span id="logoutText" onClick={_ => this.handleLogout()}>

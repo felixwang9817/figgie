@@ -161,6 +161,10 @@ app.get(
   }
 );
 
+app.get("/leaderboard", async function(req, res) {
+  db.getPlayersByMoney(req, res);
+});
+
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
 

@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const Pool = require("pg").Pool;
 const pool = new Pool({
@@ -19,6 +19,15 @@ const kStartingMoney = 300;
 //   });
 // };
 
+const getPlayersByMoney = (_, response) => {
+  pool.query("SELECT * FROM players ORDER BY money DESC", (error, results) => {
+    if (error) {
+      throw error;
+    }
+    response.status(200).json(results.rows);
+  });
+};
+
 const getMoneyByUsername = (username, cb) => {
   pool.query(
     "SELECT money FROM players WHERE username = $1",
@@ -34,7 +43,7 @@ const getMoneyByUsername = (username, cb) => {
 
 function createPlayer(username, password, cb) {
   // check if player exists
-  findByUsername(username, ((_, result) => {
+  findByUsername(username, (_, result) => {
     console.log(_, result);
     if (result) {
       return cb(false, "Username already exists!");
@@ -44,7 +53,7 @@ function createPlayer(username, password, cb) {
     const money = kStartingMoney;
     bcrypt.hash(password, saltRounds, function(err, hashedpw) {
       if (err) {
-        console.log("error during hashing", err)
+        console.log("error during hashing", err);
         return cb(false, "Error hashing pw.");
       }
 
@@ -62,8 +71,8 @@ function createPlayer(username, password, cb) {
         }
       );
     });
-  }));
-};
+  });
+}
 
 const updatePlayer = (username, money) => {
   return new Promise(function(resolve, reject) {
@@ -107,10 +116,11 @@ const findByUsername = function(username, cb) {
       return cb(null, results.rows[0]);
     }
   );
-}
+};
 
 module.exports = {
   // getPlayers,
+  getPlayersByMoney,
   getMoneyByUsername,
   createPlayer,
   updatePlayer,
