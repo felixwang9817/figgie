@@ -16,7 +16,7 @@ import {
   Tab
 } from "react-bootstrap";
 import { server } from "./consts";
-import Players from "./Player";
+import Players from "./Players";
 import Market from "./Market";
 import UserInfo from "./UserInfo";
 import TradeLog from "./TradeLog";
@@ -95,7 +95,8 @@ class App extends Component {
       username: "",
       roomNumber: "1",
       market: {},
-      players: {},
+      playersInfo: {},
+      playersList: {},
       tradeLog: [],
       observer: false,
       isGameActive: false,
@@ -124,17 +125,20 @@ class App extends Component {
     // fix: query server for room number upon refresh
 
     socket.on("marketUpdate", state => {
-      console.log("market update: ", state);
       this.setState({ market: state });
     });
 
-    socket.on("playerUpdate", state => {
-      console.log("player update: ", state);
-      this.setState({ players: state });
+    socket.on("playersInfoUpdate", state => {
+      // this updates post game results for Market component
+      this.setState({ playersInfo: state });
     });
 
+    socket.on("playersListUpdate", state => {
+      // this updates active players list and readiness for Players component
+      this.setState({ playersList: state });
+    })
+
     socket.on("tradeLogUpdate", state => {
-      console.log("trade log update");
       this.setState({ tradeLog: state });
     });
 
@@ -201,7 +205,7 @@ class App extends Component {
       alert = <Alert variant="warning"> {this.state.alertMsg} </Alert>;
     }
 
-    let currPlayerState = this.state.players[this.state.username];
+    let currPlayerState = this.state.playersInfo[this.state.username];
     let placeholderString = this.state.isGameActive
       ? "Enter trades here!"
       : currPlayerState && currPlayerState.ready
@@ -215,7 +219,7 @@ class App extends Component {
             <Col xs={7}>
               <UserInfo
                 username={this.state.username}
-                playerState={this.state.players}
+                playerState={this.state.playersInfo}
                 roomNumber={this.state.roomNumber}
                 gameTimeEnd={this.state.gameTimeEnd}
                 returnToLobby={() => this.returnToLobby()}
@@ -225,7 +229,7 @@ class App extends Component {
 
               <Market
                 username={this.state.username}
-                playerState={this.state.players}
+                playerState={this.state.playersInfo}
                 marketState={this.state["market"]}
                 isGameActive={this.state.isGameActive}
                 tradeLog={this.state.tradeLog}
@@ -258,7 +262,7 @@ class App extends Component {
 
               <Players
                 username={this.state.username}
-                playerState={this.state.players}
+                playerState={this.state.playersList}
                 isGameActive={this.state.isGameActive}
               />
             </Col>

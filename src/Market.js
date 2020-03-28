@@ -91,7 +91,8 @@ class Market extends React.Component {
               <td key={key}>{displaySuit(key)}</td>
             ))}
 
-            {!this.props.isGameActive && this.props.tradeLog.length > 0 && (
+            {!this.props.isGameActive && this.props.playerState[username] && 
+              this.props.playerState[username]["netGain"] && (
               <td>
                 Net Gain <GiTwoCoins />
               </td>
@@ -133,9 +134,10 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive &&
-            this.props.tradeLog.length > 0 &&
-            Object.keys(this.props.playerState).map(player => (
+          {!this.props.isGameActive && this.props.playerState[username] && 
+            this.props.playerState[username]["netGain"] &&  
+            // netGain not null => was in previous game and should see results
+            (Object.keys(this.props.playerState).map(player => (
               <tr style={player === username ? { color: playerColor } : {}}>
                 <td>{player === username ? "you" : "player " + player}</td>
                 {Object.keys(markets).map(key => (
@@ -154,7 +156,7 @@ class Market extends React.Component {
 
                 <td>{this.props.playerState[player]["netGain"]}</td>
               </tr>
-            ))}
+            )))}
         </tbody>
       </Table>
     );

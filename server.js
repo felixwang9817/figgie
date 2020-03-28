@@ -214,8 +214,8 @@ let initialPlayerState = {
   hearts: null,
   spades: null,
   numCards: 10,
-  money: 300,
-  netGain: 0, // delta for a single game
+  money: 300, // TODO: maybe this shouldn't be kept in per-room in-game state, but just fetched and pushed to db at start/end of game?
+  netGain: null, // delta for a single game
   connected: true,
   ready: false
 };
@@ -344,7 +344,7 @@ function markPlayerReady(username, target = true) {
     target = !playerState[username]["ready"];
   }
   playerState[username]["ready"] = target;
-  updatePlayers(roomNumber);
+  updatePlayersList(roomNumber);
 
   // check if game should start
   if (Object.keys(playerState).length !== kMaxPlayers) {
@@ -387,7 +387,7 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
   io.to(roomNumber).emit("alert", "Trade! Market cleared.");
 
   clearMarket(roomNumber);
-  updatePlayers(roomNumber);
+  updatePlayersInfo(roomNumber);
 }
 
 function postOffer(suit, price, player, roomNumber) {
@@ -517,21 +517,42 @@ function shieldPlayerInfo(username, roomNumber) {
   return playerVisibleState;
 }
 
-function updatePlayers(roomNumber, shield = true) {
+function updatePlayersInfo(roomNumber) {
   // first, get usernames associated with roomNumber
   let usernames = Object.keys(roomToState[roomNumber]["playerState"]);
 
-  // for each username, shield appropriately and emit to corresponding socket
+  // for each username, emit to corresponding socket
   for (const username of usernames) {
     let socketid = usernameToSocketid[username];
+    let showPrevGameResults = Object.keys(roomToState[roomNumber]["postGameResults"]).includes(username);
+    
     io.to(socketid).emit(
-      "playerUpdate",
-      shield
-        ? shieldPlayerInfo(username, roomNumber)
-        : roomToState[roomNumber]["playerState"]
+      "playersInfoUpdate",
+      showPrevGameResults
+        ? roomToState[roomNumber]["postGameResults"]
+        : shieldPlayerInfo(username, roomNumber) 
     );
   }
 }
+
+
+function updatePlayersList(roomNumber) {
+  // update readiness/connectedness/num-of-cards for <Players> component
+  let playersListInfo = {};
+  let playerState = roomToState[roomNumber]["playerState"];
+  for (const username of Object.keys(playerState)) {
+    playersListInfo[username] = {};
+    playersListInfo[username]["numCards"] = playerState[username]["numCards"];
+    playersListInfo[username]["ready"] = playerState[username]["ready"];
+    playersListInfo[username]["connected"] = playerState[username]["connected"];
+  }
+
+  io.to(roomNumber).emit(
+      "playersListUpdate",
+      playersListInfo
+  )
+}
+
 
 function broadcastMarketUpdate(roomNumber) {
   let marketState = roomToState[roomNumber]["marketState"];
@@ -552,9 +573,11 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["isGameActive"] = false;
   roomToState[roomNumber]["gameTimeEnd"] = null;
   roomToState[roomNumber]["tradeLog"] = [];
+  roomToState[roomNumber]["postGameResults"] = {};
 }
 
 function startGame(roomNumber) {
+  roomToState[roomNumber]["postGameResults"] = {};
   let playerState = roomToState[roomNumber]["playerState"];
 
   let common = utils.randomSuit();
@@ -594,7 +617,7 @@ function startGame(roomNumber) {
     cnt += 10;
   });
   clearMarket(roomNumber);
-  updatePlayers(roomNumber);
+  updatePlayersInfo(roomNumber);
   updateGameState(true, roomNumber);
   roomToState[roomNumber]["gameTimeEnd"] = Date.now() + gameTime;
   io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
@@ -658,12 +681,27 @@ function endGame(roomNumber) {
     db.updatePlayer(player, playerState[player]["money"]);
   });
 
-  updatePlayers(roomNumber, (shield = false));
+  setPostGameResults(roomNumber);
+  updatePlayersInfo(roomNumber);
   io.to(roomNumber).emit("goalSuit", goalSuit);
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;
   io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
 }
+
+function setPostGameResults(roomNumber) {
+  let playerState = roomToState[roomNumber]["playerState"];
+  // TODO: also store # of suits each player started with in startGame
+  for (const player in playerState) {
+    // TODO: possibly shield money? https://stackoverflow.com/questions/17781472/how-to-get-a-subset-of-a-javascript-objects-properties
+    roomToState[roomNumber]["postGameResults"][player] = playerState[player];
+  }
+  
+  console.log("post game", roomToState[roomNumber]["postGameResults"]);
+}
+
+
+/* socket communication code */
 
 io.on("connection", async function(socket) {
   if (Object.keys(usernameToRoomNumber).length == maxUsers) {
@@ -729,7 +767,8 @@ io.on("connection", async function(socket) {
   // async update money
   db.getMoneyByUsername(username, money => {
     roomToState[roomNumber]["playerState"][username]["money"] = money;
-    updatePlayers(roomNumber);
+    updatePlayersInfo(roomNumber);
+    updatePlayersList(roomNumber);
   });
 
   // update cliend UI to reflect current game state
@@ -756,7 +795,7 @@ io.on("connection", async function(socket) {
         await db.updatePlayer(username, playerState[username]["money"]); // update money
         playerState[username]["connected"] = false; // user is disconnected
         playerState[username]["ready"] = false;
-        updatePlayers(roomNumber);
+        updatePlayersList(roomNumber);
 
         // game is over, we don't need to save user's state
         if (!roomToState[roomNumber]["isGameActive"]) {
@@ -765,7 +804,7 @@ io.on("connection", async function(socket) {
           if (Object.keys(playerState).length == 0) {
             delete roomToState[roomNumber];
           } else {
-            updatePlayers(roomNumber);
+            updatePlayersList(roomNumber);
           }
         }
       }
