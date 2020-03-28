@@ -165,6 +165,12 @@ app.get("/leaderboard", async function(req, res) {
   db.getPlayersByMoney(req, res);
 });
 
+app.get("/rooms", function(req, res) {
+  res.send(Object.keys(roomToState));  // TODO: also send room state like active,
+                                      // num users, usernames (?), etc.
+})
+
+
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
 

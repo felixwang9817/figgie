@@ -8,7 +8,13 @@ class Lobby extends React.Component {
   constructor() {
     super();
 
-    this.state = { validated: false };
+    this.state = { validated: false, rooms: [] };
+
+    fetch(server + "/rooms", {})
+      .then(response => response.json())
+      .then(response => {
+        this.setState({ rooms: response });
+      });
 
     this.handleChangeRoom = this.handleChangeRoom.bind(this);
     this.handleEnterRoom = this.handleEnterRoom.bind(this);
@@ -92,26 +98,22 @@ class Lobby extends React.Component {
                     <Card.Text>
                       <p></p>
                     </Card.Text>
-                    <>
-                      <Button
-                        onClick={_ => this.handleLogout()}
-                        variant="secondary"
-                      >
-                        Log out
-                      </Button>{" "}
-                    </>
+                    <Button
+                      onClick={_ => this.handleLogout()}
+                      variant="secondary"
+                    >
+                      Log out
+                    </Button>
                   </Card.Body>
                 ) : (
                   <Card.Body>
                     <Card.Title>User Info</Card.Title>
-                    <>
-                      <Button href="/login" variant="secondary">
-                        Log in
-                      </Button>{" "}
-                      <Button href="/signup" variant="secondary">
-                        Sign up
-                      </Button>
-                    </>
+                    <Button href="/login" variant="secondary">
+                      Log in
+                    </Button>{" "}
+                    <Button href="/signup" variant="secondary">
+                      Sign up
+                    </Button>
                   </Card.Body>
                 )}
               </Card>
@@ -121,9 +123,12 @@ class Lobby extends React.Component {
               <Row className="justify-content-md-center">
                 <Col md="auto">
                   <h2>Rooms</h2>
+                  <div>
+                    {this.state.rooms}
+                  </div>
                 </Col>
               </Row>
-              {this.state.user ? (
+              {this.state.user && (
                 <div>
                   <Card id="enterRoomCard" bg="dark">
                     {alert}
@@ -157,8 +162,6 @@ class Lobby extends React.Component {
                     </Form>
                   </Card>
                 </div>
-              ) : (
-                <div></div>
               )}
             </Col>
           </Row>
