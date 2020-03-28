@@ -25,18 +25,13 @@ Ideal flow:
 
 - game room:
 
-  - [done] button to leave room & return to lobby --> instead of logout
-  - [done] each player can toggle ready/not-ready --> goes where #-cards currently is
-  - people can chat --> this merges with trade-log
-  - [done] game starts when all 4 players are ready, sets a timer for auto end --> top left
-  - [done] show net delta in money for each player at end of round
+  - people can chat --> this merges with trade-log 
   - if player leaves while game not active, server waits 5s to see if player will reconnect. If not, remove player from room.
 
-  - flash visualization on each market update
 
 * logging & robustness
   - automated tests? (UI flow tests via puppeteer?)
-  - metrics
+  - [done-ish] metrics (GA)
     - daily active users, avg minutes/session, avg games/session, etc.
   - unclear what to do with logging, but ideally server side logs should tell us about bugs and help us debug
   - split larger files into smaller components, have one person own each file (for documentation & understanding)
