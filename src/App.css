@@ -24,6 +24,16 @@
   color: white;
 }
 
+.Login-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
 .App-link {
   color: #61dafb;
 }
@@ -92,14 +102,46 @@
   text-align: center;
 }
 
-#loginSignupFormCard {
+#enterRoomCard {
+  /* background-color: #282c34; */
   align-items: center;
   margin: 14%;
+  /* margin: 35%; */
   padding: 8% 0%;
+  /* padding: 3% 0%; */
+  /* margin-top: 180px; */
+  /* margin-bottom: 10px; */
 }
 
-#loginSignupFormCard .footerRedirect {
-  margin-top: 40px;
+#loginSignupFormCard {
+  /* background-color: #282c34; */
+  align-items: center;
+  /* margin: 14%; */
+  margin: 35%;
+  /* padding: 8% 0%; */
+  padding: 3% 0%;
+  margin-top: 180px;
+  margin-bottom: 10px;
+}
+
+#signupFormCard {
+  /* background-color: #282c34; */
+  font-size: calc(2px + 2vmin);
+  align-items: center;
+  /* margin: 14%; */
+  margin: 35%;
+  /* padding: 8% 0%; */
+  padding: 2% 0%;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.signupParagraph {
+  margin-bottom: 0px;
+}
+
+.footerRedirect {
+  margin-top: 10px;
 }
 
 #timer {

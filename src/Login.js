@@ -17,8 +17,10 @@ class Login extends React.Component {
 
   componentDidMount() {
     if (this.props.newUser) {
-      this.setState({ msg: "Signup successful! Please log in.",
-                      msgType: "success"});
+      this.setState({
+        msg: "Signup successful! Please log in.",
+        msgType: "success"
+      });
     }
   }
 
@@ -76,57 +78,70 @@ class Login extends React.Component {
 
     let alert = "";
     if (this.state.msg) {
-      alert = <Alert variant={this.state.msgType || "danger"}> {this.state.msg} </Alert>;
+      alert = (
+        <Alert variant={this.state.msgType || "danger"}>
+          {" "}
+          {this.state.msg}{" "}
+        </Alert>
+      );
     }
 
     return (
-      <Card id="loginSignupFormCard">
-        {alert}
-        <h2>Login</h2>
-        <Form
-          noValidate
-          validated={this.state.validated}
-          id="loginSignupForm"
-          onSubmit={this.handleSubmitLogin}
-        >
-          <Form.Group>
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              value={this.state.username || ""}
-              placeholder="Enter username"
-              onChange={this.handleChangeUsername}
-              autoFocus={true}
-              maxLength={30}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please enter your username.
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={this.state.password || ""}
-              placeholder="Enter password"
-              onChange={this.handleChangePassword}
-              maxLength={30}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please enter your password.
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Button variant="primary" type="submit">
-            Submit
-          </Button>
-        </Form>
-        {/* TODO: move this to lobby */}
-        <a className="footerRedirect" href="/signup">
-          Sign Up
-        </a>
-      </Card>
+      <header className="Login-header">
+        {/* <Card id="loginSignupFormCard"> */}
+        <Card id="loginSignupFormCard" bg="dark">
+          {alert}
+          <h3>Figgie</h3>
+          <p></p>
+          <Form
+            noValidate
+            validated={this.state.validated}
+            id="loginSignupForm"
+            onSubmit={this.handleSubmitLogin}
+          >
+            <Form.Group>
+              {/* <Form.Label>Username</Form.Label> */}
+              <Form.Control
+                type="text"
+                value={this.state.username || ""}
+                placeholder="Username"
+                onChange={this.handleChangeUsername}
+                autoFocus={true}
+                maxLength={30}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                Please enter your username.
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group>
+              {/* <Form.Label>Password</Form.Label> */}
+              <Form.Control
+                type="password"
+                value={this.state.password || ""}
+                placeholder="Password"
+                onChange={this.handleChangePassword}
+                maxLength={30}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                Please enter your password.
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Button variant="primary" type="submit" block>
+              Log In
+            </Button>
+          </Form>
+        </Card>
+        <Card id="signupFormCard" bg="dark">
+          <p className="signupParagraph">
+            {"Don't have an account? "}
+            <a className="footerRedirect" href="/signup">
+              Sign up
+            </a>
+          </p>
+        </Card>
+      </header>
     );
   }
 }

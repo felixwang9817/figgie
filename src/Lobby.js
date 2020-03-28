@@ -125,7 +125,7 @@ class Lobby extends React.Component {
               </Row>
               {this.state.user ? (
                 <div>
-                  <Card id="loginSignupFormCard">
+                  <Card id="enterRoomCard">
                     {alert}
                     <h2>Enter Room</h2>
                     <Form
