@@ -261,15 +261,6 @@ class App extends Component {
                 playerState={this.state.players}
                 isGameActive={this.state.isGameActive}
               />
-
-              <a
-                className="App-link"
-                href="https://www.janestreet.com/figgie/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Full Game Rules
-              </a>
             </Col>
 
             <Col xs={5}>
