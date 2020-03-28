@@ -17,17 +17,16 @@ Ideal flow:
 - lobby:
 
   - can play as a guest
-  - see list of rooms, can join or create new room
-    - support private rooms by adding in optional pw to room creation
-  - can see active games and spectate
+  - see list of rooms w/ info and have it update
+  - support private rooms by adding in optional pw to room creation
+  - can spectate active games
   - can observe full rooms, and join if it becomes unfull
   - leaderboard bug (render executes before componentWillMount finishes)
 
 - game room:
 
   - people can chat --> this merges with trade-log 
-  - if player leaves while game not active, server waits 5s to see if player will reconnect. If not, remove player from room.
-
+  - clean up updatePlayersList v. updatePlayersInfo 
 
 * logging & robustness
   - automated tests? (UI flow tests via puppeteer?)

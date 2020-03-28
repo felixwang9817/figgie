@@ -10,7 +10,7 @@ class Lobby extends React.Component {
 
     this.state = { validated: false, rooms: [] };
 
-    fetch(server + "/rooms", {})
+    fetch(server + "/rooms", {})  // TODO: update every X seconds
       .then(response => response.json())
       .then(response => {
         this.setState({ rooms: response });
