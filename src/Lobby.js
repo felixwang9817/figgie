@@ -9,6 +9,7 @@ import {
   Col,
   Row
 } from "react-bootstrap";
+import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
 
@@ -86,11 +87,7 @@ class Lobby extends React.Component {
               >
                 Full Game Rules
               </a>
-              <Nav>
-                <Nav.Item>
-                  <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
-                </Nav.Item>
-              </Nav>
+              <Leaderboard />
               {this.state.user ? (
                 <div>
                   <span id="logoutText" onClick={_ => this.handleLogout()}>

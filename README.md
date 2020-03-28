@@ -6,10 +6,6 @@ Multiplayer Figgie built using React, express, and socket.io
 
 # TODO
 
-## style
-
-- favicon
-
 ## functionality
 
 Ideal flow:

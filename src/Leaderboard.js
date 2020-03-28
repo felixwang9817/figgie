@@ -24,32 +24,28 @@ class Leaderboard extends React.Component {
 
   render() {
     return (
-      <header className="App-header">
-        <Container>
-          <Row>
-            <Col>
-              Leaderboard
-              <p></p>
-              <Table striped bordered hover variant="dark">
-                <thead>
-                  <tr>
-                    <td>username</td>
-                    <td>money</td>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.keys(this.state.leaderboard).map(key => (
-                    <tr>
-                      <td>{this.state.leaderboard[key]["username"]}</td>
-                      <td>{this.state.leaderboard[key]["money"]}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Col>
-          </Row>
-        </Container>
-      </header>
+      <Row>
+        <Col>
+          Leaderboard
+          <p></p>
+          <Table striped bordered hover variant="dark">
+            <thead>
+              <tr>
+                <td>username</td>
+                <td>money</td>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(this.state.leaderboard).map(key => (
+                <tr>
+                  <td>{this.state.leaderboard[key]["username"]}</td>
+                  <td>{this.state.leaderboard[key]["money"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
     );
   }
 }

@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
 import App from "./App";
-import Leaderboard from "./Leaderboard";
 import Login from "./Login";
 import Lobby from "./Lobby";
 import Signup from "./Signup";
@@ -65,10 +64,6 @@ class Gateway extends React.Component {
 
         <Route exact path="/signup">
           <Signup onSignup={this.onSignup} />
-        </Route>
-
-        <Route exact path="/leaderboard">
-          <Leaderboard />
         </Route>
 
         <Route
