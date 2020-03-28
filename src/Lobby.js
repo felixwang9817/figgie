@@ -47,8 +47,8 @@ class Lobby extends React.Component {
         "Content-Type": "application/json"
       },
       method: "POST",
+      credentials: "include", // include cookies on RECEIVE (must be here for browser to process SET-COOKIE response header)
       body: JSON.stringify({
-        username: this.state.user.username,
         roomNumber: this.state.roomNumber
       })
     }).then(_ => {

@@ -122,14 +122,17 @@ app.post("/signup", function(req, res) {
   });
 });
 
-app.post("/enterRoom", function(req, res) {
-  // store room number for this username, so that socket can be put into room upon socket connection
-  // TODO: get username from req.user instead of req.body, using middleware
-  let username = req.body.username;
-  let roomNumber = req.body.roomNumber;
-  usernameToRoomNumber[username] = roomNumber;
-  res.send({ redirect: true });
-});
+app.post(
+  "/enterRoom",
+  require("connect-ensure-login").ensureLoggedIn(),
+  function(req, res) {
+    // store room number for this username, so that socket can be put into room upon socket connection
+    let username = req.user.username;
+    let roomNumber = req.body.roomNumber;
+    usernameToRoomNumber[username] = roomNumber;
+    res.send({ redirect: true });
+  }
+);
 
 // TODO: how to send a failure msg in json format when login fails? right now
 // res.json() will just fail on the response when there's an http error e.g. 404
