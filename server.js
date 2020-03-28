@@ -387,7 +387,11 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
   io.to(roomNumber).emit("alert", "Trade! Market cleared.");
 
   clearMarket(roomNumber);
+  // TODO: clarify when updatePlayersInfo & List is needed.
+  // potentially separate out 'update for post game only' and 'update o/w'?
+  // also maybe move 'money' to updatePlayersList so only that's needed during the game?
   updatePlayersInfo(roomNumber);
+  updatePlayersList(roomNumber);
 }
 
 function postOffer(suit, price, player, roomNumber) {
@@ -682,7 +686,8 @@ function endGame(roomNumber) {
   });
 
   setPostGameResults(roomNumber);
-  updatePlayersInfo(roomNumber);
+  updatePlayersInfo(roomNumber);  // send post game results
+  updatePlayersList(roomNumber);  // update ready
   io.to(roomNumber).emit("goalSuit", goalSuit);
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;

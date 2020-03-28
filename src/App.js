@@ -119,7 +119,7 @@ class App extends Component {
 
   async componentDidMount() {
     const socket = socketIOClient(server);
-    this.state.socket = socket;
+    this.socket = socket;
 
     // TODO: fix bug where refreshing makes room number disappear
     // fix: query server for room number upon refresh
@@ -179,11 +179,12 @@ class App extends Component {
   handleSubmit(event) {
     event.preventDefault();
 
-    this.state.socket.emit("clientCommand", this.state.trade_command);
+    this.socket.emit("clientCommand", this.state.trade_command);
     this.setState({ trade_command: "" }); // clear form
   }
 
   returnToLobby() {
+    this.socket.disconnect();
     this.setState({ username: null }); // triggers redirect
   }
 
