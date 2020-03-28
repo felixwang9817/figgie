@@ -10,7 +10,7 @@ import {
   Row
 } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
-import {server} from "./consts";
+import { server } from "./consts";
 
 class Lobby extends React.Component {
   constructor() {
@@ -55,10 +55,8 @@ class Lobby extends React.Component {
       this.setState({ redirect: true });
     });
 
-    // update this.state.user to reflect roomNumber, which passes roomNumber to App
-    let user = this.props.user;
-    user["roomNumber"] = this.state.roomNumber;
-    this.setState({ user: user });
+    // updates roomNumber at Gateway level
+    this.props.onEnterRoom(this.state.roomNumber);
   }
 
   async handleLogout() {

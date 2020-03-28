@@ -5,9 +5,6 @@ import Login from "./Login";
 import Lobby from "./Lobby";
 import Signup from "./Signup";
 
-
-
-
 class Gateway extends React.Component {
   constructor() {
     super();
@@ -18,11 +15,16 @@ class Gateway extends React.Component {
   }
 
   componentWillMount() {
-    this.setState({ user: this.props.user,
-                    newUser: false });
+    this.setState({ user: this.props.user, newUser: false });
   }
 
   updateUser(user) {
+    this.setState({ user: user });
+  }
+
+  updateRoomNumber(roomNumber) {
+    let user = this.state.user;
+    user["roomNumber"] = roomNumber;
     this.setState({ user: user });
   }
 
@@ -31,7 +33,7 @@ class Gateway extends React.Component {
   }
 
   onSignup() {
-    this.setState({ newUser: true});
+    this.setState({ newUser: true });
   }
 
   render() {
@@ -40,6 +42,7 @@ class Gateway extends React.Component {
         <Route exact path="/">
           <Lobby
             user={this.state.user}
+            onEnterRoom={roomNumber => this.updateRoomNumber(roomNumber)}
             handleLogout={_ => this.handleLogout()}
           />
         </Route>
@@ -53,7 +56,10 @@ class Gateway extends React.Component {
         </Route>
 
         <Route exact path="/login">
-          <Login onLogin={user => this.updateUser(user)} newUser={this.state.newUser} />
+          <Login
+            onLogin={user => this.updateUser(user)}
+            newUser={this.state.newUser}
+          />
         </Route>
 
         <Route exact path="/signup">
@@ -69,6 +75,5 @@ class Gateway extends React.Component {
     );
   }
 }
-
 
 export default Gateway;

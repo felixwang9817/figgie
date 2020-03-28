@@ -21,7 +21,6 @@ import Market from "./Market";
 import UserInfo from "./UserInfo";
 import TradeLog from "./TradeLog";
 
-
 function CheatSheet() {
   const [open, setOpen] = useState(false);
 
@@ -181,7 +180,7 @@ class App extends Component {
   }
 
   returnToLobby() {
-    this.setState({username: null}); // triggers redirect
+    this.setState({ username: null }); // triggers redirect
   }
 
   render() {

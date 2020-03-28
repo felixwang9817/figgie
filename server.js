@@ -124,6 +124,7 @@ app.post("/signup", function(req, res) {
 
 app.post("/enterRoom", function(req, res) {
   // store room number for this username, so that socket can be put into room upon socket connection
+  // TODO: get username from req.user instead of req.body, using middleware
   let username = req.body.username;
   let roomNumber = req.body.roomNumber;
   usernameToRoomNumber[username] = roomNumber;
@@ -136,7 +137,10 @@ app.get("/auth", require("connect-ensure-login").ensureLoggedIn(), function(
   req,
   res
 ) {
-  res.send({ user: req.user });
+  let user = req.user;
+  let username = user["username"];
+  user["roomNumber"] = usernameToRoomNumber[username];
+  res.send({ user: user });
 });
 
 // TODO: what triggers this fetch?
