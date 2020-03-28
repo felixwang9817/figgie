@@ -82,15 +82,26 @@ class Lobby extends React.Component {
               >
                 Full Game Rules
               </a> */}
-              {this.state.user ? (
-                <div>
-                  <h3>username: {this.state.user.username}</h3>
-                  <span id="logoutText" onClick={_ => this.handleLogout()}>
-                    Logout
-                  </span>
-                </div>
-              ) : (
-                <Card id="userInfoFormCard" bg="dark" className="text-center">
+              <Card id="userInfoFormCard" bg="dark" className="text-center">
+                {this.state.user ? (
+                  <Card.Body>
+                    <Card.Title>{this.state.user.username}</Card.Title>
+                    <Card.Subtitle>
+                      money: {this.state.user.money}
+                    </Card.Subtitle>
+                    <Card.Text>
+                      <p></p>
+                    </Card.Text>
+                    <>
+                      <Button
+                        onClick={_ => this.handleLogout()}
+                        variant="secondary"
+                      >
+                        Log out
+                      </Button>{" "}
+                    </>
+                  </Card.Body>
+                ) : (
                   <Card.Body>
                     <Card.Title>User Info</Card.Title>
                     <>
@@ -101,27 +112,9 @@ class Lobby extends React.Component {
                         Sign up
                       </Button>
                     </>
-                    {/* <Nav>
-                      <Nav.Item>
-                        <Nav.Link
-                          href="/login"
-                          style={{ color: defaultTextColor }}
-                        >
-                          Login
-                        </Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link
-                          href="/signup"
-                          style={{ color: defaultTextColor }}
-                        >
-                          Signup
-                        </Nav.Link>
-                      </Nav.Item>
-                    </Nav> */}
                   </Card.Body>
-                </Card>
-              )}
+                )}
+              </Card>
               <Leaderboard />
             </Col>
             <Col xs={8}>
