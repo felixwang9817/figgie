@@ -125,9 +125,12 @@ class Lobby extends React.Component {
               </Row>
               {this.state.user ? (
                 <div>
-                  <Card id="enterRoomCard">
+                  <Card id="enterRoomCard" bg="dark">
                     {alert}
-                    <h2>Enter Room</h2>
+                    <h3>Enter Room</h3>
+                    <p>
+                      <small>Enter a room to start playing.</small>
+                    </p>
                     <Form
                       noValidate
                       validated={this.state.validated}
@@ -135,11 +138,10 @@ class Lobby extends React.Component {
                       onSubmit={this.handleEnterRoom}
                     >
                       <Form.Group>
-                        <Form.Label>Room</Form.Label>
                         <Form.Control
                           type="text"
                           value={this.state.roomNumber || ""}
-                          placeholder="Enter Room"
+                          placeholder="Room number"
                           onChange={this.handleChangeRoom}
                           autoFocus={true}
                           maxLength={30}
@@ -149,8 +151,8 @@ class Lobby extends React.Component {
                           Please choose a room.
                         </Form.Control.Feedback>
                       </Form.Group>
-                      <Button variant="primary" type="submit">
-                        Submit
+                      <Button variant="primary" type="submit" block>
+                        Enter room
                       </Button>
                     </Form>
                   </Card>
