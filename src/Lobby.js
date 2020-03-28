@@ -74,7 +74,7 @@ class Lobby extends React.Component {
             <Col xs sm md lg xl={3}></Col>
           </Row>
           <Row>
-            <Col xs={6}>
+            <Col xs={4}>
               {/* <a
                 className="App-link"
                 href="https://www.janestreet.com/figgie/"
@@ -91,10 +91,19 @@ class Lobby extends React.Component {
                   </span>
                 </div>
               ) : (
-                <Card bg={"secondary"} style={{ width: "18rem" }}>
+                // <Card bg={"secondary"} style={{ width: "18rem" }}>
+                <Card id="userInfoFormCard" bg="dark" className="text-center">
                   <Card.Body>
                     <Card.Title>User Info</Card.Title>
-                    <Nav>
+                    <>
+                      <Button href="/login" variant="secondary">
+                        Log in
+                      </Button>{" "}
+                      <Button href="/signup" variant="secondary">
+                        Sign up
+                      </Button>
+                    </>
+                    {/* <Nav>
                       <Nav.Item>
                         <Nav.Link
                           href="/login"
@@ -111,13 +120,13 @@ class Lobby extends React.Component {
                           Signup
                         </Nav.Link>
                       </Nav.Item>
-                    </Nav>
+                    </Nav> */}
                   </Card.Body>
                 </Card>
               )}
               <Leaderboard />
             </Col>
-            <Col xs={6}>
+            <Col xs={8}>
               <Row className="justify-content-md-center">
                 <Col md="auto">
                   <h2>Rooms</h2>

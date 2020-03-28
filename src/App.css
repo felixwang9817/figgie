@@ -146,6 +146,17 @@
   margin-bottom: 0px;
 }
 
+#userInfoFormCard {
+  /* background-color: #282c34; */
+  /* align-items: center; */
+  /* margin: 14%; */
+  margin: 0%;
+  /* padding: 8% 0%; */
+  padding: 3% 0%;
+  margin-top: 0px;
+  margin-bottom: 20px;
+}
+
 .signupParagraph {
   margin-bottom: 0px;
 }
