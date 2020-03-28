@@ -70,53 +70,58 @@ class Signup extends React.Component {
     }
 
     return (
-      <Card id="loginSignupFormCard">
-        {alert}
-        <h2>Signup</h2>
-
-        <Form
-          noValidate
-          validated={this.state.validated}
-          id="loginSignupForm"
-          onSubmit={this.handleSubmitSignup}
-        >
-          <Form.Group>
-            <Form.Label>Username</Form.Label>
-            <Form.Control
-              type="text"
-              value={this.state.username || ""}
-              placeholder="Enter username"
-              onChange={this.handleChangeUsername}
-              autoFocus={true}
-              maxLength={30}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please choose a username (max 30 characters).
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type="password"
-              value={this.state.password || ""}
-              placeholder="Enter password"
-              onChange={this.handleChangePassword}
-              maxLength={30}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please choose a password (max 30 characters).
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Button variant="primary" type="submit">
-            Submit
-          </Button>
-        </Form>
-        <a className="footerRedirect" href="/login">
-          Login
-        </a>
-      </Card>
+      <header className="Signup-header">
+        <Card id="loginSignupFormCard" bg="dark">
+          {alert}
+          <h3>Figgie</h3>
+          <p></p>
+          <Form
+            noValidate
+            validated={this.state.validated}
+            id="loginSignupForm"
+            onSubmit={this.handleSubmitSignup}
+          >
+            <Form.Group>
+              <Form.Control
+                type="text"
+                value={this.state.username || ""}
+                placeholder="Username"
+                onChange={this.handleChangeUsername}
+                autoFocus={true}
+                maxLength={30}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                Please choose a username (max 30 characters).
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group>
+              <Form.Control
+                type="password"
+                value={this.state.password || ""}
+                placeholder="Password"
+                onChange={this.handleChangePassword}
+                maxLength={30}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                Please choose a password (max 30 characters).
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Button variant="primary" type="submit" block>
+              Sign up
+            </Button>
+          </Form>
+        </Card>
+        <Card id="signupFormCard" bg="dark">
+          <p className="signupParagraph">
+            {"Already have an account? "}
+            <a className="footerRedirect" href="/login">
+              Log in
+            </a>
+          </p>
+        </Card>
+      </header>
     );
   }
 }

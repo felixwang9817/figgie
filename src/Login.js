@@ -88,7 +88,6 @@ class Login extends React.Component {
 
     return (
       <header className="Login-header">
-        {/* <Card id="loginSignupFormCard"> */}
         <Card id="loginSignupFormCard" bg="dark">
           {alert}
           <h3>Figgie</h3>
@@ -100,7 +99,6 @@ class Login extends React.Component {
             onSubmit={this.handleSubmitLogin}
           >
             <Form.Group>
-              {/* <Form.Label>Username</Form.Label> */}
               <Form.Control
                 type="text"
                 value={this.state.username || ""}
@@ -115,7 +113,6 @@ class Login extends React.Component {
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
-              {/* <Form.Label>Password</Form.Label> */}
               <Form.Control
                 type="password"
                 value={this.state.password || ""}
