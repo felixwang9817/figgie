@@ -4,30 +4,27 @@ Multiplayer Figgie built using React, express, and socket.io
 
 [figgie.io](figgie.io)
 
-
 # TODO
 
-## style
+Style:
 
-- favicon
+- leaderboard should be centered
 
 ## functionality
 
 Ideal flow:
+
 - lobby:
+
   - can play as a guest
-  - [done] init landing page in lobby
-  - on load, query /auth and get back username & roomnumber
-  - make sure that refresh works in game
   - see list of rooms, can join or create new room
     - support private rooms by adding in optional pw to room creation
-  - [done] can sign up / login / logout
-  - rules
-  - leaderboard
   - can see active games and spectate
   - can observe full rooms, and join if it becomes unfull
+  - leaderboard bug (render executes before componentWillMount finishes)
 
 - game room:
+
   - [done] button to leave room & return to lobby --> instead of logout
   - [done] each player can toggle ready/not-ready --> goes where #-cards currently is
   - people can chat --> this merges with trade-log
@@ -37,19 +34,18 @@ Ideal flow:
 
   - flash visualization on each market update
 
-
-- logging & robustness
+* logging & robustness
   - automated tests? (UI flow tests via puppeteer?)
   - metrics
     - daily active users, avg minutes/session, avg games/session, etc.
   - unclear what to do with logging, but ideally server side logs should tell us about bugs and help us debug
   - split larger files into smaller components, have one person own each file (for documentation & understanding)
 
-
-
 starting from fresh:
 A, B, C, D join room 1
+
 - everyone sees:
+
   - ready check
   - [chat]
   - trade log
@@ -57,9 +53,10 @@ A, B, C, D join room 1
 
   - if anyone leaves and joins, they see same thing
 
-
 Everyone is ready, game starts.
+
 - everyone sees:
+
   - market
   - trade log
   - rules
@@ -70,7 +67,9 @@ Everyone is ready, game starts.
   - E cannot join
 
 Game ends
+
 - everyone sees:
+
   - trade log
   - results
   - show player's names A,B,C,D
@@ -79,14 +78,6 @@ Game ends
   - if D rejoins, everyone sees updated names. D still sees results
 
   - if D leaves and E joins, everyone see updated names. E doesn't see results
-
-
-
-
-
-
-
-
 
 ## Deployment
 

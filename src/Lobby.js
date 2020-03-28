@@ -1,16 +1,8 @@
 import React from "react";
-import {
-  Form,
-  Button,
-  Card,
-  Nav,
-  Jumbotron,
-  Container,
-  Col,
-  Row
-} from "react-bootstrap";
+import { Form, Button, Card, Container, Col, Row } from "react-bootstrap";
+import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
-import {server} from "./consts";
+import { server } from "./consts";
 
 class Lobby extends React.Component {
   constructor() {
@@ -47,18 +39,16 @@ class Lobby extends React.Component {
         "Content-Type": "application/json"
       },
       method: "POST",
+      credentials: "include", // include cookies on RECEIVE (must be here for browser to process SET-COOKIE response header)
       body: JSON.stringify({
-        username: this.state.user.username,
         roomNumber: this.state.roomNumber
       })
     }).then(_ => {
       this.setState({ redirect: true });
     });
 
-    // update this.state.user to reflect roomNumber, which passes roomNumber to App
-    let user = this.props.user;
-    user["roomNumber"] = this.state.roomNumber;
-    this.setState({ user: user });
+    // updates roomNumber at Gateway level
+    this.props.onEnterRoom(this.state.roomNumber);
   }
 
   async handleLogout() {
@@ -73,21 +63,74 @@ class Lobby extends React.Component {
     }
 
     return (
-      <Container>
-        <Row>
-          <Col>
-            <Jumbotron>
-              <h1>
-                username: {this.state.user ? this.state.user.username : "N/A"}
-              </h1>
+      <header className="Lobby-header">
+        <Container>
+          <Row className="justify-content-md-center">
+            <Col xs sm md lg xl={3}></Col>
+            <Col xs sm md lg xl="auto">
+              <h1>Figgie</h1>
+            </Col>
+            <Col xs sm md lg xl={3}></Col>
+          </Row>
+          <Row>
+            <Col xs={4}>
+              {/* <a
+                className="App-link"
+                href="https://www.janestreet.com/figgie/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Full Game Rules
+              </a> */}
+              <Card id="userInfoFormCard" bg="dark" className="text-center">
+                {this.state.user ? (
+                  <Card.Body>
+                    <Card.Title>{this.state.user.username}</Card.Title>
+                    <Card.Subtitle>
+                      money: {this.state.user.money}
+                    </Card.Subtitle>
+                    <Card.Text>
+                      <p></p>
+                    </Card.Text>
+                    <>
+                      <Button
+                        onClick={_ => this.handleLogout()}
+                        variant="secondary"
+                      >
+                        Log out
+                      </Button>{" "}
+                    </>
+                  </Card.Body>
+                ) : (
+                  <Card.Body>
+                    <Card.Title>User Info</Card.Title>
+                    <>
+                      <Button href="/login" variant="secondary">
+                        Log in
+                      </Button>{" "}
+                      <Button href="/signup" variant="secondary">
+                        Sign up
+                      </Button>
+                    </>
+                  </Card.Body>
+                )}
+              </Card>
+              <Leaderboard />
+            </Col>
+            <Col xs={8}>
+              <Row className="justify-content-md-center">
+                <Col md="auto">
+                  <h2>Rooms</h2>
+                </Col>
+              </Row>
               {this.state.user ? (
                 <div>
-                  <span id="logoutText" onClick={_ => this.handleLogout()}>
-                    Logout
-                  </span>
-                  <Card id="loginSignupFormCard">
+                  <Card id="enterRoomCard" bg="dark">
                     {alert}
-                    <h2>Enter Room</h2>
+                    <h3>Enter Room</h3>
+                    <p>
+                      <small>Enter a room to start playing.</small>
+                    </p>
                     <Form
                       noValidate
                       validated={this.state.validated}
@@ -95,11 +138,10 @@ class Lobby extends React.Component {
                       onSubmit={this.handleEnterRoom}
                     >
                       <Form.Group>
-                        <Form.Label>Room</Form.Label>
                         <Form.Control
                           type="text"
                           value={this.state.roomNumber || ""}
-                          placeholder="Enter Room"
+                          placeholder="Room number"
                           onChange={this.handleChangeRoom}
                           autoFocus={true}
                           maxLength={30}
@@ -109,26 +151,19 @@ class Lobby extends React.Component {
                           Please choose a room.
                         </Form.Control.Feedback>
                       </Form.Group>
-                      <Button variant="primary" type="submit">
-                        Submit
+                      <Button variant="primary" type="submit" block>
+                        Enter room
                       </Button>
                     </Form>
                   </Card>
                 </div>
               ) : (
-                <Nav>
-                  <Nav.Item>
-                    <Nav.Link href="/login">Login</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link href="/signup">Signup</Nav.Link>
-                  </Nav.Item>
-                </Nav>
+                <div></div>
               )}
-            </Jumbotron>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Container>
+      </header>
     );
   }
 }

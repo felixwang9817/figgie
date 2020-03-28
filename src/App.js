@@ -21,7 +21,6 @@ import Market from "./Market";
 import UserInfo from "./UserInfo";
 import TradeLog from "./TradeLog";
 
-
 function CheatSheet() {
   const [open, setOpen] = useState(false);
 
@@ -181,7 +180,7 @@ class App extends Component {
   }
 
   returnToLobby() {
-    this.setState({username: null}); // triggers redirect
+    this.setState({ username: null }); // triggers redirect
   }
 
   render() {
@@ -262,15 +261,6 @@ class App extends Component {
                 playerState={this.state.players}
                 isGameActive={this.state.isGameActive}
               />
-
-              <a
-                className="App-link"
-                href="https://www.janestreet.com/figgie/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Full Game Rules
-              </a>
             </Col>
 
             <Col xs={5}>

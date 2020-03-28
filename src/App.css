@@ -13,10 +13,40 @@
   color: white;
 }
 
+.Lobby-header {
+  background-color: #282c34;
+  min-height: 110vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.Login-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.Signup-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
 .App-link {
   color: #61dafb;
 }
-
 
 .row {
   width: 100%;
@@ -27,7 +57,6 @@
   padding: 30px;
 }
 
-
 .tradeCommandForm {
   font-size: 18px;
   width: 60%;
@@ -36,7 +65,6 @@
 .tradeCommandForm input {
   flex: auto;
 }
-
 
 #market {
   padding-top: 10px;
@@ -79,8 +107,9 @@
   margin: 5px;
 }
 
-#rulesCheatSheetText .card-header, #rulesCheatSheetText .list-group-item {
-  padding: .5rem 1rem;
+#rulesCheatSheetText .card-header,
+#rulesCheatSheetText .list-group-item {
+  padding: 0.5rem 1rem;
 }
 
 #tradeLog {
@@ -93,7 +122,7 @@
 }
 
 #tradeLog .list-group-item-primary {
-  color: #b8daff;  /* make light for dark background */
+  color: #b8daff; /* make light for dark background */
 }
 
 .FullGame {
@@ -101,14 +130,71 @@
   text-align: center;
 }
 
-#loginSignupFormCard {
+#enterRoomCard {
+  /* background-color: #282c34; */
   align-items: center;
   margin: 14%;
+  /* margin: 35%; */
   padding: 8% 0%;
+  /* padding: 3% 0%; */
+  /* margin-top: 180px; */
+  /* margin-bottom: 10px; */
+  border-radius: 15px;
 }
 
-#loginSignupFormCard .footerRedirect {
-  margin-top: 40px;
+#loginSignupFormCard {
+  /* background-color: #282c34; */
+  align-items: center;
+  /* margin: 14%; */
+  margin: 35%;
+  /* padding: 8% 0%; */
+  padding: 3% 0%;
+  margin-top: 180px;
+  margin-bottom: 10px;
+  border-radius: 15px;
+}
+
+#signupFormCard {
+  /* background-color: #282c34; */
+  font-size: calc(2px + 2vmin);
+  align-items: center;
+  /* margin: 14%; */
+  margin: 35%;
+  /* padding: 8% 0%; */
+  padding: 2% 0%;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  border-radius: 15px;
+}
+
+#userInfoFormCard {
+  /* background-color: #282c34; */
+  /* align-items: center; */
+  /* margin: 14%; */
+  margin: 0%;
+  /* padding: 8% 0%; */
+  padding: 3% 0%;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border-radius: 15px;
+}
+
+#leaderboardTable {
+  /* margin: 0%;
+  padding: 3% 0%;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border-radius: 15px; */
+  margin: auto;
+  display: block;
+}
+
+.signupParagraph {
+  margin-bottom: 0px;
+}
+
+.footerRedirect {
+  margin-top: 10px;
 }
 
 #timer {

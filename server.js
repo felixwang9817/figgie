@@ -122,13 +122,17 @@ app.post("/signup", function(req, res) {
   });
 });
 
-app.post("/enterRoom", function(req, res) {
-  // store room number for this username, so that socket can be put into room upon socket connection
-  let username = req.body.username;
-  let roomNumber = req.body.roomNumber;
-  usernameToRoomNumber[username] = roomNumber;
-  res.send({ redirect: true });
-});
+app.post(
+  "/enterRoom",
+  require("connect-ensure-login").ensureLoggedIn(),
+  function(req, res) {
+    // store room number for this username, so that socket can be put into room upon socket connection
+    let username = req.user.username;
+    let roomNumber = req.body.roomNumber;
+    usernameToRoomNumber[username] = roomNumber;
+    res.send({ redirect: true });
+  }
+);
 
 // TODO: how to send a failure msg in json format when login fails? right now
 // res.json() will just fail on the response when there's an http error e.g. 404
@@ -136,7 +140,10 @@ app.get("/auth", require("connect-ensure-login").ensureLoggedIn(), function(
   req,
   res
 ) {
-  res.send({ user: req.user });
+  let user = req.user;
+  let username = user["username"];
+  user["roomNumber"] = usernameToRoomNumber[username];
+  res.send({ user: user });
 });
 
 // TODO: what triggers this fetch?
@@ -153,6 +160,10 @@ app.get(
     res.send({ user: null, msg: msg });
   }
 );
+
+app.get("/leaderboard", async function(req, res) {
+  db.getPlayersByMoney(req, res);
+});
 
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
