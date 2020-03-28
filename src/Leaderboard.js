@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Container, Col, Row } from "react-bootstrap";
+import { Table, Col, Row, Card } from "react-bootstrap";
 import { server } from "./consts";
 
 class Leaderboard extends React.Component {
@@ -13,7 +13,7 @@ class Leaderboard extends React.Component {
     this.state = { leaderboard: [{ username: "", money: "" }] };
   }
 
-  async componentWillMount() {
+  async componentDidMount() {
     await fetch(server + "/leaderboard", {})
       .then(response => response.json())
       .then(response => {
@@ -24,28 +24,36 @@ class Leaderboard extends React.Component {
 
   render() {
     return (
-      <Row>
-        <Col>
-          Leaderboard
-          <p></p>
-          <Table striped bordered hover variant="dark">
-            <thead>
-              <tr>
-                <td>username</td>
-                <td>money</td>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.keys(this.state.leaderboard).map(key => (
+      <Card id="userInfoFormCard" bg="dark" className="text-center">
+        <Row>
+          <Col>
+            Leaderboard
+            <p></p>
+            <Table
+              striped
+              bordered
+              hover
+              variant="dark"
+              className="leaderboardTable"
+            >
+              <thead>
                 <tr>
-                  <td>{this.state.leaderboard[key]["username"]}</td>
-                  <td>{this.state.leaderboard[key]["money"]}</td>
+                  <td>username</td>
+                  <td>money</td>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+              </thead>
+              <tbody>
+                {Object.keys(this.state.leaderboard).map(key => (
+                  <tr>
+                    <td>{this.state.leaderboard[key]["username"]}</td>
+                    <td>{this.state.leaderboard[key]["money"]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      </Card>
     );
   }
 }

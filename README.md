@@ -6,6 +6,10 @@ Multiplayer Figgie built using React, express, and socket.io
 
 # TODO
 
+Style:
+
+- leaderboard should be centered
+
 ## functionality
 
 Ideal flow:

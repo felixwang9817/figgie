@@ -161,6 +161,16 @@
   border-radius: 15px;
 }
 
+#leaderboardTable {
+  /* margin: 0%;
+  padding: 3% 0%;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border-radius: 15px; */
+  margin: auto;
+  display: block;
+}
+
 .signupParagraph {
   margin-bottom: 0px;
 }

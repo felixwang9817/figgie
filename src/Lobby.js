@@ -1,9 +1,8 @@
 import React from "react";
-import { Form, Button, Card, Nav, Container, Col, Row } from "react-bootstrap";
+import { Form, Button, Card, Container, Col, Row } from "react-bootstrap";
 import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
-import { defaultTextColor, disconnectedColor } from "./consts";
 
 class Lobby extends React.Component {
   constructor() {
@@ -91,7 +90,6 @@ class Lobby extends React.Component {
                   </span>
                 </div>
               ) : (
-                // <Card bg={"secondary"} style={{ width: "18rem" }}>
                 <Card id="userInfoFormCard" bg="dark" className="text-center">
                   <Card.Body>
                     <Card.Title>User Info</Card.Title>
