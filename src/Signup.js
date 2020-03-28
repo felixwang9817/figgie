@@ -49,9 +49,9 @@ class Signup extends React.Component {
         console.log("signup.js receiving response", res);
 
         this.setState(res);
-        // window.setTimeout(() => {
-        //   this.setState({ msg: "" });
-        // }, 5000);
+        if (this.state.success) {
+          this.props.onSignup();
+        }
       })
       .catch(err => {
         console.log(err);
@@ -61,7 +61,6 @@ class Signup extends React.Component {
 
   render() {
     if (this.state.success) {
-      this.props.onSignup();
       return <Redirect to="/login" />;
     }
 
