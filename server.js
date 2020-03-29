@@ -32,6 +32,7 @@ require("isomorphic-fetch");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 2;
+const kMaxObservers = 2;
 const gameTime =
   process.env.NODE_ENV === "production" ? 4 * 60 * 1000 : 30 * 1000; // in ms
 
@@ -186,6 +187,7 @@ if (process.env.NODE_ENV === "production") {
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
+
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
 let suitAbbreviationToSuit = {
@@ -238,6 +240,7 @@ function parseCommand(command, socket) {
   let roomNumber = usernameToRoomNumber[username];
 
   if (!roomToState[roomNumber]) return;
+  if (!Object.keys(roomToState[roomNumber]["playerState"]).includes(username)) return;  // observers can't trade
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "ready") {
       markPlayerReady(username);
@@ -507,12 +510,13 @@ function clearPlayer(username, roomNumber) {
 
 // UPDATE FUNCTIONS
 function shieldPlayerInfo(username, roomNumber) {
+  let playerState = roomToState[roomNumber]["playerState"];
   let playerVisibleState = utils.deepCopy(
-    roomToState[roomNumber]["playerState"]
+    playerState
   );
 
   // hiding other player's hands
-  Object.keys(playerVisibleState).map(player => {
+  Object.keys(playerState).map(player => {
     if (player !== username) {
       suits.forEach(suit => {
         playerVisibleState[player][suit] = null;
@@ -525,12 +529,16 @@ function shieldPlayerInfo(username, roomNumber) {
 
 function updatePlayers(roomNumber) {
   // first, get usernames associated with roomNumber
-  let usernames = Object.keys(roomToState[roomNumber]["playerState"]);
+  let playerState = roomToState[roomNumber]["playerState"];
+  let usernames = Object.keys(playerState);
+  for (const observer of roomToState[roomNumber]["observers"]) {
+    usernames.push(observer);
+  }
 
+  console.log("about to send", usernames);
   // for each username, emit to corresponding socket
   for (const username of usernames) {
     let socketid = usernameToSocketid[username];
-
     io.to(socketid).emit(
       "playersUpdate",
       shieldPlayerInfo(username, roomNumber) 
@@ -559,6 +567,7 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["gameTimeEnd"] = null;
   roomToState[roomNumber]["tradeLog"] = [];
   roomToState[roomNumber]["postGameResults"] = {};
+  roomToState[roomNumber]["observers"] = new Set();
 }
 
 function startGame(roomNumber) {
@@ -683,9 +692,18 @@ function setPostGameResults(roomNumber) {
     // TODO: possibly shield money? https://stackoverflow.com/questions/17781472/how-to-get-a-subset-of-a-javascript-objects-properties
     roomToState[roomNumber]["postGameResults"][player] = playerState[player];
   }
+
+  for (const player of roomToState[roomNumber]["observers"]) {
+    // certify that observers were in this game, so they can see the results
+    roomToState[roomNumber]["postGameResults"][player] = {};
+  }
   
   console.log("post game", roomToState[roomNumber]["postGameResults"]);
   for (const player in playerState) {
+    sendPostGameResults(player);
+  }
+
+  for (const player of roomToState[roomNumber]["observers"]) {
     sendPostGameResults(player);
   }
 }
@@ -742,38 +760,45 @@ io.on("connection", async function(socket) {
   usernameToSocketid[username] = socket.id;
   socket.join(roomNumber);
 
+  // TODO: figure out how to let observers join active games
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
   if (
-    (currPlayers.length == kMaxPlayers ||
-      roomToState[roomNumber]["isGameActive"]) &&
+    ((currPlayers.length >= kMaxPlayers + kMaxObservers) ||  // if inactive, allow kMaxObservers
+      roomToState[roomNumber]["isGameActive"]) &&  // if active, dont let any new users
     !currPlayers.includes(username)
   ) {
     // room full
     console.log(
       "Room is full or active, rejecting connection from " + socket.id
     );
-    socket.emit("roomFull");
+    socket.emit("maxCapacity");
     socket.disconnect();
     return;
   }
 
   if (!roomToState[roomNumber]["playerState"][username]) {
-    // user is joining so they get initial player state
-    roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
-      initialPlayerState
-    );
+    if (currPlayers.length >= kMaxPlayers) {
+      roomToState[roomNumber]["observers"].add(username);
+    } else {
+      // user is joining so they get initial player state
+      roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
+        initialPlayerState
+      );
+
+      // async update money
+      db.getMoneyByUsername(username, money => {
+        roomToState[roomNumber]["playerState"][username]["money"] = money;
+        updatePlayers(roomNumber);
+      });
+    }
+    
   } else {
     // user is reconnecting so we restore player state and change connected to true
     roomToState[roomNumber]["playerState"][username]["connected"] = true;
   }
 
-  // async update money
-  db.getMoneyByUsername(username, money => {
-    roomToState[roomNumber]["playerState"][username]["money"] = money;
-    updatePlayers(roomNumber);
-  });
-
   // update cliend UI to reflect current game state
+  updatePlayers(roomNumber);
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
   socket.emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
   let tradeLog = roomToState[roomNumber]["tradeLog"];
@@ -785,12 +810,11 @@ io.on("connection", async function(socket) {
   // they are active and want to restart a game in the room
 
   socket.on("disconnect", async function() {
-    // TODO: be more careful about checking conditions
-    // if (!socket.handshake.session.passport) return;
     let user = socket.handshake.session.passport.user;
     let username = user.username;
     let roomNumber = usernameToRoomNumber[username];
     console.log("user disconnected", username);
+
 
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
@@ -810,6 +834,12 @@ io.on("connection", async function(socket) {
             updatePlayers(roomNumber);
           }
         }
+      } else {
+        if (!Object.keys(roomToState[roomToState]["observers"]).includes(username)) {
+          throw "username " + username + "not found in room " + roomNumber;
+        }
+
+        roomToState[roomToState]["observers"].delete(username);
       }
     }
 

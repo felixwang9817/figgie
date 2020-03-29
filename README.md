@@ -24,16 +24,18 @@ Ideal flow:
   - leaderboard bug (render executes before componentWillMount finishes)
 
 - game room:
-
   - people can chat --> this merges with trade-log 
-  - clean up updatePlayersList v. updatePlayersInfo 
 
-* logging & robustness
+
+- logging & robustness
   - automated tests? (UI flow tests via puppeteer?)
   - [done-ish] metrics (GA)
     - daily active users, avg minutes/session, avg games/session, etc.
   - unclear what to do with logging, but ideally server side logs should tell us about bugs and help us debug
   - split larger files into smaller components, have one person own each file (for documentation & understanding)
+
+
+
 
 starting from fresh:
 A, B, C, D join room 1

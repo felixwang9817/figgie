@@ -123,7 +123,7 @@ class Market extends React.Component {
           {this.props.isGameActive ? (
             <tr>
               <td># you have</td>
-              {Object.keys(markets).map(key => (
+              {Object.keys(markets).map(key => (  // TODO: hide on observer's screen
                 <td key={key}>
                   {this.props.playerState[username] != null &&
                     this.props.playerState[username][key]}
@@ -135,28 +135,28 @@ class Market extends React.Component {
           )}
           {/* Displaying everyone's cards at end of the game */}
           {!this.props.isGameActive && this.props.postGameResults[username] && 
-            this.props.postGameResults[username]["netGain"] &&  
-            // netGain not null => was in previous game and should see results
             (Object.keys(this.props.postGameResults).map(player => (
-              <tr style={player === username ? { color: playerColor } : {}}>
-                <td>{player === username ? "you" : "player " + player}</td>
-                {Object.keys(markets).map(key => (
-                  <td
-                    key={key}
-                    style={
-                      key === this.props.goalSuit
-                        ? { color: goalColor, fontWeight: "bold" }
-                        : {}
-                    }
-                  >
-                    {this.props.postGameResults[player] != null &&
-                      this.props.postGameResults[player][key]}
-                  </td>
-                ))}
+              (this.props.postGameResults[player]["netGain"] != null) && // hide observers
+              (
+                <tr style={player === username ? { color: playerColor } : {}}>
+                  <td>{player === username ? "you" : "player " + player}</td>
+                  {Object.keys(markets).map(key => (
+                    <td
+                      key={key}
+                      style={
+                        key === this.props.goalSuit
+                          ? { color: goalColor, fontWeight: "bold" }
+                          : {}
+                      }
+                    >
+                      {this.props.postGameResults[player] != null &&
+                        this.props.postGameResults[player][key]}
+                    </td>
+                  ))}
 
-                <td>{this.props.postGameResults[player]["netGain"]}</td>
-              </tr>
-            )))}
+                  <td>{this.props.postGameResults[player]["netGain"]}</td>
+                </tr>
+              ))))}
         </tbody>
       </Table>
     );

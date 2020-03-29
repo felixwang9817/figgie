@@ -12,7 +12,6 @@ class Players extends React.Component {
     let username = this.props.username;
 
     if (username == null) return "";
-    if (playerState[username] == null) return "";
 
     let numPlayers = Object.keys(playerState).length;
     if (numPlayers < 4) {

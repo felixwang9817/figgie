@@ -148,9 +148,7 @@ class App extends Component {
 
     socket.on("maxCapacity", () => {
       console.log("Connection rejected since server is at maximum capacity.");
-      this.setState({ observer: true });
-      // TODO: actually keep connection alive for observers and show them
-      // true game state but disable commands
+      this.returnToLobby();
     });
 
     socket.on("gameStateUpdate", state => {
