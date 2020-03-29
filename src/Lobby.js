@@ -1,5 +1,13 @@
 import React from "react";
-import { Form, Button, Card, Container, Col, Row } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Container,
+  Col,
+  Row,
+  Table
+} from "react-bootstrap";
 import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
@@ -8,27 +16,39 @@ class Lobby extends React.Component {
   constructor() {
     super();
 
+    this.numSeconds = 5;
+
     this.state = { validated: false, rooms: [] };
 
-    fetch(server + "/rooms", {})  // TODO: update every X seconds
-      .then(response => response.json())
-      .then(response => {
-        this.setState({ rooms: response });
-      });
-
     this.handleChangeRoom = this.handleChangeRoom.bind(this);
-    this.handleEnterRoom = this.handleEnterRoom.bind(this);
+    this.handleEnterRoomForm = this.handleEnterRoomForm.bind(this);
   }
 
   componentDidMount() {
     this.setState({ user: this.props.user });
+
+    setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
   }
 
   handleChangeRoom(event) {
     this.setState({ roomNumber: event.target.value });
   }
 
-  async handleEnterRoom(event) {
+  updateRooms() {
+    fetch(server + "/rooms", {})
+      .then(response => response.json())
+      .then(response => {
+        this.setState({ rooms: response });
+      });
+  }
+
+  handleEnterRoomButton(roomNumber) {
+    this.setState({ roomNumber: roomNumber }, _ => {
+      this.handleEnterRoom();
+    });
+  }
+
+  handleEnterRoomForm(event) {
     event.preventDefault();
     this.setState({ validated: true }); // this just triggers green/red UI
     // it doesn't mean the form passed validation
@@ -39,6 +59,10 @@ class Lobby extends React.Component {
       return;
     }
 
+    this.handleEnterRoom();
+  }
+
+  handleEnterRoom() {
     fetch(server + "/enterRoom", {
       headers: {
         Accept: "application/json",
@@ -120,15 +144,50 @@ class Lobby extends React.Component {
               <Leaderboard />
             </Col>
             <Col xs={8}>
-              <Row className="justify-content-md-center">
-                <Col md="auto">
-                  <h2>Rooms</h2>
-                  <div>
-                    {this.state.rooms}
-                  </div>
-                </Col>
-              </Row>
-      
+              {this.state.user && (
+                <Card id="roomListCard" bg="dark">
+                  <Row className="justify-content-md-center">
+                    <Col md="auto">
+                      <h2>Rooms</h2>
+                      <div>
+                        <Table
+                          striped
+                          bordered
+                          hover
+                          size="sm"
+                          variant="dark"
+                          className="roomListTable"
+                        >
+                          <thead>
+                            <tr>
+                              <td>room number</td>
+                              <td>join button</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.keys(this.state.rooms).map(key => (
+                              <tr>
+                                <td>{this.state.rooms[key]}</td>
+                                <td>
+                                  <Button
+                                    onClick={_ =>
+                                      this.handleEnterRoomButton(
+                                        this.state.rooms[key]
+                                      )
+                                    }
+                                  >
+                                    Join
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Col>
+                  </Row>
+                </Card>
+              )}
               {this.state.user ? (
                 <Card id="enterRoomCard" bg="dark">
                   {alert}
@@ -140,7 +199,7 @@ class Lobby extends React.Component {
                     noValidate
                     validated={this.state.validated}
                     id="enterRoomForm"
-                    onSubmit={this.handleEnterRoom}
+                    onSubmit={this.handleEnterRoomForm}
                   >
                     <Form.Group>
                       <Form.Control
@@ -161,7 +220,11 @@ class Lobby extends React.Component {
                     </Button>
                   </Form>
                 </Card>
-              ) : (<Row className="justify-content-md-center red"><span>Log in to join a room!</span></Row>)}
+              ) : (
+                <Row className="justify-content-md-center red">
+                  <span>Log in to join a room!</span>
+                </Row>
+              )}
             </Col>
           </Row>
         </Container>

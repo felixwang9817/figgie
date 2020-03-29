@@ -77,16 +77,27 @@
 }
 
 @-webkit-keyframes flash {
-  0% { opacity: 1; } 
-  50% { opacity: .1; } 
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 @keyframes flash {
-  0% { opacity: 1; } 
-  50% { opacity: .1; } 
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
 }
-
 
 #CheatSheet {
   margin-bottom: 30px;
@@ -137,8 +148,20 @@
   /* margin: 35%; */
   padding: 8% 0%;
   /* padding: 3% 0%; */
-  /* margin-top: 180px; */
+  margin-top: 0px;
   /* margin-bottom: 10px; */
+}
+
+#roomListCard {
+  /* background-color: #282c34; */
+  align-items: center;
+  margin: 14%;
+  /* margin: 35%; */
+  padding: 8% 0%;
+  /* padding: 3% 0%; */
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border-radius: 15px;
 }
 
 #loginSignupFormCard {
@@ -188,6 +211,16 @@
 }
 
 #leaderboardTable {
+  /* margin: 0%;
+  padding: 3% 0%;
+  margin-top: 0px;
+  margin-bottom: 20px;
+  border-radius: 15px; */
+  margin: auto;
+  display: block;
+}
+
+#roomListTable {
   /* margin: 0%;
   padding: 3% 0%;
   margin-top: 0px;

@@ -31,6 +31,7 @@ class Leaderboard extends React.Component {
             striped
             bordered
             hover
+            size="sm"
             variant="dark"
             className="leaderboardTable"
           >
