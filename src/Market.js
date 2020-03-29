@@ -1,16 +1,13 @@
 import React from "react";
-import {
-  Table
-} from "react-bootstrap";
+import { Table } from "react-bootstrap";
 import {
   GiSpades,
   GiClubs,
   GiDiamonds,
   GiHearts,
-  GiTwoCoins,
+  GiTwoCoins
 } from "react-icons/gi";
 import { playerColor, goalColor } from "./consts";
-
 
 function displaySuit(suit) {
   let icon = null;
@@ -46,34 +43,34 @@ class Market extends React.Component {
     super();
 
     this.state = {
-      didMarketChange:
-      {
+      didMarketChange: {
         clubs: { bid: false, offer: false },
         spades: { bid: false, offer: false },
         hearts: { bid: false, offer: false },
         diamonds: { bid: false, offer: false }
       }
-    }
+    };
   }
 
   componentDidUpdate(prevProps) {
     let markets = this.props.marketState;
     let prevMarkets = prevProps.marketState;
     if (Object.keys(prevMarkets).length === 0) return;
-    if (JSON.stringify(markets) === JSON.stringify(prevMarkets)) return;  // no change
+    if (JSON.stringify(markets) === JSON.stringify(prevMarkets)) return; // no change
 
-    let didMarketChange = {}
+    let didMarketChange = {};
 
-    Object.keys(markets).map(key => {
+    Object.keys(markets).forEach(key => {
       didMarketChange[key] = {};
-      didMarketChange[key]["bid"] = markets[key]["bid"] !== prevMarkets[key]["bid"];
-      didMarketChange[key]["offer"] = markets[key]["offer"] !== prevMarkets[key]["offer"];
-    })
+      didMarketChange[key]["bid"] =
+        markets[key]["bid"] !== prevMarkets[key]["bid"];
+      didMarketChange[key]["offer"] =
+        markets[key]["offer"] !== prevMarkets[key]["offer"];
+    });
 
     console.log(didMarketChange);
     this.setState({ didMarketChange: didMarketChange });
   }
-
 
   render() {
     let markets = this.props.marketState;
@@ -91,19 +88,25 @@ class Market extends React.Component {
               <td key={key}>{displaySuit(key)}</td>
             ))}
 
-            {!this.props.isGameActive && this.props.postGameResults[username] && 
+            {!this.props.isGameActive &&
+              this.props.postGameResults[username] &&
               this.props.postGameResults[username]["netGain"] && (
-              <td>
-                Net Gain <GiTwoCoins />
-              </td>
-            )}
+                <td>
+                  Net Gain <GiTwoCoins />
+                </td>
+              )}
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>bids</td>
             {Object.keys(markets).map(key => (
-              <td key={key} className={this.state.didMarketChange[key]["bid"] ? "marketFlash" : ""} >
+              <td
+                key={key}
+                className={
+                  this.state.didMarketChange[key]["bid"] ? "marketFlash" : ""
+                }
+              >
                 {markets[key]["bid"] !== null
                   ? markets[key]["bid"] + " by " + markets[key]["bidPlayer"]
                   : ""}
@@ -113,7 +116,12 @@ class Market extends React.Component {
           <tr>
             <td>offers</td>
             {Object.keys(markets).map(key => (
-              <td key={key} className={this.state.didMarketChange[key]["offer"] ? "marketFlash" : ""}>
+              <td
+                key={key}
+                className={
+                  this.state.didMarketChange[key]["offer"] ? "marketFlash" : ""
+                }
+              >
                 {markets[key]["offer"] !== null
                   ? markets[key]["offer"] + " by " + markets[key]["offerPlayer"]
                   : ""}
@@ -123,7 +131,9 @@ class Market extends React.Component {
           {this.props.isGameActive ? (
             <tr>
               <td># you have</td>
-              {Object.keys(markets).map(key => (  // TODO: hide on observer's screen
+              {Object.keys(markets).map((
+                key // TODO: hide on observer's screen
+              ) => (
                 <td key={key}>
                   {this.props.playerState[username] != null &&
                     this.props.playerState[username][key]}
@@ -134,29 +144,31 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive && this.props.postGameResults[username] && 
-            (Object.keys(this.props.postGameResults).map(player => (
-              (this.props.postGameResults[player]["netGain"] != null) && // hide observers
-              (
-                <tr style={player === username ? { color: playerColor } : {}}>
-                  <td>{player === username ? "you" : "player " + player}</td>
-                  {Object.keys(markets).map(key => (
-                    <td
-                      key={key}
-                      style={
-                        key === this.props.goalSuit
-                          ? { color: goalColor, fontWeight: "bold" }
-                          : {}
-                      }
-                    >
-                      {this.props.postGameResults[player] != null &&
-                        this.props.postGameResults[player][key]}
-                    </td>
-                  ))}
+          {!this.props.isGameActive &&
+            this.props.postGameResults[username] &&
+            Object.keys(this.props.postGameResults).map(
+              player =>
+                this.props.postGameResults[player]["netGain"] != null && ( // hide observers
+                  <tr style={player === username ? { color: playerColor } : {}}>
+                    <td>{player === username ? "you" : "player " + player}</td>
+                    {Object.keys(markets).map(key => (
+                      <td
+                        key={key}
+                        style={
+                          key === this.props.goalSuit
+                            ? { color: goalColor, fontWeight: "bold" }
+                            : {}
+                        }
+                      >
+                        {this.props.postGameResults[player] != null &&
+                          this.props.postGameResults[player][key]}
+                      </td>
+                    ))}
 
-                  <td>{this.props.postGameResults[player]["netGain"]}</td>
-                </tr>
-              ))))}
+                    <td>{this.props.postGameResults[player]["netGain"]}</td>
+                  </tr>
+                )
+            )}
         </tbody>
       </Table>
     );
