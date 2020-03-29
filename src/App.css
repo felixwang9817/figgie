@@ -148,8 +148,20 @@
   /* margin: 35%; */
   padding: 8% 0%;
   /* padding: 3% 0%; */
-  /* margin-top: 180px; */
+  margin-top: 0px;
   /* margin-bottom: 10px; */
+  border-radius: 15px;
+}
+
+#roomListCard {
+  /* background-color: #282c34; */
+  align-items: center;
+  margin: 14%;
+  /* margin: 35%; */
+  padding: 8% 0%;
+  /* padding: 3% 0%; */
+  margin-top: 0px;
+  margin-bottom: 20px;
   border-radius: 15px;
 }
 

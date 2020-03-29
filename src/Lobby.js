@@ -146,46 +146,48 @@ class Lobby extends React.Component {
             <Col xs={8}>
               {this.state.user && (
                 <div>
-                  <Row className="justify-content-md-center">
-                    <Col md="auto">
-                      <h2>Rooms</h2>
-                      <div>
-                        <Table
-                          striped
-                          bordered
-                          hover
-                          size="sm"
-                          variant="dark"
-                          className="roomListTable"
-                        >
-                          <thead>
-                            <tr>
-                              <td>room number</td>
-                              <td>join button</td>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.keys(this.state.rooms).map(key => (
+                  <Card id="roomListCard" bg="dark">
+                    <Row className="justify-content-md-center">
+                      <Col md="auto">
+                        <h2>Rooms</h2>
+                        <div>
+                          <Table
+                            striped
+                            bordered
+                            hover
+                            size="sm"
+                            variant="dark"
+                            className="roomListTable"
+                          >
+                            <thead>
                               <tr>
-                                <td>{this.state.rooms[key]}</td>
-                                <td>
-                                  <Button
-                                    onClick={_ =>
-                                      this.handleEnterRoomButton(
-                                        this.state.rooms[key]
-                                      )
-                                    }
-                                  >
-                                    Join
-                                  </Button>
-                                </td>
+                                <td>room number</td>
+                                <td>join button</td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      </div>
-                    </Col>
-                  </Row>
+                            </thead>
+                            <tbody>
+                              {Object.keys(this.state.rooms).map(key => (
+                                <tr>
+                                  <td>{this.state.rooms[key]}</td>
+                                  <td>
+                                    <Button
+                                      onClick={_ =>
+                                        this.handleEnterRoomButton(
+                                          this.state.rooms[key]
+                                        )
+                                      }
+                                    >
+                                      Join
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        </div>
+                      </Col>
+                    </Row>
+                  </Card>
                   <Card id="enterRoomCard" bg="dark">
                     {alert}
                     <h3>Enter Room</h3>
