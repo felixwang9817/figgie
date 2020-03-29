@@ -139,7 +139,6 @@
   /* padding: 3% 0%; */
   /* margin-top: 180px; */
   /* margin-bottom: 10px; */
-  border-radius: 15px;
 }
 
 #loginSignupFormCard {
@@ -151,7 +150,6 @@
   padding: 3% 0%;
   margin-top: 180px;
   margin-bottom: 10px;
-  border-radius: 15px;
 }
 
 #signupFormCard {
@@ -164,7 +162,6 @@
   padding: 2% 0%;
   margin-top: 10px;
   margin-bottom: 0px;
-  border-radius: 15px;
 }
 
 #userInfoFormCard {
@@ -176,7 +173,18 @@
   padding: 3% 0%;
   margin-top: 0px;
   margin-bottom: 20px;
-  border-radius: 15px;
+}
+
+#userInfoFormCard .card-title {
+  color: yellow;
+}
+
+.card {
+  border-radius: 15px !important;
+}
+
+.red {
+  color: red;
 }
 
 #leaderboardTable {

@@ -73,7 +73,7 @@ class Lobby extends React.Component {
         <Container>
           <Row className="justify-content-md-center">
             <Col xs sm md lg xl={3}></Col>
-            <Col xs sm md lg xl="auto">
+            <Col xs sm md lg xl="auto" className="text-center">
               <h1>Figgie</h1>
             </Col>
             <Col xs sm md lg xl={3}></Col>
@@ -107,7 +107,7 @@ class Lobby extends React.Component {
                   </Card.Body>
                 ) : (
                   <Card.Body>
-                    <Card.Title>User Info</Card.Title>
+                    <Card.Title>Welcome, guest</Card.Title>
                     <Button href="/login" variant="secondary">
                       Log in
                     </Button>{" "}
@@ -128,41 +128,40 @@ class Lobby extends React.Component {
                   </div>
                 </Col>
               </Row>
-              {this.state.user && (
-                <div>
-                  <Card id="enterRoomCard" bg="dark">
-                    {alert}
-                    <h3>Enter Room</h3>
-                    <p>
-                      <small>Enter a room to start playing.</small>
-                    </p>
-                    <Form
-                      noValidate
-                      validated={this.state.validated}
-                      id="enterRoomForm"
-                      onSubmit={this.handleEnterRoom}
-                    >
-                      <Form.Group>
-                        <Form.Control
-                          type="text"
-                          value={this.state.roomNumber || ""}
-                          placeholder="Room number"
-                          onChange={this.handleChangeRoom}
-                          autoFocus={true}
-                          maxLength={30}
-                          required
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          Please choose a room.
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                      <Button variant="primary" type="submit" block>
-                        Enter room
-                      </Button>
-                    </Form>
-                  </Card>
-                </div>
-              )}
+      
+              {this.state.user ? (
+                <Card id="enterRoomCard" bg="dark">
+                  {alert}
+                  <h3>Enter Room</h3>
+                  <p>
+                    <small>Enter a room to start playing.</small>
+                  </p>
+                  <Form
+                    noValidate
+                    validated={this.state.validated}
+                    id="enterRoomForm"
+                    onSubmit={this.handleEnterRoom}
+                  >
+                    <Form.Group>
+                      <Form.Control
+                        type="text"
+                        value={this.state.roomNumber || ""}
+                        placeholder="Room number"
+                        onChange={this.handleChangeRoom}
+                        autoFocus={true}
+                        maxLength={30}
+                        required
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please choose a room.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Button variant="primary" type="submit" block>
+                      Enter room
+                    </Button>
+                  </Form>
+                </Card>
+              ) : (<Row className="justify-content-md-center red"><span>Log in to join a room!</span></Row>)}
             </Col>
           </Row>
         </Container>

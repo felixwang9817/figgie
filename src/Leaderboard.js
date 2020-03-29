@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Col, Row, Card } from "react-bootstrap";
+import { Table, Card } from "react-bootstrap";
 import { server } from "./consts";
 
 class Leaderboard extends React.Component {
@@ -24,35 +24,32 @@ class Leaderboard extends React.Component {
 
   render() {
     return (
-      <Card id="userInfoFormCard" bg="dark" className="text-center">
-        <Row>
-          <Col>
-            Leaderboard
-            <p></p>
-            <Table
-              striped
-              bordered
-              hover
-              variant="dark"
-              className="leaderboardTable"
-            >
-              <thead>
-                <tr>
-                  <td>username</td>
-                  <td>money</td>
+      <Card id="leaderboardCard" bg="dark" className="text-center">
+        <Card.Body>
+          <Card.Title>Leaderboard</Card.Title>
+          <Table
+            striped
+            bordered
+            hover
+            variant="dark"
+            className="leaderboardTable"
+          >
+            <thead>
+              <tr>
+                <td>username</td>
+                <td>money</td>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(this.state.leaderboard).map(key => (
+                <tr key={key}>
+                  <td>{this.state.leaderboard[key]["username"]}</td>
+                  <td>{this.state.leaderboard[key]["money"]}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {Object.keys(this.state.leaderboard).map(key => (
-                  <tr>
-                    <td>{this.state.leaderboard[key]["username"]}</td>
-                    <td>{this.state.leaderboard[key]["money"]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
+              ))}
+            </tbody>
+          </Table>
+        </Card.Body>
       </Card>
     );
   }

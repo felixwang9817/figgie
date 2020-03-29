@@ -24,7 +24,7 @@ class Players extends React.Component {
     }
 
     let observers = this.props.observers.length ? 
-                    (<Row> {"Observers: " + this.props.observers} </Row>)
+                    (<span> {"Observers: " + this.props.observers} </span>)
                     : "";
 
     // fill players up to four names
@@ -88,6 +88,7 @@ class Players extends React.Component {
           </tbody>
         </Table>
         {msg}
+        <br />
         {observers}
       </div>
     );
