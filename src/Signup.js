@@ -98,7 +98,7 @@ class Signup extends React.Component {
                 required
               />
               <Form.Control.Feedback type="invalid">
-                Please choose a username (max 30 characters).
+                Please choose a username.
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group>
@@ -111,7 +111,7 @@ class Signup extends React.Component {
                 required
               />
               <Form.Control.Feedback type="invalid">
-                Please choose a password (max 30 characters).
+                Please choose a password.
               </Form.Control.Feedback>
             </Form.Group>
             <Button variant="primary" type="submit" block>

@@ -29,7 +29,7 @@ fetch(
   .then(response => response.json())
   .then(response => {
     console.log("response.user", response.user);
-    ReactGA.set({ username: response.user.username });
+    if (response.user) { ReactGA.set({ username: response.user.username }); }
     render(response.user);
   })
   .catch(err => {

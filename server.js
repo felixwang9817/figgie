@@ -5,7 +5,7 @@ const session = require("express-session")({
   secret: "keyboard cat",
   resave: true,
   saveUninitialized: true,
-  cookie: { maxAge: 3600000 }
+  cookie: { maxAge: 3600000, sameSite: 'none' }
 });
 
 const cors = require("cors");

@@ -63,7 +63,7 @@ class Login extends React.Component {
       .then(response => response.json())
       .then(res => {
         this.props.onLogin(res.user);
-        ReactGA.set({ username: res.user.username });
+        if (res.user) { ReactGA.set({ username: res.user.username }); }
         this.setState(res);
       })
       .catch(err => {
