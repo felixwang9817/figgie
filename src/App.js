@@ -96,7 +96,7 @@ class App extends Component {
       roomNumber: "1",
       market: {},
       playersInfo: {},
-      playersList: {},
+      postGameResults: {},
       tradeLog: [],
       observer: false,
       isGameActive: false,
@@ -128,14 +128,14 @@ class App extends Component {
       this.setState({ market: state });
     });
 
-    socket.on("playersInfoUpdate", state => {
+    socket.on("playersUpdate", state => {
       // this updates post game results for Market component
       this.setState({ playersInfo: state });
     });
 
-    socket.on("playersListUpdate", state => {
+    socket.on("postGameUpdate", state => {
       // this updates active players list and readiness for Players component
-      this.setState({ playersList: state });
+      this.setState({ postGameResults: state });
     })
 
     socket.on("tradeLogUpdate", state => {
@@ -230,6 +230,7 @@ class App extends Component {
 
               <Market
                 username={this.state.username}
+                postGameResults={this.state.postGameResults}
                 playerState={this.state.playersInfo}
                 marketState={this.state["market"]}
                 isGameActive={this.state.isGameActive}
@@ -263,7 +264,7 @@ class App extends Component {
 
               <Players
                 username={this.state.username}
-                playerState={this.state.playersList}
+                playerState={this.state.playersInfo}
                 isGameActive={this.state.isGameActive}
               />
             </Col>

@@ -91,8 +91,8 @@ class Market extends React.Component {
               <td key={key}>{displaySuit(key)}</td>
             ))}
 
-            {!this.props.isGameActive && this.props.playerState[username] && 
-              this.props.playerState[username]["netGain"] && (
+            {!this.props.isGameActive && this.props.postGameResults[username] && 
+              this.props.postGameResults[username]["netGain"] && (
               <td>
                 Net Gain <GiTwoCoins />
               </td>
@@ -134,10 +134,10 @@ class Market extends React.Component {
             <tr></tr>
           )}
           {/* Displaying everyone's cards at end of the game */}
-          {!this.props.isGameActive && this.props.playerState[username] && 
-            this.props.playerState[username]["netGain"] &&  
+          {!this.props.isGameActive && this.props.postGameResults[username] && 
+            this.props.postGameResults[username]["netGain"] &&  
             // netGain not null => was in previous game and should see results
-            (Object.keys(this.props.playerState).map(player => (
+            (Object.keys(this.props.postGameResults).map(player => (
               <tr style={player === username ? { color: playerColor } : {}}>
                 <td>{player === username ? "you" : "player " + player}</td>
                 {Object.keys(markets).map(key => (
@@ -149,12 +149,12 @@ class Market extends React.Component {
                         : {}
                     }
                   >
-                    {this.props.playerState[player] != null &&
-                      this.props.playerState[player][key]}
+                    {this.props.postGameResults[player] != null &&
+                      this.props.postGameResults[player][key]}
                   </td>
                 ))}
 
-                <td>{this.props.playerState[player]["netGain"]}</td>
+                <td>{this.props.postGameResults[player]["netGain"]}</td>
               </tr>
             )))}
         </tbody>
