@@ -8,13 +8,9 @@ class Lobby extends React.Component {
   constructor() {
     super();
 
-    this.state = { validated: false, rooms: [] };
+    this.numSeconds = 5;
 
-    fetch(server + "/rooms", {})  // TODO: update every X seconds
-      .then(response => response.json())
-      .then(response => {
-        this.setState({ rooms: response });
-      });
+    this.state = { validated: false, rooms: [] };
 
     this.handleChangeRoom = this.handleChangeRoom.bind(this);
     this.handleEnterRoom = this.handleEnterRoom.bind(this);
@@ -22,10 +18,20 @@ class Lobby extends React.Component {
 
   componentDidMount() {
     this.setState({ user: this.props.user });
+
+    setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
   }
 
   handleChangeRoom(event) {
     this.setState({ roomNumber: event.target.value });
+  }
+
+  updateRooms() {
+    fetch(server + "/rooms", {})
+      .then(response => response.json())
+      .then(response => {
+        this.setState({ rooms: response });
+      });
   }
 
   async handleEnterRoom(event) {
@@ -123,9 +129,7 @@ class Lobby extends React.Component {
               <Row className="justify-content-md-center">
                 <Col md="auto">
                   <h2>Rooms</h2>
-                  <div>
-                    {this.state.rooms}
-                  </div>
+                  <div>{this.state.rooms}</div>
                 </Col>
               </Row>
               {this.state.user && (
