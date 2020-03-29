@@ -70,7 +70,6 @@ class Market extends React.Component {
       didMarketChange[key]["offer"] = markets[key]["offer"] !== prevMarkets[key]["offer"];
     })
 
-    console.log(didMarketChange);
     this.setState({ didMarketChange: didMarketChange });
   }
 
@@ -120,12 +119,12 @@ class Market extends React.Component {
               </td>
             ))}
           </tr>
-          {this.props.isGameActive ? (
+          {this.props.isGameActive && this.props.playerState[username] ? (
             <tr>
               <td># you have</td>
-              {Object.keys(markets).map(key => (  // TODO: hide on observer's screen
+              {Object.keys(markets).map(key => (
                 <td key={key}>
-                  {this.props.playerState[username] != null &&
+                  {this.props.playerState[username] &&
                     this.props.playerState[username][key]}
                 </td>
               ))}
@@ -144,7 +143,7 @@ class Market extends React.Component {
                     <td
                       key={key}
                       style={
-                        key === this.props.goalSuit
+                        key === this.props.goalSuit  // TODO: fix this on refresh
                           ? { color: goalColor, fontWeight: "bold" }
                           : {}
                       }

@@ -240,7 +240,10 @@ function parseCommand(command, socket) {
   let roomNumber = usernameToRoomNumber[username];
 
   if (!roomToState[roomNumber]) return;
-  if (!Object.keys(roomToState[roomNumber]["playerState"]).includes(username)) return;  // observers can't trade
+  if (!Object.keys(roomToState[roomNumber]["playerState"]).includes(username)) {
+    socket.emit("alert", "Observers cannot input commands!");
+    return;  // observers can't trade
+  }
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "ready") {
       markPlayerReady(username);
@@ -535,7 +538,6 @@ function updatePlayers(roomNumber) {
     usernames.push(observer);
   }
 
-  console.log("about to send", usernames);
   // for each username, emit to corresponding socket
   for (const username of usernames) {
     let socketid = usernameToSocketid[username];
@@ -567,7 +569,7 @@ function initializeRoom(roomNumber) {
   roomToState[roomNumber]["gameTimeEnd"] = null;
   roomToState[roomNumber]["tradeLog"] = [];
   roomToState[roomNumber]["postGameResults"] = {};
-  roomToState[roomNumber]["observers"] = new Set();
+  roomToState[roomNumber]["observers"] = [];
 }
 
 function startGame(roomNumber) {
@@ -722,6 +724,14 @@ function sendPostGameResults(username) {
 }
 
 
+function sendObserversList(roomNumber) {
+  console.log("observers of room", roomNumber, ": ", roomToState[roomNumber]["observers"]);
+  io.to(roomNumber).emit(
+    "observersListUpdate", roomToState[roomNumber]["observers"]);
+}
+
+
+
 /* socket communication code */
 
 io.on("connection", async function(socket) {
@@ -762,23 +772,25 @@ io.on("connection", async function(socket) {
 
   // TODO: figure out how to let observers join active games
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
-  if (
-    ((currPlayers.length >= kMaxPlayers + kMaxObservers) ||  // if inactive, allow kMaxObservers
-      roomToState[roomNumber]["isGameActive"]) &&  // if active, dont let any new users
-    !currPlayers.includes(username)
-  ) {
+  if (currPlayers.length >= kMaxPlayers &&
+      !currPlayers.includes(username) && 
+      roomToState[roomNumber]["observers"].length >= kMaxObservers) {
     // room full
     console.log(
-      "Room is full or active, rejecting connection from " + socket.id
+      "Room is full, rejecting connection from " + socket.id
     );
     socket.emit("maxCapacity");
     socket.disconnect();
     return;
   }
 
-  if (!roomToState[roomNumber]["playerState"][username]) {
-    if (currPlayers.length >= kMaxPlayers) {
-      roomToState[roomNumber]["observers"].add(username);
+  if (roomToState[roomNumber]["playerState"][username]) {
+    // user is reconnecting so we restore player state and change connected to true
+    roomToState[roomNumber]["playerState"][username]["connected"] = true;
+
+  } else {  // new player
+    if (currPlayers.length >= kMaxPlayers || roomToState[roomNumber]["isGameActive"]) {
+      roomToState[roomNumber]["observers"].push(username);
     } else {
       // user is joining so they get initial player state
       roomToState[roomNumber]["playerState"][username] = utils.deepCopy(
@@ -791,10 +803,6 @@ io.on("connection", async function(socket) {
         updatePlayers(roomNumber);
       });
     }
-    
-  } else {
-    // user is reconnecting so we restore player state and change connected to true
-    roomToState[roomNumber]["playerState"][username]["connected"] = true;
   }
 
   // update cliend UI to reflect current game state
@@ -805,6 +813,7 @@ io.on("connection", async function(socket) {
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   broadcastMarketUpdate(roomNumber);
   sendPostGameResults(username);
+  sendObserversList(roomNumber);
 
   // TODO2: eventually add cleanup on a timer after game ends, boot people to lobby unless
   // they are active and want to restart a game in the room
@@ -835,11 +844,13 @@ io.on("connection", async function(socket) {
           }
         }
       } else {
-        if (!Object.keys(roomToState[roomToState]["observers"]).includes(username)) {
+        let index = roomToState[roomNumber]["observers"].indexOf(username);
+        if (index == -1) {
           throw "username " + username + "not found in room " + roomNumber;
         }
 
-        roomToState[roomToState]["observers"].delete(username);
+        roomToState[roomNumber]["observers"].splice(index, 1);
+        sendObserversList(roomNumber);
       }
     }
 

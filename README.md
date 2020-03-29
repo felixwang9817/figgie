@@ -19,8 +19,6 @@ Ideal flow:
   - can play as a guest
   - see list of rooms w/ info and have it update
   - support private rooms by adding in optional pw to room creation
-  - can spectate active games
-  - can observe full rooms, and join if it becomes unfull
   - leaderboard bug (render executes before componentWillMount finishes)
 
 - game room:

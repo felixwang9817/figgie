@@ -98,7 +98,7 @@ class App extends Component {
       playersInfo: {},
       postGameResults: {},
       tradeLog: [],
-      observer: false,
+      observers: [],
       isGameActive: false,
       gameTimeEnd: null,
       alertMsg: "",
@@ -136,6 +136,12 @@ class App extends Component {
     socket.on("postGameUpdate", state => {
       // this updates active players list and readiness for Players component
       this.setState({ postGameResults: state });
+    })
+
+    socket.on("observersListUpdate", state => {
+      console.log("observers: ", state);
+      this.setState({ observers: state });
+
     })
 
     socket.on("tradeLogUpdate", state => {
@@ -191,19 +197,12 @@ class App extends Component {
       return <Redirect to="/" />;
     }
 
-    if (this.state.observer) {
-      return (
-        <div className="FullGame">
-          Game Full. Please wait for players to leave and refresh.
-        </div>
-      );
-    }
-
     let alert = "";
     if (this.state.alertMsg) {
       alert = <Alert variant="warning"> {this.state.alertMsg} </Alert>;
     }
 
+    let isObserver = this.state.observers.includes(this.state.username);
     let currPlayerState = this.state.playersInfo[this.state.username];
     let placeholderString = this.state.isGameActive
       ? "Enter trades here!"
@@ -219,6 +218,7 @@ class App extends Component {
               <UserInfo
                 username={this.state.username}
                 playerState={this.state.playersInfo}
+                isObserver={isObserver}
                 roomNumber={this.state.roomNumber}
                 gameTimeEnd={this.state.gameTimeEnd}
                 returnToLobby={() => this.returnToLobby()}
@@ -264,6 +264,7 @@ class App extends Component {
                 username={this.state.username}
                 playerState={this.state.playersInfo}
                 isGameActive={this.state.isGameActive}
+                observers={this.state.observers}
               />
             </Col>
 
