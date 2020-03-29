@@ -154,8 +154,9 @@ class Lobby extends React.Component {
                           striped
                           bordered
                           hover
+                          size="sm"
                           variant="dark"
-                          className="leaderboardTable"
+                          className="roomListTable"
                         >
                           <thead>
                             <tr>
