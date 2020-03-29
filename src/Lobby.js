@@ -1,5 +1,13 @@
 import React from "react";
-import { Form, Button, Card, Container, Col, Row } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Card,
+  Container,
+  Col,
+  Row,
+  Table
+} from "react-bootstrap";
 import Leaderboard from "./Leaderboard";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
@@ -136,27 +144,47 @@ class Lobby extends React.Component {
               <Leaderboard />
             </Col>
             <Col xs={8}>
-              <Row className="justify-content-md-center">
-                <Col md="auto">
-                  <h2>Rooms</h2>
-                  <div>
-                    {Object.keys(this.state.rooms).map(key => (
-                      <p>
-                        {this.state.rooms[key]}
-                        <Button
-                          onClick={_ =>
-                            this.handleEnterRoomButton(this.state.rooms[key])
-                          }
-                        >
-                          Join
-                        </Button>
-                      </p>
-                    ))}
-                  </div>
-                </Col>
-              </Row>
               {this.state.user && (
                 <div>
+                  <Row className="justify-content-md-center">
+                    <Col md="auto">
+                      <h2>Rooms</h2>
+                      <div>
+                        <Table
+                          striped
+                          bordered
+                          hover
+                          variant="dark"
+                          className="leaderboardTable"
+                        >
+                          <thead>
+                            <tr>
+                              <td>room number</td>
+                              <td>join button</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {Object.keys(this.state.rooms).map(key => (
+                              <tr>
+                                <td>{this.state.rooms[key]}</td>
+                                <td>
+                                  <Button
+                                    onClick={_ =>
+                                      this.handleEnterRoomButton(
+                                        this.state.rooms[key]
+                                      )
+                                    }
+                                  >
+                                    Join
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Col>
+                  </Row>
                   <Card id="enterRoomCard" bg="dark">
                     {alert}
                     <h3>Enter Room</h3>
