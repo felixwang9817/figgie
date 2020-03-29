@@ -1,10 +1,6 @@
 import React from "react";
-import {
-  Table,
-  Row
-} from "react-bootstrap";
-import {playerColor, disconnectedColor} from "./consts";
-
+import { Table } from "react-bootstrap";
+import { playerColor, disconnectedColor } from "./consts";
 
 class Players extends React.Component {
   render() {
@@ -23,9 +19,11 @@ class Players extends React.Component {
         : "Game will start when all players are ready!";
     }
 
-    let observers = this.props.observers.length ? 
-                    (<span> {"Observers: " + this.props.observers} </span>)
-                    : "";
+    let observers = this.props.observers.length ? (
+      <span> {"Observers: " + this.props.observers} </span>
+    ) : (
+      ""
+    );
 
     // fill players up to four names
     let players = Object.keys(playerState);

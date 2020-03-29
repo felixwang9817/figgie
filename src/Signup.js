@@ -1,4 +1,5 @@
 import React from "react";
+import ReactGA from "react-ga";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import { Redirect } from "react-router-dom";
 import { server } from "./consts";
