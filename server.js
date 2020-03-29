@@ -814,6 +814,7 @@ io.on("connection", async function(socket) {
   broadcastMarketUpdate(roomNumber);
   sendPostGameResults(username);
   sendObserversList(roomNumber);
+  io.to(roomNumber).emit("goalSuit", roomToState[roomNumber]["goalSuit"]);
 
   // TODO2: eventually add cleanup on a timer after game ends, boot people to lobby unless
   // they are active and want to restart a game in the room

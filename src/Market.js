@@ -143,7 +143,7 @@ class Market extends React.Component {
                     <td
                       key={key}
                       style={
-                        key === this.props.goalSuit  // TODO: fix this on refresh
+                        key === this.props.goalSuit
                           ? { color: goalColor, fontWeight: "bold" }
                           : {}
                       }
