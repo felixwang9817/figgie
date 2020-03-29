@@ -5,5 +5,5 @@ export const defaultTextColor = "white";
 
 export const server =
   process.env.NODE_ENV === "production"
-    ? "http://3.22.23.96:8080"
+    ? "http://figgie.io:8080"
     : "http://localhost:8080";

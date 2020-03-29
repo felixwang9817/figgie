@@ -5,7 +5,7 @@ const session = require("express-session")({
   secret: "keyboard cat",
   resave: true,
   saveUninitialized: true,
-  cookie: { maxAge: 3600000, sameSite: 'none' }
+  cookie: { maxAge: 3600000 }
 });
 
 const cors = require("cors");
@@ -99,7 +99,7 @@ passport.deserializeUser(function(user, cb) {
 
 var server;
 if (process.env.NODE_ENV === "production") {
-  server = "http://3.22.23.96:8080";
+  server = "http://figgie.io:8080";
 } else {
   server = "http://localhost:8080";
 }
