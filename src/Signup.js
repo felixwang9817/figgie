@@ -33,6 +33,11 @@ class Signup extends React.Component {
       return;
     }
 
+    ReactGA.event({
+      category: "Signup",
+      action: "Signup attempt by " + this.state.username
+    });
+
     fetch(server + "/signup", {
       headers: {
         Accept: "application/json",

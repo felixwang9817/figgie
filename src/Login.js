@@ -45,7 +45,7 @@ class Login extends React.Component {
 
     ReactGA.event({
       category: "Login",
-      action: "Login attempt"
+      action: "Login attempt by " + this.state.username
     });
 
     fetch(server + "/login", {
@@ -63,6 +63,7 @@ class Login extends React.Component {
       .then(response => response.json())
       .then(res => {
         this.props.onLogin(res.user);
+        ReactGA.set({ username: res.user.username });
         this.setState(res);
       })
       .catch(err => {

@@ -30,48 +30,8 @@ Ideal flow:
   - [done-ish] metrics (GA)
     - daily active users, avg minutes/session, avg games/session, etc.
   - unclear what to do with logging, but ideally server side logs should tell us about bugs and help us debug
-  - split larger files into smaller components, have one person own each file (for documentation & understanding)
+  - have one person own each file/component (for documentation & understanding)
 
-
-
-
-starting from fresh:
-A, B, C, D join room 1
-
-- everyone sees:
-
-  - ready check
-  - [chat]
-  - trade log
-  - rules
-
-  - if anyone leaves and joins, they see same thing
-
-Everyone is ready, game starts.
-
-- everyone sees:
-
-  - market
-  - trade log
-  - rules
-  - [chat]
-
-  - if D leaves, A,B,C see D greyed out but everything else the same
-  - if D rejoins, he sees what he saw before
-  - E cannot join
-
-Game ends
-
-- everyone sees:
-
-  - trade log
-  - results
-  - show player's names A,B,C,D
-
-  - if D leaves, A,B,C see same results but no player name D
-  - if D rejoins, everyone sees updated names. D still sees results
-
-  - if D leaves and E joins, everyone see updated names. E doesn't see results
 
 ## Deployment
 

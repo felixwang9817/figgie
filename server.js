@@ -770,7 +770,6 @@ io.on("connection", async function(socket) {
   usernameToSocketid[username] = socket.id;
   socket.join(roomNumber);
 
-  // TODO: figure out how to let observers join active games
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
   if (currPlayers.length >= kMaxPlayers &&
       !currPlayers.includes(username) && 
@@ -815,9 +814,6 @@ io.on("connection", async function(socket) {
   sendPostGameResults(username);
   sendObserversList(roomNumber);
   io.to(roomNumber).emit("goalSuit", roomToState[roomNumber]["goalSuit"]);
-
-  // TODO2: eventually add cleanup on a timer after game ends, boot people to lobby unless
-  // they are active and want to restart a game in the room
 
   socket.on("disconnect", async function() {
     let user = socket.handshake.session.passport.user;
