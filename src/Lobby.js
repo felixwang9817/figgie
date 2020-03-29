@@ -13,7 +13,7 @@ class Lobby extends React.Component {
     this.state = { validated: false, rooms: [] };
 
     this.handleChangeRoom = this.handleChangeRoom.bind(this);
-    this.handleEnterRoom = this.handleEnterRoom.bind(this);
+    this.handleEnterRoomForm = this.handleEnterRoomForm.bind(this);
   }
 
   componentDidMount() {
@@ -34,7 +34,13 @@ class Lobby extends React.Component {
       });
   }
 
-  async handleEnterRoom(event) {
+  handleEnterRoomButton(roomNumber) {
+    this.setState({ roomNumber: roomNumber }, _ => {
+      this.handleEnterRoom();
+    });
+  }
+
+  handleEnterRoomForm(event) {
     event.preventDefault();
     this.setState({ validated: true }); // this just triggers green/red UI
     // it doesn't mean the form passed validation
@@ -45,6 +51,10 @@ class Lobby extends React.Component {
       return;
     }
 
+    this.handleEnterRoom();
+  }
+
+  handleEnterRoom() {
     fetch(server + "/enterRoom", {
       headers: {
         Accept: "application/json",
@@ -129,7 +139,20 @@ class Lobby extends React.Component {
               <Row className="justify-content-md-center">
                 <Col md="auto">
                   <h2>Rooms</h2>
-                  <div>{this.state.rooms}</div>
+                  <div>
+                    {Object.keys(this.state.rooms).map(key => (
+                      <p>
+                        {this.state.rooms[key]}
+                        <Button
+                          onClick={_ =>
+                            this.handleEnterRoomButton(this.state.rooms[key])
+                          }
+                        >
+                          Join
+                        </Button>
+                      </p>
+                    ))}
+                  </div>
                 </Col>
               </Row>
               {this.state.user && (
@@ -144,7 +167,7 @@ class Lobby extends React.Component {
                       noValidate
                       validated={this.state.validated}
                       id="enterRoomForm"
-                      onSubmit={this.handleEnterRoom}
+                      onSubmit={this.handleEnterRoomForm}
                     >
                       <Form.Group>
                         <Form.Control
