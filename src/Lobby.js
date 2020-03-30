@@ -26,6 +26,7 @@ class Lobby extends React.Component {
 
   componentDidMount() {
     this.setState({ user: this.props.user });
+    // TODO: after setting user, have callback fetch money from server
     this.updateRooms();
     setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
   }
@@ -151,39 +152,42 @@ class Lobby extends React.Component {
                       <h2>Rooms</h2>
                       <div>
                         {this.state.rooms.length > 0 ? (
-                        <Table
-                          striped
-                          bordered
-                          hover
-                          size="sm"
-                          variant="dark"
-                          className="roomListTable"
-                        >
-                          <thead>
-                            <tr>
-                              <td>room number</td>
-                              <td>join button</td>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.keys(this.state.rooms).map(key => (
+                          <Table
+                            striped
+                            bordered
+                            hover
+                            size="sm"
+                            variant="dark"
+                            className="roomListTable"
+                          >
+                            <thead>
                               <tr>
-                                <td>{this.state.rooms[key]}</td>
-                                <td>
-                                  <Button
-                                    onClick={_ =>
-                                      this.handleEnterRoomButton(
-                                        this.state.rooms[key]
-                                      )
-                                    }
-                                  >
-                                    Join
-                                  </Button>
-                                </td>
+                                <td>room number</td>
+                                <td>join button</td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </Table>) : "no active rooms"}
+                            </thead>
+                            <tbody>
+                              {Object.keys(this.state.rooms).map(key => (
+                                <tr>
+                                  <td>{this.state.rooms[key]}</td>
+                                  <td>
+                                    <Button
+                                      onClick={_ =>
+                                        this.handleEnterRoomButton(
+                                          this.state.rooms[key]
+                                        )
+                                      }
+                                    >
+                                      Join
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        ) : (
+                          "no active rooms"
+                        )}
                       </div>
                     </Col>
                   </Row>

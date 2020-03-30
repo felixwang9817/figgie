@@ -28,6 +28,7 @@ const getPlayersByMoney = (_, response) => {
   });
 };
 
+// TODO: change name and added equivalent endpoint for money endpoint in server
 const getMoneyByUsername = (username, cb) => {
   pool.query(
     "SELECT money FROM players WHERE username = $1",
