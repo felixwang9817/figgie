@@ -150,7 +150,7 @@ class Lobby extends React.Component {
                     <Col md="auto">
                       <h2>Rooms</h2>
                       <div>
-                        {this.state.rooms.length > 0 && (
+                        {this.state.rooms.length > 0 ? (
                         <Table
                           striped
                           bordered
@@ -183,7 +183,7 @@ class Lobby extends React.Component {
                               </tr>
                             ))}
                           </tbody>
-                        </Table>)}
+                        </Table>) : "no active rooms"}
                       </div>
                     </Col>
                   </Row>
