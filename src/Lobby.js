@@ -150,40 +150,47 @@ class Lobby extends React.Component {
                     <Col md="auto">
                       <h2>Rooms</h2>
                       <div>
-                        {this.state.rooms.length > 0 ? (
-                        <Table
-                          striped
-                          bordered
-                          hover
-                          size="sm"
-                          variant="dark"
-                          className="roomListTable"
-                        >
-                          <thead>
-                            <tr>
-                              <td>room number</td>
-                              <td>join button</td>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Object.keys(this.state.rooms).map(key => (
+                        {Object.keys(this.state.rooms).length > 0 ? (
+                          <Table
+                            striped
+                            bordered
+                            hover
+                            size="sm"
+                            variant="dark"
+                            className="roomListTable"
+                          >
+                            <thead>
                               <tr>
-                                <td>{this.state.rooms[key]}</td>
-                                <td>
-                                  <Button
-                                    onClick={_ =>
-                                      this.handleEnterRoomButton(
-                                        this.state.rooms[key]
-                                      )
-                                    }
-                                  >
-                                    Join
-                                  </Button>
-                                </td>
+                                <td>Title</td>
+                                <td>Players</td>
+                                <td>Action</td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </Table>) : "no active rooms"}
+                            </thead>
+                            <tbody>
+                              {Object.keys(this.state.rooms).map(key => (
+                                <tr>
+                                  <td>{key}</td>
+                                  <td>
+                                    {Object.keys(
+                                      this.state.rooms[key]["playerState"]
+                                    ).length + "/4"}
+                                  </td>
+                                  <td>
+                                    <Button
+                                      onClick={_ =>
+                                        this.handleEnterRoomButton(key)
+                                      }
+                                    >
+                                      Join
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        ) : (
+                          "no active rooms"
+                        )}
                       </div>
                     </Col>
                   </Row>

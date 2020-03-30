@@ -167,10 +167,8 @@ app.get("/leaderboard", async function(req, res) {
 });
 
 app.get("/rooms", function(req, res) {
-  res.send(Object.keys(roomToState));  // TODO: also send room state like active,
-                                      // num users, usernames (?), etc.
-})
-
+  res.send(roomToState);
+});
 
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
@@ -186,7 +184,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
-
 
 let maxUsers = 40; // TODO: stress test
 let suits = ["hearts", "diamonds", "clubs", "spades"];
@@ -242,7 +239,7 @@ function parseCommand(command, socket) {
   if (!roomToState[roomNumber]) return;
   if (!Object.keys(roomToState[roomNumber]["playerState"]).includes(username)) {
     socket.emit("alert", "Observers cannot input commands!");
-    return;  // observers can't trade
+    return; // observers can't trade
   }
   if (!roomToState[roomNumber]["isGameActive"]) {
     if (command == "ready") {
@@ -514,9 +511,7 @@ function clearPlayer(username, roomNumber) {
 // UPDATE FUNCTIONS
 function shieldPlayerInfo(username, roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
-  let playerVisibleState = utils.deepCopy(
-    playerState
-  );
+  let playerVisibleState = utils.deepCopy(playerState);
 
   // hiding other player's hands
   Object.keys(playerState).map(player => {
@@ -543,11 +538,10 @@ function updatePlayers(roomNumber) {
     let socketid = usernameToSocketid[username];
     io.to(socketid).emit(
       "playersUpdate",
-      shieldPlayerInfo(username, roomNumber) 
+      shieldPlayerInfo(username, roomNumber)
     );
   }
 }
-
 
 function broadcastMarketUpdate(roomNumber) {
   let marketState = roomToState[roomNumber]["marketState"];
@@ -623,7 +617,6 @@ function startGame(roomNumber) {
   setTimeout(() => endGame(roomNumber), gameTime);
 }
 
-
 function endGame(roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) return;
   io.to(roomNumber).emit("alert", "Time's up!");
@@ -679,13 +672,12 @@ function endGame(roomNumber) {
   });
 
   setPostGameResults(roomNumber);
-  updatePlayers(roomNumber);  // update ready
+  updatePlayers(roomNumber); // update ready
   io.to(roomNumber).emit("goalSuit", goalSuit);
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;
   updateGameTime(roomNumber);
 }
-
 
 function setPostGameResults(roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
@@ -699,7 +691,7 @@ function setPostGameResults(roomNumber) {
     // certify that observers were in this game, so they can see the results
     roomToState[roomNumber]["postGameResults"][player] = {};
   }
-  
+
   console.log("post game", roomToState[roomNumber]["postGameResults"]);
   for (const player in playerState) {
     sendPostGameResults(player);
@@ -710,35 +702,48 @@ function setPostGameResults(roomNumber) {
   }
 }
 
-
 function sendPostGameResults(username) {
   let socketid = usernameToSocketid[username];
   let roomNumber = usernameToRoomNumber[username];
   if (!roomNumber) return;
-  if (!Object.keys(roomToState[roomNumber]["postGameResults"]).includes(username)) return;
-    
+  if (
+    !Object.keys(roomToState[roomNumber]["postGameResults"]).includes(username)
+  )
+    return;
+
   io.to(socketid).emit(
     "postGameUpdate",
-    roomToState[roomNumber]["postGameResults"] 
+    roomToState[roomNumber]["postGameResults"]
   );
 }
 
-
 function sendObserversList(roomNumber) {
-  console.log("observers of room", roomNumber, ": ", roomToState[roomNumber]["observers"]);
+  console.log(
+    "observers of room",
+    roomNumber,
+    ": ",
+    roomToState[roomNumber]["observers"]
+  );
   io.to(roomNumber).emit(
-    "observersListUpdate", roomToState[roomNumber]["observers"]);
+    "observersListUpdate",
+    roomToState[roomNumber]["observers"]
+  );
 }
 
 function updateGameTime(roomNumber) {
   console.log("updating time");
-  if (!roomToState[roomNumber]["isGameActive"] || 
-      !roomToState[roomNumber]["gameTimeEnd"] || 
-      roomToState[roomNumber]["gameTimeEnd"] < Date.now()) {
+  if (
+    !roomToState[roomNumber]["isGameActive"] ||
+    !roomToState[roomNumber]["gameTimeEnd"] ||
+    roomToState[roomNumber]["gameTimeEnd"] < Date.now()
+  ) {
     io.to(roomNumber).emit("gameTimeUpdate", null);
   }
 
-  io.to(roomNumber).emit("gameTimeUpdate", roomToState[roomNumber]["gameTimeEnd"] - Date.now())
+  io.to(roomNumber).emit(
+    "gameTimeUpdate",
+    roomToState[roomNumber]["gameTimeEnd"] - Date.now()
+  );
 }
 
 /* socket communication code */
@@ -780,13 +785,13 @@ io.on("connection", async function(socket) {
   socket.join(roomNumber);
 
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
-  if (currPlayers.length >= kMaxPlayers &&
-      !currPlayers.includes(username) && 
-      roomToState[roomNumber]["observers"].length >= kMaxObservers) {
+  if (
+    currPlayers.length >= kMaxPlayers &&
+    !currPlayers.includes(username) &&
+    roomToState[roomNumber]["observers"].length >= kMaxObservers
+  ) {
     // room full
-    console.log(
-      "Room is full, rejecting connection from " + socket.id
-    );
+    console.log("Room is full, rejecting connection from " + socket.id);
     socket.emit("maxCapacity");
     socket.disconnect();
     return;
@@ -795,9 +800,12 @@ io.on("connection", async function(socket) {
   if (roomToState[roomNumber]["playerState"][username]) {
     // user is reconnecting so we restore player state and change connected to true
     roomToState[roomNumber]["playerState"][username]["connected"] = true;
-
-  } else {  // new player
-    if (currPlayers.length >= kMaxPlayers || roomToState[roomNumber]["isGameActive"]) {
+  } else {
+    // new player
+    if (
+      currPlayers.length >= kMaxPlayers ||
+      roomToState[roomNumber]["isGameActive"]
+    ) {
       roomToState[roomNumber]["observers"].push(username);
     } else {
       // user is joining so they get initial player state
@@ -816,7 +824,7 @@ io.on("connection", async function(socket) {
   // update cliend UI to reflect current game state
   updatePlayers(roomNumber);
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
-  updateGameTime(roomNumber)
+  updateGameTime(roomNumber);
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   broadcastMarketUpdate(roomNumber);
@@ -829,7 +837,6 @@ io.on("connection", async function(socket) {
     let username = user.username;
     let roomNumber = usernameToRoomNumber[username];
     console.log("user disconnected", username);
-
 
     if (roomToState[roomNumber] != null) {
       let playerState = roomToState[roomNumber]["playerState"];
