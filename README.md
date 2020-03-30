@@ -12,6 +12,10 @@ Style:
 
 ## functionality
 
+- https
+- fix money update in lobby after a game
+- time sync: server should send to clinet #-of-secs-left in game rather than gameTimeEnd (since Date.now() is not synced)
+
 Ideal flow:
 
 - lobby:
