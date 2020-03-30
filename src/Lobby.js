@@ -26,7 +26,7 @@ class Lobby extends React.Component {
 
   componentDidMount() {
     this.setState({ user: this.props.user });
-
+    this.updateRooms();
     setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
   }
 
@@ -150,6 +150,7 @@ class Lobby extends React.Component {
                     <Col md="auto">
                       <h2>Rooms</h2>
                       <div>
+                        {this.state.rooms.length > 0 && (
                         <Table
                           striped
                           bordered
@@ -182,7 +183,7 @@ class Lobby extends React.Component {
                               </tr>
                             ))}
                           </tbody>
-                        </Table>
+                        </Table>)}
                       </div>
                     </Col>
                   </Row>
