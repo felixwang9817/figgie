@@ -28,8 +28,7 @@ const getPlayersByMoney = (_, response) => {
   });
 };
 
-// TODO: change name and added equivalent endpoint for money endpoint in server
-const getMoneyByUsername = (username, cb) => {
+const getMoneyByUsernameCB = (username, cb) => {
   pool.query(
     "SELECT money FROM players WHERE username = $1",
     [username],
@@ -38,6 +37,19 @@ const getMoneyByUsername = (username, cb) => {
         throw error;
       }
       cb(results.rows[0]["money"]);
+    }
+  );
+};
+
+const getMoneyByUsername = (_, username, response) => {
+  pool.query(
+    "SELECT money FROM players WHERE username = $1",
+    [username],
+    (error, results) => {
+      if (error) {
+        throw error;
+      }
+      response.status(200).json(results.rows[0]["money"]);
     }
   );
 };
@@ -123,6 +135,7 @@ module.exports = {
   // getPlayers,
   getPlayersByMoney,
   getMoneyByUsername,
+  getMoneyByUsernameCB,
   createPlayer,
   updatePlayer,
   // deletePlayer,
