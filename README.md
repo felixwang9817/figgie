@@ -9,12 +9,12 @@ Multiplayer Figgie built using React, express, and socket.io
 Style:
 
 - leaderboard should be centered
+- room list style
 
 ## functionality
 
 - https
 - fix money update in lobby after a game
-- time sync: server should send to clinet #-of-secs-left in game rather than gameTimeEnd (since Date.now() is not synced)
 
 Ideal flow:
 

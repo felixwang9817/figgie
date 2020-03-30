@@ -158,12 +158,13 @@ class App extends Component {
     });
 
     socket.on("gameStateUpdate", state => {
-      console.log("gameStateUpdate: ", state);
       this.setState({ isGameActive: state });
     });
 
-    socket.on("gameTimeEnd", state => {
-      this.setState({ gameTimeEnd: state });
+    socket.on("gameTimeUpdate", state => {
+      // given the duration left, calculate the remaining time to game
+      console.log("gametime: ", state, "ending at", state + Date.now());
+      this.setState({ gameTimeEnd: state + Date.now() });
     });
 
     socket.on("alert", msg => {

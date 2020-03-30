@@ -616,7 +616,7 @@ function startGame(roomNumber) {
   updatePlayers(roomNumber);
   updateGameState(true, roomNumber);
   roomToState[roomNumber]["gameTimeEnd"] = Date.now() + gameTime;
-  io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
+  updateGameTime(roomNumber);
   io.to(roomNumber).emit("goalSuit", "");
   io.to(roomNumber).emit("alert", "Game on!"); // tell all players
 
@@ -683,7 +683,7 @@ function endGame(roomNumber) {
   io.to(roomNumber).emit("goalSuit", goalSuit);
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;
-  io.to(roomNumber).emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
+  updateGameTime(roomNumber);
 }
 
 
@@ -730,7 +730,16 @@ function sendObserversList(roomNumber) {
     "observersListUpdate", roomToState[roomNumber]["observers"]);
 }
 
+function updateGameTime(roomNumber) {
+  console.log("updating time");
+  if (!roomToState[roomNumber]["isGameActive"] || 
+      !roomToState[roomNumber]["gameTimeEnd"] || 
+      roomToState[roomNumber]["gameTimeEnd"] < Date.now()) {
+    io.to(roomNumber).emit("gameTimeUpdate", null);
+  }
 
+  io.to(roomNumber).emit("gameTimeUpdate", roomToState[roomNumber]["gameTimeEnd"] - Date.now())
+}
 
 /* socket communication code */
 
@@ -807,7 +816,7 @@ io.on("connection", async function(socket) {
   // update cliend UI to reflect current game state
   updatePlayers(roomNumber);
   socket.emit("gameStateUpdate", roomToState[roomNumber]["isGameActive"]);
-  socket.emit("gameTimeEnd", roomToState[roomNumber]["gameTimeEnd"]);
+  updateGameTime(roomNumber)
   let tradeLog = roomToState[roomNumber]["tradeLog"];
   io.to(roomNumber).emit("tradeLogUpdate", tradeLog);
   broadcastMarketUpdate(roomNumber);

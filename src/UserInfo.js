@@ -30,7 +30,7 @@ class UserInfo extends React.Component {
 
     function formatDate(ms) {
       if (ms < 0) {
-        return "0:00";
+        return "";
       }
       let minutes = Math.floor(ms / 60000);
       let seconds = Math.floor((ms - 60000 * minutes) / 1000);
