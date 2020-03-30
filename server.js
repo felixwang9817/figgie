@@ -170,6 +170,16 @@ app.get("/rooms", function(req, res) {
   res.send(roomToState);
 });
 
+app.get(
+  "/money",
+  require("connect-ensure-login").ensureLoggedIn(),
+  async function(req, res) {
+    let username = req.user.username;
+    console.log("username in getting money", username);
+    db.getMoneyByUsername(req, username, res);
+  }
+);
+
 // ENV is being set correctly for `npm start` (and I assume for `npm build`) and can be accessed
 // in Login.js & App
 
@@ -814,7 +824,7 @@ io.on("connection", async function(socket) {
       );
 
       // async update money
-      db.getMoneyByUsername(username, money => {
+      db.getMoneyByUsernameCB(username, money => {
         roomToState[roomNumber]["playerState"][username]["money"] = money;
         updatePlayers(roomNumber);
       });
