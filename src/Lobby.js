@@ -25,13 +25,27 @@ class Lobby extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ user: this.props.user });
+    this.setState({ user: this.props.user }, _ => {
+      if (this.state.user) {
+        this.updateMoney();
+      }
+    });
     this.updateRooms();
     setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
   }
 
   handleChangeRoom(event) {
     this.setState({ roomNumber: event.target.value });
+  }
+
+  updateMoney() {
+    fetch(server + "/money", { credentials: "include" })
+      .then(response => response.json())
+      .then(response => {
+        let user = this.state.user;
+        user["money"] = response;
+        this.setState({ user: user });
+      });
   }
 
   updateRooms() {
