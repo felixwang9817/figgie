@@ -118,34 +118,39 @@ class Lobby extends React.Component {
           </Row>
           <Row>
             <Col xs={5}>
-              {/* <a
-                className="App-link"
-                href="https://www.janestreet.com/figgie/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Full Game Rules
-              </a> */}
               <Card id="userInfoFormCard" bg="dark" className="text-center">
                 {this.state.user ? (
                   <Card.Body>
-                    <Card.Title>{this.state.user.username}</Card.Title>
-                    <Card.Subtitle>
-                      money: {this.state.user.money}
-                    </Card.Subtitle>
-                    <Card.Text>
-                      <p></p>
-                    </Card.Text>
-                    <Button
-                      onClick={_ => this.handleLogout()}
-                      variant="secondary"
-                    >
-                      Log out
-                    </Button>
+                  <Card.Title>{this.state.user.username}</Card.Title>
+                  <Card.Subtitle>
+                    money: {this.state.user.money}
+                  </Card.Subtitle>
+                  <Card.Text>
+                    <p></p>
+                  </Card.Text>
+                  <Button
+                    onClick={_ => this.handleLogout()}
+                    variant="secondary"
+                  >
+                    Log out
+                  </Button>
                   </Card.Body>
                 ) : (
                   <Card.Body>
                     <Card.Title>Welcome, guest</Card.Title>
+
+                    <Card.Text>
+                      <a
+                        className="App-link"
+                        href="https://www.janestreet.com/figgie/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{"font-size": "18px"}}
+                      >
+                        Full Game Rules
+                      </a>
+                    </Card.Text>
+
                     <Button href="/login" variant="secondary">
                       Log in
                     </Button>{" "}

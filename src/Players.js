@@ -20,7 +20,7 @@ class Players extends React.Component {
     }
 
     let observers = this.props.observers.length ? (
-      <span> {"Observers: " + this.props.observers} </span>
+      <> <br /> <span> {"Observers: " + this.props.observers} </span> </>
     ) : (
       ""
     );
@@ -86,8 +86,17 @@ class Players extends React.Component {
           </tbody>
         </Table>
         {msg}
-        <br />
         {observers}
+        <br />
+        <a
+          className="App-link"
+          href="https://www.janestreet.com/figgie/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{"font-size": "18px"}}
+        >
+          Full Game Rules
+        </a>
       </div>
     );
   }
