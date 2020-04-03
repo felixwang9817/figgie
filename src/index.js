@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import { FaGithub } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
 import Gateway from "./Gateway";
 import * as serviceWorker from "./serviceWorker";
 import {server} from "./consts";
@@ -12,11 +14,25 @@ ReactGA.initialize('UA-77066601-2');
 
 function render(user) {
   ReactDOM.render(
-    (<BrowserRouter>
-      <AppContainer>
-        <Gateway user={user} />
-      </AppContainer>
-    </BrowserRouter>),
+    (
+    <>
+      <main role='main' className='flex-shrink-0'>
+        <BrowserRouter>
+          <AppContainer>
+            <Gateway user={user} />
+          </AppContainer>
+        </BrowserRouter>
+      </main>
+
+      <footer className='footer mt-auto py-3 bg-dark text-white text-right'>
+        <div className='container'>
+          Built by Felix Wang and Wanqi Zhu
+          <a href="https://github.com/felixwang9817/figgie"> <FaGithub /> </a>
+          <a href="mailto:wanqizhu@stanford.edu;felixw17@stanford.edu&subject=Figgie"> <MdEmail /> </a>
+        </div>
+      </footer>
+    </>
+    ),
     document.getElementById("root")
   );
 }

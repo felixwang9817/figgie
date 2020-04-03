@@ -1,10 +1,17 @@
+#root {
+  background-color: #282c34;
+}
+
+main {
+  background-color: #282c34;
+}
+
 .App {
   text-align: center;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,8 +21,6 @@
 }
 
 .Lobby-header {
-  background-color: #282c34;
-  min-height: 110vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,9 +29,12 @@
   color: white;
 }
 
+.lobby-title {
+  padding: 40px 0;
+}
+
 .Login-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  
   display: flex;
   flex-direction: column;
   /* justify-content: center; */
@@ -35,8 +43,7 @@
 }
 
 .Signup-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  
   display: flex;
   flex-direction: column;
   /* justify-content: center; */
@@ -50,7 +57,7 @@
 
 .row {
   width: 100%;
-  margin-bottom: 30px;
+  /*margin-bottom: 30px;*/
 }
 
 .gameRow {
@@ -142,7 +149,7 @@
 }
 
 #enterRoomCard {
-  /* background-color: #282c34; */
+  /*  */
   align-items: center;
   margin: 14%;
   /* margin: 35%; */
@@ -154,7 +161,7 @@
 }
 
 #roomListCard {
-  /* background-color: #282c34; */
+  /*  */
   align-items: center;
   margin: 14%;
   /* margin: 35%; */
@@ -166,7 +173,7 @@
 }
 
 #loginSignupFormCard {
-  /* background-color: #282c34; */
+  /*  */
   align-items: center;
   /* margin: 14%; */
   margin: 35%;
@@ -178,7 +185,7 @@
 }
 
 #signupFormCard {
-  /* background-color: #282c34; */
+  /*  */
   font-size: calc(2px + 2vmin);
   align-items: center;
   /* margin: 14%; */
@@ -191,7 +198,7 @@
 }
 
 #userInfoFormCard {
-  /* background-color: #282c34; */
+  /*  */
   /* align-items: center; */
   /* margin: 14%; */
   margin: 0%;

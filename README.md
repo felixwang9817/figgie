@@ -8,18 +8,20 @@ Multiplayer Figgie built using React, express, and socket.io
 
 Style:
 
-- leaderboard should be centered
 - room list style
 
 ## functionality
 
 - https
 - fix money update in lobby after a game
+- email/contact in footer w/ link to github
+- poker favicon
+- after sign up, see msg in login
+- if observers is full, trying to join room boots u back in lobby w/o msg
 
 Ideal flow:
 
 - lobby:
-
   - can play as a guest
   - see list of rooms w/ info and have it update
   - support private rooms by adding in optional pw to room creation

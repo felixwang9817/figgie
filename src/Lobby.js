@@ -97,13 +97,13 @@ class Lobby extends React.Component {
         <Container>
           <Row className="justify-content-md-center">
             <Col xs sm md lg xl={3}></Col>
-            <Col xs sm md lg xl="auto" className="text-center">
+            <Col xs sm md lg xl="auto" className="text-center lobby-title">
               <h1>Figgie</h1>
             </Col>
             <Col xs sm md lg xl={3}></Col>
           </Row>
           <Row>
-            <Col xs={4}>
+            <Col xs={5}>
               {/* <a
                 className="App-link"
                 href="https://www.janestreet.com/figgie/"
@@ -143,7 +143,7 @@ class Lobby extends React.Component {
               </Card>
               <Leaderboard />
             </Col>
-            <Col xs={8}>
+            <Col xs={7}>
               {this.state.user && (
                 <Card id="roomListCard" bg="dark">
                   <Row className="justify-content-md-center">
