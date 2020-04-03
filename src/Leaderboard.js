@@ -14,12 +14,21 @@ class Leaderboard extends React.Component {
   }
 
   async componentDidMount() {
-    await fetch(server + "/leaderboard", {})
-      .then(response => response.json())
-      .then(response => {
-        let leaderboard = response.slice(0, 5);
-        this.setState({ leaderboard: leaderboard });
-      });
+    async function f(setState) {
+      await fetch(server + "/leaderboard", {})
+        .then(response => response.json())
+        .then(response => {
+          let leaderboard = response.slice(0, 5);
+          setState(leaderboard);
+        }).catch(err => {
+          // if fail to fetch for some reason, wait and try again
+          console.log(err);
+          console.log("trying again");
+          setTimeout(() => f(setState), 1000);
+        });
+    }
+
+    await f((l) => this.setState({ leaderboard: l }));
   }
 
   render() {
