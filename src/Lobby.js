@@ -31,7 +31,11 @@ class Lobby extends React.Component {
       }
     });
     this.updateRooms();
-    setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
+    this.intervalUpdate = setInterval(_ => this.updateRooms(), this.numSeconds * 1000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalUpdate);
   }
 
   handleChangeRoom(event) {
