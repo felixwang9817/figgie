@@ -16,7 +16,7 @@ class Lobby extends React.Component {
   constructor() {
     super();
 
-    this.numSeconds = 5;
+    this.numSeconds = 2;
 
     this.state = { validated: false, rooms: [] };
 
