@@ -16,9 +16,10 @@ class Login extends React.Component {
   }
 
   componentDidMount() {
+    console.log(this.props.newUser);
     if (this.props.newUser) {
       this.setState({
-        msg: "Signup successful! Please log in.",
+        msg: "Signup success! Please log in.",
         msgType: "success"
       });
     }
@@ -65,6 +66,7 @@ class Login extends React.Component {
         this.props.onLogin(res.user);
         if (res.user) { ReactGA.set({ username: res.user.username }); }
         this.setState(res);
+        this.setState({ msgType: "danger" });
       })
       .catch(err => {
         console.log(err);
@@ -81,8 +83,7 @@ class Login extends React.Component {
     if (this.state.msg) {
       alert = (
         <Alert variant={this.state.msgType || "danger"}>
-          {" "}
-          {this.state.msg}{" "}
+          {this.state.msg}
         </Alert>
       );
     }

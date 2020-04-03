@@ -14,9 +14,7 @@ Style:
 
 - https
 - fix money update in lobby after a game
-- email/contact in footer w/ link to github
 - poker favicon
-- after sign up, see msg in login
 - if observers is full, trying to join room boots u back in lobby w/o msg
 
 Ideal flow:

@@ -33,7 +33,7 @@ class Gateway extends React.Component {
   }
 
   onSignup() {
-    this.setState({ newUser: true });
+    this.setState({ newUser: true});
   }
 
   render() {

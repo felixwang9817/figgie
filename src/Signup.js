@@ -54,10 +54,10 @@ class Signup extends React.Component {
       .then(res => {
         console.log("signup.js receiving response", res);
 
-        this.setState(res);
-        if (this.state.success) {
+        if (res.success) {
           this.props.onSignup();
         }
+        this.setState(res);
       })
       .catch(err => {
         console.log(err);
