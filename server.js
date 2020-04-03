@@ -756,6 +756,17 @@ function updateGameTime(roomNumber) {
   );
 }
 
+
+function addBot(botID, socket) {
+  // TODO
+  console.log("server received add bot request for bot ", botID, "from", socket.id);
+  socket.emit("alert", "Feature coming soon!");
+}
+
+
+
+
+
 /* socket communication code */
 
 io.on("connection", async function(socket) {
@@ -888,4 +899,6 @@ io.on("connection", async function(socket) {
     console.log("server has received command: " + command);
     parseCommand(command, socket);
   });
+
+  socket.on("addBot", botID => addBot(botID, socket));
 });

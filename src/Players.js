@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "react-bootstrap";
+import { Table, DropdownButton, Dropdown } from "react-bootstrap";
 import { playerColor, disconnectedColor } from "./consts";
 
 class Players extends React.Component {
@@ -12,11 +12,21 @@ class Players extends React.Component {
 
     let numPlayers = Object.keys(playerState).length;
     if (numPlayers < 4) {
-      msg = "Waiting for players " + numPlayers + "/4...";
+      msg = (
+             <>
+              <span>Waiting for players {numPlayers}/4...</span>
+              <DropdownButton onSelect={this.props.addBot} title="Add bot">
+                <Dropdown.Item eventKey="1">Beginner Bot</Dropdown.Item>
+                <Dropdown.Item eventKey="2">Coming soon</Dropdown.Item>
+                <Dropdown.Item eventKey="3">Coming soon</Dropdown.Item>
+              </DropdownButton>
+             </>
+            );
     } else {
       msg = this.props.isGameActive
         ? "Game on!"
         : "Game will start when all players are ready!";
+      msg = (<>{msg} <br /> </>);
     }
 
     let observers = this.props.observers.length ? (
@@ -87,7 +97,6 @@ class Players extends React.Component {
         </Table>
         {msg}
         {observers}
-        <br />
         <a
           className="App-link"
           href="https://www.janestreet.com/figgie/"
