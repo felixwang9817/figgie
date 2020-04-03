@@ -6,6 +6,12 @@ main {
   background-color: #282c34;
 }
 
+
+footer a {
+  font-size: 25px;
+  margin-left: 4px;
+}
+
 .App {
   text-align: center;
 }
@@ -249,6 +255,7 @@ main {
 .footerRedirect {
   margin-top: 10px;
 }
+
 
 #timer {
   float: left;
