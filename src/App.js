@@ -196,14 +196,6 @@ class App extends Component {
 
   addBot(botID) {
     console.log("Trying to add bot: ", botID);
-
-    // placeholder
-    this.setState({ alertMsg: "Feature coming soon!" }, () => {
-        window.setTimeout(() => {
-          this.setState({ alertMsg: "" });
-        }, 5000);
-      });
-
     this.socket.emit("addBot", botID);
   }
 
