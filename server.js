@@ -118,6 +118,10 @@ app.post(
 app.post("/signup", function(req, res) {
   console.log("at signup, body: ", req.body);
 
+  if (req.body.username.slice(-3) == "BOT") {
+    res.send({ success: false, msg: "Username cannot end with 'BOT'"});
+  }
+
   db.createPlayer(req.body.username, req.body.password, (success, msg) => {
     res.send({ success: success, msg: msg });
   });
@@ -147,7 +151,7 @@ app.get("/auth", require("connect-ensure-login").ensureLoggedIn(), function(
   res.send({ user: user });
 });
 
-// TODO: what triggers this fetch?
+
 app.get("/logout", function(req, res) {
   console.log("logging out");
   req.logout();
@@ -232,7 +236,8 @@ let initialPlayerState = {
   money: 300, // TODO: maybe this shouldn't be kept in per-room in-game state, but just fetched and pushed to db at start/end of game?
   netGain: null, // delta for a single game
   connected: true,
-  ready: false
+  ready: false,
+  isBot: false
 };
 let roomToState = {}; // room number -> market state and player state for that room
 
@@ -417,14 +422,10 @@ function postOffer(suit, price, player, roomNumber) {
   if (sellerState[suit] < 1) return false; // check have card to sell
 
   let currentOffer = marketState[suit]["offer"];
-  console.log("currentOffer: " + currentOffer);
-  console.log("price: " + price);
   if (currentOffer === null || price < currentOffer) {
     // valid offer; check market crossing
     let bidPrice = marketState[suit]["bid"];
     let bidPlayer = marketState[suit]["bidPlayer"];
-    console.log("bidPrice: " + bidPrice);
-    console.log("bidPlayer: " + bidPlayer);
     if (bidPrice !== null && bidPrice >= price) {
       // crossed market
       if (bidPlayer != player) {
@@ -448,8 +449,6 @@ function postBid(suit, price, player, roomNumber) {
   let marketState = roomToState[roomNumber]["marketState"];
   if (!marketState) return;
   let currentBid = marketState[suit]["bid"];
-  console.log("currentBid: " + currentBid);
-  console.log("price: " + price);
   if (currentBid === null || price > currentBid) {
     // valid bid; check market crossing
     let offerPrice = marketState[suit]["offer"];
@@ -538,7 +537,7 @@ function shieldPlayerInfo(username, roomNumber) {
 function updatePlayers(roomNumber) {
   // first, get usernames associated with roomNumber
   let playerState = roomToState[roomNumber]["playerState"];
-  let usernames = Object.keys(playerState);
+  let usernames = Object.keys(playerState).filter(p => !playerState[p]["isBot"]);
   for (const observer of roomToState[roomNumber]["observers"]) {
     usernames.push(observer);
   }
@@ -678,7 +677,9 @@ function endGame(roomNumber) {
     playerState[player]["netGain"] += playerState[player]["money"];
     playerState[player]["ready"] = false;
     // let update resolve async
-    db.updatePlayer(player, playerState[player]["money"]);
+    if (!playerState[player]["isBot"]) {
+      db.updatePlayer(player, playerState[player]["money"]);
+    }
   });
 
   setPostGameResults(roomNumber);
@@ -715,7 +716,7 @@ function setPostGameResults(roomNumber) {
 function sendPostGameResults(username) {
   let socketid = usernameToSocketid[username];
   let roomNumber = usernameToRoomNumber[username];
-  if (!roomNumber) return;
+  if (!roomNumber) return;  // bots will return here
   if (
     !Object.keys(roomToState[roomNumber]["postGameResults"]).includes(username)
   )
@@ -758,8 +759,28 @@ function updateGameTime(roomNumber) {
 
 
 function addBot(botID, socket) {
-  // TODO
   console.log("server received add bot request for bot ", botID, "from", socket.id);
+
+  let user = socket.handshake.session.passport.user;
+  let username = user.username;
+  let roomNumber = usernameToRoomNumber[username];
+
+  let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
+  if (currPlayers.length >= kMaxPlayers) {
+    socket.emit("alert", "Room full, cannot add bot.");
+    return;
+  }
+
+  let botName = "_" + roomNumber + "_" + currPlayers.length.toString() + " BOT";
+  roomToState[roomNumber]["playerState"][botName] = utils.deepCopy(
+      initialPlayerState
+    );
+
+  roomToState[roomNumber]["playerState"][botName]["isBot"] = true;
+  roomToState[roomNumber]["playerState"][botName]["ready"] = true;
+  updatePlayers(roomNumber);
+  // TODO
+  // wire in bot trading logic
   socket.emit("alert", "Feature coming soon!");
 }
 
@@ -802,9 +823,6 @@ io.on("connection", async function(socket) {
     initializeRoom(roomNumber);
   }
 
-  usernameToSocketid[username] = socket.id;
-  socket.join(roomNumber);
-
   let currPlayers = Object.keys(roomToState[roomNumber]["playerState"]);
   if (
     currPlayers.length >= kMaxPlayers &&
@@ -817,6 +835,9 @@ io.on("connection", async function(socket) {
     socket.disconnect();
     return;
   }
+
+  usernameToSocketid[username] = socket.id;
+  socket.join(roomNumber);
 
   if (roomToState[roomNumber]["playerState"][username]) {
     // user is reconnecting so we restore player state and change connected to true
@@ -871,7 +892,8 @@ io.on("connection", async function(socket) {
         if (!roomToState[roomNumber]["isGameActive"]) {
           delete playerState[username];
 
-          if (Object.keys(playerState).length == 0) {
+          if (Object.keys(playerState).filter(p => !playerState[p]["isBot"]).length == 0) {
+            // no more players, delete room
             delete roomToState[roomNumber];
           } else {
             updatePlayers(roomNumber);
