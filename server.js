@@ -237,7 +237,7 @@ let initialPlayerState = {
   netGain: null, // delta for a single game
   connected: true,
   ready: false,
-  isBot: false
+  botStrategy: null
 };
 let roomToState = {}; // room number -> market state and player state for that room
 
@@ -520,10 +520,14 @@ function clearPlayer(username, roomNumber) {
 // UPDATE FUNCTIONS
 function shieldPlayerInfo(username, roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
-  let playerVisibleState = utils.deepCopy(playerState);
+  let playerVisibleState = {};
 
   // hiding other player's hands
-  Object.keys(playerState).map(player => {
+  Object.keys(playerState).forEach(player => {
+    // can't deepcopy botStrategy
+    let { botStrategy, ...otherStates } = playerState[player];
+    playerVisibleState[player] = utils.deepCopy(otherStates);
+
     if (player !== username) {
       suits.forEach(suit => {
         playerVisibleState[player][suit] = null;
@@ -537,7 +541,7 @@ function shieldPlayerInfo(username, roomNumber) {
 function updatePlayers(roomNumber) {
   // first, get usernames associated with roomNumber
   let playerState = roomToState[roomNumber]["playerState"];
-  let usernames = Object.keys(playerState).filter(p => !playerState[p]["isBot"]);
+  let usernames = Object.keys(playerState).filter(p => !playerState[p]["botStrategy"]);
   for (const observer of roomToState[roomNumber]["observers"]) {
     usernames.push(observer);
   }
@@ -624,6 +628,13 @@ function startGame(roomNumber) {
   io.to(roomNumber).emit("alert", "Game on!"); // tell all players
 
   setTimeout(() => endGame(roomNumber), gameTime);
+  
+  // start bots
+  for (const player in playerState) {
+    if (!playerState[player]["botStrategy"]) continue;
+
+    playerState[player]["botStrategy"].start(player, roomNumber);
+  }
 }
 
 function endGame(roomNumber) {
@@ -631,6 +642,12 @@ function endGame(roomNumber) {
   io.to(roomNumber).emit("alert", "Time's up!");
 
   let playerState = roomToState[roomNumber]["playerState"];
+  // end bots
+  for (const player in playerState) {
+    if (!playerState[player]["botStrategy"]) continue;
+
+    playerState[player]["botStrategy"].end();
+  }
   updateGameState(false, roomNumber);
   clearMarket(roomNumber);
 
@@ -677,7 +694,7 @@ function endGame(roomNumber) {
     playerState[player]["netGain"] += playerState[player]["money"];
     playerState[player]["ready"] = false;
     // let update resolve async
-    if (!playerState[player]["isBot"]) {
+    if (!playerState[player]["botStrategy"]) {
       db.updatePlayer(player, playerState[player]["money"]);
     }
   });
@@ -716,7 +733,8 @@ function setPostGameResults(roomNumber) {
 function sendPostGameResults(username) {
   let socketid = usernameToSocketid[username];
   let roomNumber = usernameToRoomNumber[username];
-  if (!roomNumber) return;  // bots will return here
+  if (!roomNumber) return;  
+  if (!socketid) return; // bots will return here
   if (
     !Object.keys(roomToState[roomNumber]["postGameResults"]).includes(username)
   )
@@ -758,8 +776,15 @@ function updateGameTime(roomNumber) {
 }
 
 
+/* bots code */ 
+
+
 function addBot(botID, socket) {
   console.log("server received add bot request for bot ", botID, "from", socket.id);
+  if (!enabledBots[botID]) {
+    socket.emit("alert", "Feature coming soon!");
+    return;
+  }
 
   let user = socket.handshake.session.passport.user;
   let username = user.username;
@@ -776,12 +801,43 @@ function addBot(botID, socket) {
       initialPlayerState
     );
 
-  roomToState[roomNumber]["playerState"][botName]["isBot"] = true;
-  roomToState[roomNumber]["playerState"][botName]["ready"] = true;
-  updatePlayers(roomNumber);
-  // TODO
-  // wire in bot trading logic
-  socket.emit("alert", "Feature coming soon!");
+  usernameToRoomNumber[botName] = roomNumber;  // enables markPlayerReady
+
+  // create new instance of target bot class
+  roomToState[roomNumber]["playerState"][botName]["botStrategy"] = new enabledBots[botID]();
+  markPlayerReady(botName, true)  // auto checks if game should be started
+
+  // TODO: allow bots to be removed
+}
+
+
+class runBasicBot {
+  constructor() {
+    this.trade = this.trade.bind(this);
+  }
+
+  start(botName, roomNumber) {
+    this.name = botName;
+    this.roomNumber = roomNumber;
+    this.interval = setInterval(this.trade, 5000);
+    this.trade();
+  }
+
+  trade() {
+    suits.forEach(suit => {
+      postBid(suit, 5, this.name, this.roomNumber);
+      postOffer(suit, 10, this.name, this.roomNumber);
+    });
+  }
+
+  end() {
+    // do whatever cleanup is needed
+    clearInterval(this.interval);
+  }
+}
+
+let enabledBots = {
+  1: runBasicBot,
 }
 
 
@@ -892,8 +948,12 @@ io.on("connection", async function(socket) {
         if (!roomToState[roomNumber]["isGameActive"]) {
           delete playerState[username];
 
-          if (Object.keys(playerState).filter(p => !playerState[p]["isBot"]).length == 0) {
+          if (Object.keys(playerState).filter(p => !playerState[p]["botStrategy"]).length == 0) {
             // no more players, delete room
+            // clean up bots
+            for (const player in playerState) {
+              delete usernameToRoomNumber[player];
+            }
             delete roomToState[roomNumber];
           } else {
             updatePlayers(roomNumber);
