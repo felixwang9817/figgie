@@ -13,11 +13,12 @@ Style:
 ## functionality
 
 - https
-- fix money update in lobby after a game
-- poker favicon
 - if observers is full, trying to join room boots u back in lobby w/o msg
 
-Ideal flow:
+- bots:
+  - remove bot
+  - better strategy
+  - limit amount of money earned by farming bots
 
 - lobby:
   - can play as a guest

@@ -412,6 +412,13 @@ function tradeCard(buyer, seller, suit, price, roomNumber) {
 
   clearMarket(roomNumber);
   updatePlayers(roomNumber);
+
+  // update bots
+  for (const player in playerState) {
+    if (!playerState[player]["botStrategy"]) continue;
+
+    playerState[player]["botStrategy"].recordTrade(suit, price, buyer, seller);
+  }
 }
 
 function postOffer(suit, price, player, roomNumber) {
@@ -814,30 +821,91 @@ function addBot(botID, socket) {
 class runBasicBot {
   constructor() {
     this.trade = this.trade.bind(this);
+    this.tradeLog = [];
   }
 
   start(botName, roomNumber) {
     this.name = botName;
     this.roomNumber = roomNumber;
-    this.interval = setInterval(this.trade, 5000);
+    this.intervals = [setInterval(this.trade, 5000)];
     this.trade();
+  }
+
+  bid(suit, price) {
+    // DO NOT overwrite
+    return postBid(suit, price, this.name, this.roomNumber);
+  }
+
+  offer(suit, price) {
+    // DO NOT overwrite
+    return postOffer(suit, price, this.name, this.roomNumber);
   }
 
   trade() {
     suits.forEach(suit => {
-      postBid(suit, 5, this.name, this.roomNumber);
-      postOffer(suit, 10, this.name, this.roomNumber);
+      this.bid(suit, 4);
+      this.offer(suit, 10);
     });
+  }
+
+  recordTrade(suit, price, buyer, seller) {
+    // smarter strategies will use this
+    this.tradeLog.push({ suit: suit, price: price, buyer: buyer, seller: seller});
   }
 
   end() {
     // do whatever cleanup is needed
-    clearInterval(this.interval);
+    this.intervals.forEach(interval => clearInterval(interval));
   }
 }
 
+
+class runMPFadingBot extends runBasicBot {
+  constructor() {
+    super();
+
+    this.mp = {};
+    for (const suit of suits) {
+      this.mp[suit] = 6;
+    }
+
+    this.fade = 4;
+    this.updateFade = this.updateFade.bind(this);
+    this.trade = this.trade.bind(this);
+  }
+
+  start(botName, roomNumber) {
+    super.start(botName, roomNumber);
+
+    this.intervals.push(setInterval(this.updateFade, Math.floor(gameTime/4)))
+  }
+
+  trade() {
+    console.log("about to trade; mp: ", this.mp, "fade: ", this.fade);
+    suits.forEach(suit => {
+      this.bid(suit, this.mp[suit] - this.fade);
+      this.offer(suit, this.mp[suit] + this.fade);
+    });
+  }
+
+  recordTrade(suit, price, buyer, seller) {
+    super.recordTrade(suit, price, buyer, seller);
+    this.mp[suit] = price;
+  }
+
+  updateFade() {
+    // each minute, if at least 3 trades have happened, reduce fade by 1
+    if (this.tradeLog.length >= 3 && this.fade > 1) {
+      this.fade -= 1;
+      this.tradeLog = [];
+    }
+  }
+}
+
+
 let enabledBots = {
   1: runBasicBot,
+  2: runMPFadingBot
 }
 
 

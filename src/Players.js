@@ -17,7 +17,7 @@ class Players extends React.Component {
               <span>Waiting for players {numPlayers}/4...</span>
               <DropdownButton onSelect={this.props.addBot} title="Add bot">
                 <Dropdown.Item eventKey="1">Beginner Bot</Dropdown.Item>
-                <Dropdown.Item eventKey="2">Coming soon</Dropdown.Item>
+                <Dropdown.Item eventKey="2">Market Making Bot</Dropdown.Item>
                 <Dropdown.Item eventKey="3">Coming soon</Dropdown.Item>
               </DropdownButton>
              </>
