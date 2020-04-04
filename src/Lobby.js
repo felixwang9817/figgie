@@ -151,7 +151,7 @@ class Lobby extends React.Component {
                         rel="noopener noreferrer"
                         style={{"font-size": "18px"}}
                       >
-                        Full Game Rules
+                        How To Play
                       </a>
                     </Card.Text>
 

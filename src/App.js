@@ -39,7 +39,7 @@ function CheatSheet() {
             <Tab eventKey="basic" title="Basic">
               <ListGroup variant="flush">
                 <ListGroup.Item>
-                  <span>start</span> to start. Market clears after every trade.
+                  Market clears after every trade.
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <span>SUIT at X</span> to make an offer, e.g.{" "}
