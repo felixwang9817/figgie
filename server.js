@@ -88,12 +88,10 @@ passport.use(
 // from our socket. TODO: In future, we should serialize users to just their id/username
 // and reconstruct their data from db
 passport.serializeUser(function(user, cb) {
-  console.log("serializing", user);
   cb(null, user);
 });
 
 passport.deserializeUser(function(user, cb) {
-  console.log("deserializing", user);
   cb(null, user);
 });
 
@@ -152,11 +150,12 @@ app.get("/auth", require("connect-ensure-login").ensureLoggedIn(), function(
 });
 
 
-app.get("/logout", function(req, res) {
-  console.log("logging out");
-  req.logout();
-  res.send("bye");
-});
+app.get("/logout", require("connect-ensure-login").ensureLoggedIn(),
+  function(req, res) {
+    console.log("logging out by user", req.user.username);
+    req.logout();
+    res.send("bye");
+  });
 
 app.get(
   "/login", // happens when /auth fails
@@ -185,7 +184,6 @@ app.get(
   require("connect-ensure-login").ensureLoggedIn(),
   async function(req, res) {
     let username = req.user.username;
-    console.log("username in getting money", username);
     db.getMoneyByUsername(req, username, res);
   }
 );
@@ -256,6 +254,7 @@ function parseCommand(command, socket) {
   let user = socket.handshake.session.passport.user;
   let username = user.username;
   let roomNumber = usernameToRoomNumber[username];
+  console.log("server has received command: " + command, "from user", username);
 
   if (!roomToState[roomNumber]) return;
   if (!Object.keys(roomToState[roomNumber]["playerState"]).includes(username)) {
@@ -593,6 +592,8 @@ function initializeRoom(roomNumber) {
 }
 
 function startGame(roomNumber) {
+  console.log("game starting in room", roomNumber);
+
   roomToState[roomNumber]["postGameResults"] = {};
   let playerState = roomToState[roomNumber]["playerState"];
 
@@ -609,11 +610,8 @@ function startGame(roomNumber) {
   cards.fill(remainingSuits[0], 20, 30);
   cards.fill(remainingSuits[1], 30, 40);
 
-  console.log("preshuffle: " + cards);
   utils.shuffle(cards);
 
-  console.log("goal: " + goal);
-  console.log("cards: " + cards);
   roomToState[roomNumber]["goalSuit"] = goal;
 
   // distribute cards to players
@@ -652,6 +650,8 @@ function startGame(roomNumber) {
 
 function endGame(roomNumber) {
   if (!roomToState[roomNumber]["isGameActive"]) return;
+  console.log("Game ended in room", roomNumber);
+
   io.to(roomNumber).emit("alert", "Time's up!");
 
   let playerState = roomToState[roomNumber]["playerState"];
@@ -733,7 +733,6 @@ function setPostGameResults(roomNumber) {
     roomToState[roomNumber]["postGameResults"][player] = {};
   }
 
-  console.log("post game", roomToState[roomNumber]["postGameResults"]);
   for (const player in playerState) {
     sendPostGameResults(player);
   }
@@ -760,12 +759,6 @@ function sendPostGameResults(username) {
 }
 
 function sendObserversList(roomNumber) {
-  console.log(
-    "observers of room",
-    roomNumber,
-    ": ",
-    roomToState[roomNumber]["observers"]
-  );
   io.to(roomNumber).emit(
     "observersListUpdate",
     roomToState[roomNumber]["observers"]
@@ -773,7 +766,6 @@ function sendObserversList(roomNumber) {
 }
 
 function updateGameTime(roomNumber) {
-  console.log("updating time");
   if (
     !roomToState[roomNumber]["isGameActive"] ||
     !roomToState[roomNumber]["gameTimeEnd"] ||
@@ -887,7 +879,6 @@ class runMPFadingBot extends runBasicBot {
   }
 
   trade() {
-    console.log("about to trade; mp: ", this.mp, "fade: ", this.fade);
     suits.forEach(suit => {
       this.bid(suit, this.mp[suit] - this.fade);
       this.offer(suit, this.mp[suit] + this.fade);
@@ -947,6 +938,7 @@ io.on("connection", async function(socket) {
   let roomNumber = usernameToRoomNumber[username];
   console.log(
     "The user " + username + " connected with socket id " + socket.id
+    + " joining room " + roomNumber
   );
 
   if (!Object.keys(roomToState).includes(roomNumber)) {
@@ -1043,16 +1035,10 @@ io.on("connection", async function(socket) {
         sendObserversList(roomNumber);
       }
     }
-
-    console.log(
-      "current room state at end of disconnect",
-      roomToState[roomNumber]
-    );
   });
 
   // on client command, server parses the command
   socket.on("clientCommand", command => {
-    console.log("server has received command: " + command);
     parseCommand(command, socket);
   });
 
