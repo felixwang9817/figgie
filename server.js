@@ -358,6 +358,7 @@ function parseCommand(command, socket) {
       return;
     }
 
+    console.log("user using cheatcode:", username);
     let seller = tokens[5];
     postOffer(suit, 1, seller, roomNumber);
     takeOffer(suit, username, roomNumber, socket);
