@@ -109,6 +109,7 @@ class App extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.returnToLobby = this.returnToLobby.bind(this);
+    this.addBot = this.addBot.bind(this);
   }
 
   // state must be set before render to prevent redirect to /
@@ -193,6 +194,11 @@ class App extends Component {
     this.setState({ username: null }); // triggers redirect
   }
 
+  addBot(botID) {
+    console.log("Trying to add bot: ", botID);
+    this.socket.emit("addBot", botID);
+  }
+
   render() {
     if (!this.props.user || !this.state.username) {
       return <Redirect to="/" />;
@@ -266,6 +272,7 @@ class App extends Component {
                 playerState={this.state.playersInfo}
                 isGameActive={this.state.isGameActive}
                 observers={this.state.observers}
+                addBot={this.addBot}
               />
             </Col>
 
