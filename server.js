@@ -167,7 +167,13 @@ app.get("/leaderboard", async function(req, res) {
 });
 
 app.get("/rooms", function(req, res) {
-  res.send(roomToState);
+  filteredRoomToState = {}
+  for (const roomNumber in roomToState) {
+    filteredRoomToState[roomNumber] = {}
+    // only send player's usernames in that room
+    filteredRoomToState[roomNumber]["playerState"] = Object.keys(roomToState[roomNumber]["playerState"]);
+  }
+  res.send(filteredRoomToState);
 });
 
 app.get(
