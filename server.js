@@ -31,7 +31,7 @@ const path = require("path");
 require("isomorphic-fetch");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 2;
+const kMaxPlayers = process.env.NODE_ENV === "production" ? 4 : 4;
 const kMaxObservers = 2;
 const gameTime =
   process.env.NODE_ENV === "production" ? 4 * 60 * 1000 : 30 * 1000; // in ms
@@ -719,7 +719,29 @@ function endGame(roomNumber) {
   // reset timer
   roomToState[roomNumber]["gameTimeEnd"] = null;
   updateGameTime(roomNumber);
+
+  // wait 5s to cleanup room in case all players have left during the game
+  setTimeout(() => checkIfRoomNeedCleanup(roomNumber), 5000);
 }
+
+
+function checkIfRoomNeedCleanup(roomNumber) {
+  if (!roomToState[roomNumber]) return;
+  let playerState = roomToState[roomNumber]["playerState"];
+
+  if (Object.keys(playerState).filter(p => !playerState[p]["botStrategy"]
+                                           && playerState[p]["connected"]).length == 0) {
+    // no more connected players, delete room
+    // clean up bots
+    for (const player in playerState) {
+      delete usernameToRoomNumber[player];
+    }
+    delete roomToState[roomNumber];
+  } else {
+    updatePlayers(roomNumber);
+  }
+}
+
 
 function setPostGameResults(roomNumber) {
   let playerState = roomToState[roomNumber]["playerState"];
@@ -1015,16 +1037,7 @@ io.on("connection", async function(socket) {
         if (!roomToState[roomNumber]["isGameActive"]) {
           delete playerState[username];
 
-          if (Object.keys(playerState).filter(p => !playerState[p]["botStrategy"]).length == 0) {
-            // no more players, delete room
-            // clean up bots
-            for (const player in playerState) {
-              delete usernameToRoomNumber[player];
-            }
-            delete roomToState[roomNumber];
-          } else {
-            updatePlayers(roomNumber);
-          }
+          checkIfRoomNeedCleanup(roomNumber);
         }
       } else {
         let index = roomToState[roomNumber]["observers"].indexOf(username);
